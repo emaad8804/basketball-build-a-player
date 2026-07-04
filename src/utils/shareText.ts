@@ -29,7 +29,12 @@ export function flawLine(state: GameState): string {
 export function resultLine(state: GameState): string {
   const { seasonResult: season, playoffResult: playoffs, finalsResult: finals } = state
   if (!season) return ''
-  if (!season.madePlayoffs) return '📉 Missed the playoffs'
+  if (!season.madePlayoffs && !state.playInResult?.survived) {
+    if (state.playInResult?.seasonEndingInjury)
+      return '💀 Season-ending injury (Play-In)'
+    if (state.playInResult) return '🚨 Lost in the Play-In'
+    return '📉 Missed the playoffs'
+  }
   if (playoffs?.seasonEndingInjury)
     return `💀 Season-ending injury (${playoffs.seasonEndingInjury})`
   if (finals) {

@@ -1,6 +1,7 @@
 import type { AttributeKey, Grade, Group, Player, Rarity, Team } from './player'
 import type {
   FinalsResult,
+  PlayInResult,
   PlayoffResult,
   SeasonResult,
 } from './simulation'
@@ -30,6 +31,7 @@ export type Screen =
   | 'team'
   | 'result'
   | 'season'
+  | 'playin'
   | 'playoffs'
   | 'finals'
   | 'share'
@@ -62,6 +64,8 @@ export interface GameState {
   chemistryBonuses: ChemistryBonus[]
   archetype: string | null
   seasonResult: SeasonResult | null
+  playInResult: PlayInResult | null
+  playInGamesRevealed: number
   playoffResult: PlayoffResult | null
   finalsResult: FinalsResult | null
   playoffGamesRevealed: number

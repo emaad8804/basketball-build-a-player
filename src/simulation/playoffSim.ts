@@ -46,7 +46,7 @@ function game7Strength(profile: BuildProfile): number {
 }
 
 /** Map strength (60-99) to a per-game win probability. */
-function strengthToWinProb(strength: number): number {
+export function strengthToWinProb(strength: number): number {
   return clamp(0.5 + (strength - 82) * 0.02, 0.2, 0.82)
 }
 
@@ -104,6 +104,7 @@ function seedAdjustment(opponentSeed: number): number {
 export function simulatePlayoffs(
   profile: BuildProfile,
   season: SeasonResult,
+  seedOverride?: number,
 ): PlayoffResult {
   const strength = playoffStrength(profile)
   const pGame7Base = clamp(
@@ -112,7 +113,8 @@ export function simulatePlayoffs(
     0.85,
   )
   const rounds: PlayoffRound[] = []
-  const opponentSeeds = opponentSeedsForPath(season.seed)
+  // Play-in survivors enter as the 8 seed regardless of season record
+  const opponentSeeds = opponentSeedsForPath(seedOverride ?? season.seed)
 
   // Never draw your own team as an opponent
   const usedOpponents = new Set<string>(

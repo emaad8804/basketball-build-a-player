@@ -73,8 +73,12 @@ export function ShareScreen() {
 
   const playoffSummary = !season
     ? ''
-    : !season.madePlayoffs
-      ? 'Missed the playoffs'
+    : !season.madePlayoffs && !state.playInResult?.survived
+      ? state.playInResult
+        ? state.playInResult.seasonEndingInjury
+          ? 'Injured on play-in night'
+          : 'Lost in the Play-In'
+        : 'Missed the playoffs'
       : playoffs?.seasonEndingInjury
         ? `Season-ending injury (${playoffs.seasonEndingInjury})`
         : playoffs === null

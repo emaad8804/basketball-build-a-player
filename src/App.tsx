@@ -5,6 +5,7 @@ import { FlawScreen } from './components/flaw/FlawScreen'
 import { TeamSpinScreen } from './components/team/TeamSpinScreen'
 import { ResultScreen } from './components/result/ResultScreen'
 import { SeasonScreen } from './components/season/SeasonScreen'
+import { PlayInScreen } from './components/playin/PlayInScreen'
 import { PlayoffsScreen } from './components/playoffs/PlayoffsScreen'
 import { FinalsScreen } from './components/finals/FinalsScreen'
 import { ShareScreen } from './components/share/ShareScreen'
@@ -24,6 +25,8 @@ function Screens() {
       return <ResultScreen />
     case 'season':
       return <SeasonScreen />
+    case 'playin':
+      return <PlayInScreen />
     case 'playoffs':
       return <PlayoffsScreen />
     case 'finals':

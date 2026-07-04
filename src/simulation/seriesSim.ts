@@ -56,7 +56,7 @@ const CLEAN_ELIMINATION_RECAPS = [
   'A flawless closer: no crack in the armor for the opponent to pry open.',
 ]
 
-function generateGameStats(
+export function generateGameStats(
   profile: BuildProfile,
   won: boolean,
   isGame7: boolean,
@@ -101,7 +101,7 @@ function generateGameStats(
   return { pts, reb, ast, stl, blk }
 }
 
-function generateScore(
+export function generateScore(
   won: boolean,
   defense: number,
   isGame7: boolean,

@@ -15,6 +15,7 @@ import { assignArchetype } from '../game-logic/archetype'
 import { makeBuildProfile } from '../simulation/profile'
 import { rollGlassBones } from '../simulation/flawEffects'
 import { simulateSeason } from '../simulation/seasonSim'
+import { simulatePlayIn } from '../simulation/playInSim'
 import { simulatePlayoffs } from '../simulation/playoffSim'
 import { simulateFinals } from '../simulation/finalsSim'
 import { deriveLegacyLabel } from '../simulation/legacy'
@@ -38,6 +39,8 @@ export type GameAction =
   | { type: 'SPIN_HOME_TEAM' }
   | { type: 'ACCEPT_TEAM' }
   | { type: 'SIMULATE_SEASON' }
+  | { type: 'SIMULATE_PLAY_IN' }
+  | { type: 'REVEAL_NEXT_PLAYIN_GAME' }
   | { type: 'SIMULATE_PLAYOFFS' }
   | { type: 'REVEAL_NEXT_PLAYOFF_GAME' }
   | { type: 'REVEAL_ALL_PLAYOFF_GAMES' }
@@ -263,6 +266,36 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, screen: 'season', seasonResult }
     }
 
+    case 'SIMULATE_PLAY_IN': {
+      if (
+        !state.group ||
+        state.overall === null ||
+        !state.seasonResult?.playInEligible ||
+        state.playInResult !== null
+      )
+        return state
+      const profile = makeBuildProfile(
+        state.group,
+        state.overall,
+        state.lockedAttributes,
+        state.flawId,
+        state.homeTeam,
+      )
+      const playInResult = simulatePlayIn(profile, state.seasonResult)
+      return { ...state, screen: 'playin', playInResult, playInGamesRevealed: 0 }
+    }
+
+    case 'REVEAL_NEXT_PLAYIN_GAME': {
+      if (!state.playInResult) return state
+      return {
+        ...state,
+        playInGamesRevealed: Math.min(
+          state.playInGamesRevealed + 1,
+          state.playInResult.games.length,
+        ),
+      }
+    }
+
     case 'SIMULATE_PLAYOFFS': {
       if (!state.group || state.overall === null || !state.seasonResult)
         return state
@@ -273,19 +306,33 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         state.flawId,
         state.homeTeam,
       )
+      const viaPlayIn = state.playInResult !== null
+      const qualified =
+        state.seasonResult.madePlayoffs ||
+        state.playInResult?.survived === true
 
-      if (!state.seasonResult.madePlayoffs) {
-        // Missed the playoffs entirely — straight to legacy
+      if (!qualified) {
+        // Missed the playoffs (or died on play-in night) — straight to legacy
         const legacyLabel = deriveLegacyLabel(
           profile,
           state.seasonResult,
           null,
           null,
+          {
+            viaPlayIn,
+            playInInjury: state.playInResult?.seasonEndingInjury,
+          },
         )
         return { ...state, screen: 'share', legacyLabel }
       }
 
-      const playoffResult = simulatePlayoffs(profile, state.seasonResult)
+      // Play-in survivors enter the bracket as the 8 seed
+      const seedOverride = state.seasonResult.madePlayoffs ? undefined : 8
+      const playoffResult = simulatePlayoffs(
+        profile,
+        state.seasonResult,
+        seedOverride,
+      )
 
       if (!playoffResult.reachedFinals) {
         const legacyLabel = deriveLegacyLabel(
@@ -293,6 +340,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           state.seasonResult,
           playoffResult,
           null,
+          { viaPlayIn },
         )
         return {
           ...state,
@@ -314,6 +362,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           state.seasonResult,
           injured,
           null,
+          { viaPlayIn },
         )
         return {
           ...state,
@@ -330,6 +379,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         state.seasonResult,
         playoffResult,
         finalsResult,
+        { viaPlayIn },
       )
       return {
         ...state,

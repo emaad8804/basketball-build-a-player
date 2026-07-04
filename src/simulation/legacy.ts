@@ -5,6 +5,13 @@ import type {
 } from '../types'
 import type { BuildProfile } from './profile'
 
+export interface LegacyContext {
+  /** Run went through the play-in tournament. */
+  viaPlayIn?: boolean
+  /** Glass Bones struck on play-in night. */
+  playInInjury?: boolean
+}
+
 /**
  * Ordered rule-chain from the spec — first match wins.
  */
@@ -13,6 +20,7 @@ export function deriveLegacyLabel(
   season: SeasonResult,
   playoffs: PlayoffResult | null,
   finals: FinalsResult | null,
+  ctx: LegacyContext = {},
 ): string {
   const { overall, ratings } = profile
   const champion = finals?.won ?? false
@@ -31,9 +39,12 @@ export function deriveLegacyLabel(
   const eliteDefense = ratings.defense >= 94
 
   // Glass Bones ended the run — the great what-if outranks everything else
-  if (playoffs?.seasonEndingInjury) {
+  if (playoffs?.seasonEndingInjury || ctx.playInInjury) {
     return overall >= 93 ? 'What Could Have Been' : 'Star-Crossed Season'
   }
+
+  // A title from the play-in lane is the greatest story in basketball
+  if (champion && ctx.viaPlayIn) return 'Ultimate Underdog'
 
   if (champion && finalsMvp && season.wonMvp) return 'First Ballot Hall of Famer'
   if (champion && finalsMvp && overall >= 95) return 'All-Time Great'
@@ -45,6 +56,13 @@ export function deriveLegacyLabel(
   if (champion && finalsMvp) return 'Finals MVP'
   if (champion) return 'Championship Piece'
   if (reachedFinals) return 'Almost a Champion'
+  // Survived the play-in and still made a deep run
+  if (
+    ctx.viaPlayIn &&
+    playoffs !== null &&
+    playoffs.eliminatedIn === 'Conference Finals'
+  )
+    return 'Play-In Warrior'
   if (season.wonMvp) return 'MVP-Caliber Superstar'
   if (lostEarly && overall >= 93) return 'Playoff Disappointment'
   if (lostEarly && season.stats.ppg >= 28) return 'Regular Season Superstar'

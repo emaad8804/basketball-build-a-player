@@ -125,6 +125,8 @@ export function simulateSeason(profile: BuildProfile): SeasonResult {
   }
 
   const madePlayoffs = wins >= PLAYOFF_WIN_CUTOFF
+  // One last chance: 40-43 wins earns a sudden-death play-in berth
+  const playInEligible = !madePlayoffs && wins >= 40
   // Conference comes from the Team Destiny landing when there is one
   const conference: 'East' | 'West' =
     profile.homeConference ?? (Math.random() < 0.5 ? 'East' : 'West')
@@ -174,6 +176,7 @@ export function simulateSeason(profile: BuildProfile): SeasonResult {
     wins,
     losses,
     seed,
+    playInEligible,
     conference,
     stats,
     awards,

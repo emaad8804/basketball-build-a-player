@@ -12,6 +12,8 @@ export interface SeasonResult {
   wins: number
   losses: number
   seed: number
+  /** 40-43 wins: one last chance via the play-in tournament. */
+  playInEligible: boolean
   conference: 'East' | 'West'
   stats: StatLine
   awards: string[]
@@ -49,6 +51,20 @@ export interface SeriesGame {
   flawEvent?: string
   /** Player sat this game out (Injury Prone). */
   dnp?: boolean
+}
+
+/** One sudden-death play-in game; each has its own opponent. */
+export interface PlayInGame extends SeriesGame {
+  opponent: string
+}
+
+export interface PlayInResult {
+  /** 42-43 wins get the forgiving 7/8 path; 40-41 must win two straight. */
+  path: '7-8' | '9-10'
+  games: PlayInGame[]
+  survived: boolean
+  /** Glass Bones struck on play-in night — the run ends before tip-off. */
+  seasonEndingInjury?: boolean
 }
 
 export interface PlayoffRound {

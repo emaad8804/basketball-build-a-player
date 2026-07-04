@@ -38,7 +38,8 @@ export function SeasonScreen() {
         </h2>
         <div className="mt-1 text-lg text-gray-300">
           {ordinal(season.seed)} seed in the {season.conference}
-          {!season.madePlayoffs && ' — missed the playoffs'}
+          {!season.madePlayoffs &&
+            (season.playInEligible ? ' — play-in bound' : ' — missed the playoffs')}
         </div>
       </div>
 
@@ -88,6 +89,13 @@ export function SeasonScreen() {
             className="text-lg px-8"
           >
             ⚔️ Enter the Playoffs
+          </Button>
+        ) : season.playInEligible ? (
+          <Button
+            onClick={() => dispatch({ type: 'SIMULATE_PLAY_IN' })}
+            className="text-lg px-8 anim-glow-pulse !bg-red-700 hover:!bg-red-600 !shadow-red-900/40"
+          >
+            🚨 Play-In Tournament — Win or Go Home
           </Button>
         ) : (
           <Button

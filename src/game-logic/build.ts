@@ -56,6 +56,8 @@ export function emptyBuildState(): Pick<
   | 'chemistryBonuses'
   | 'archetype'
   | 'seasonResult'
+  | 'playInResult'
+  | 'playInGamesRevealed'
   | 'playoffResult'
   | 'finalsResult'
   | 'playoffGamesRevealed'
@@ -77,6 +79,8 @@ export function emptyBuildState(): Pick<
     chemistryBonuses: [],
     archetype: null,
     seasonResult: null,
+    playInResult: null,
+    playInGamesRevealed: 0,
     playoffResult: null,
     finalsResult: null,
     playoffGamesRevealed: 0,
