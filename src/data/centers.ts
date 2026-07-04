@@ -91,7 +91,7 @@ export const CENTERS: Player[] = [
   },
   {
     name: 'Jaren Jackson Jr.',
-    team: 'Memphis Grizzlies',
+    team: 'Utah Jazz',
     primaryPosition: 'PF',
     secondaryPositions: ['C'],
     eligibleGroups: ['Centers', 'Forwards'],
@@ -146,7 +146,7 @@ export const CENTERS: Player[] = [
   },
   {
     name: 'Ivica Zubac',
-    team: 'LA Clippers',
+    team: 'Indiana Pacers',
     primaryPosition: 'C',
     secondaryPositions: [],
     eligibleGroups: ['Centers'],
@@ -190,7 +190,7 @@ export const CENTERS: Player[] = [
   },
   {
     name: 'Nic Claxton',
-    team: 'Brooklyn Nets',
+    team: 'Chicago Bulls',
     primaryPosition: 'C',
     secondaryPositions: [],
     eligibleGroups: ['Centers'],
@@ -201,7 +201,7 @@ export const CENTERS: Player[] = [
   },
   {
     name: 'Deandre Ayton',
-    team: 'Los Angeles Lakers',
+    team: 'Washington Wizards',
     primaryPosition: 'C',
     secondaryPositions: [],
     eligibleGroups: ['Centers'],
@@ -212,7 +212,7 @@ export const CENTERS: Player[] = [
   },
   {
     name: 'Nikola Vucevic',
-    team: 'Chicago Bulls',
+    team: 'Boston Celtics',
     primaryPosition: 'C',
     secondaryPositions: [],
     eligibleGroups: ['Centers'],
@@ -256,7 +256,7 @@ export const CENTERS: Player[] = [
   },
   {
     name: 'Walker Kessler',
-    team: 'Utah Jazz',
+    team: 'Los Angeles Lakers',
     primaryPosition: 'C',
     secondaryPositions: [],
     eligibleGroups: ['Centers'],
@@ -297,5 +297,16 @@ export const CENTERS: Player[] = [
     centerType: 'hybrid-big',
     grades: { frame: 'B', athleticism: 'A-', shooting: 'B-', finishing: 'B', ballHandling: 'C+', playmaking: 'B-', defense: 'B+', rebounding: 'B', iqClutch: 'C+' },
     tags: ['unicorn', 'mobile', 'rising'],
+  },
+  {
+    name: 'Zach Edey',
+    team: 'Memphis Grizzlies',
+    primaryPosition: 'C',
+    secondaryPositions: [],
+    eligibleGroups: ['Centers'],
+    rarity: 'Rare',
+    centerType: 'true-center',
+    grades: { frame: 'A+', athleticism: 'C+', shooting: 'D', finishing: 'A-', ballHandling: 'D', playmaking: 'C', defense: 'B+', rebounding: 'A', iqClutch: 'B-' },
+    tags: ['giant', 'glass', 'post-up'],
   },
 ]

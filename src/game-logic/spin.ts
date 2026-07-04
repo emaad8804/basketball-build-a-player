@@ -1,10 +1,39 @@
-import { CENTER_TYPE_WEIGHTS } from '../constants/attributes'
+import { CENTER_TYPE_WEIGHTS, RARITY_WEIGHTS } from '../constants/attributes'
 import { NBA_TEAMS } from '../constants/teams'
 import { playersOnTeamInGroup } from '../data'
-import type { CenterType, Group, Player, Team } from '../types'
+import type { CenterType, Group, Player, Rarity, Team } from '../types'
 
 function pickRandom<T>(items: T[]): T {
   return items[Math.floor(Math.random() * items.length)]
+}
+
+/**
+ * Weighted pick by rarity tier: stars are harder to land than role
+ * players. Weights renormalize over the tiers present in the pool.
+ */
+function pickRarityWeighted(players: Player[]): Player {
+  if (players.length === 1) return players[0]
+
+  const byRarity = new Map<Rarity, Player[]>()
+  for (const p of players) {
+    const list = byRarity.get(p.rarity)
+    if (list) list.push(p)
+    else byRarity.set(p.rarity, [p])
+  }
+
+  const presentTiers = [...byRarity.keys()]
+  if (presentTiers.length === 1) return pickRandom(players)
+
+  const totalWeight = presentTiers.reduce(
+    (sum, tier) => sum + RARITY_WEIGHTS[tier],
+    0,
+  )
+  let roll = Math.random() * totalWeight
+  for (const tier of presentTiers) {
+    roll -= RARITY_WEIGHTS[tier]
+    if (roll <= 0) return pickRandom(byRarity.get(tier)!)
+  }
+  return pickRandom(byRarity.get(presentTiers[presentTiers.length - 1])!)
 }
 
 /**
@@ -71,5 +100,5 @@ export function spinPlayer(
   if (group === 'Centers') {
     pool = getCenterWeightedPlayerPool(pool)
   }
-  return pickRandom(pool)
+  return pickRarityWeighted(pool)
 }

@@ -39,3 +39,14 @@ export const CENTER_TYPE_WEIGHTS: Record<string, number> = {
   'hybrid-big': 20,
   'small-ball': 10,
 }
+
+/**
+ * Spin odds by rarity tier — better players are harder to land.
+ * Weights renormalize over the tiers actually present in a team's pool.
+ */
+export const RARITY_WEIGHTS: Record<string, number> = {
+  Common: 46,
+  Rare: 30,
+  Elite: 16,
+  Legendary: 8,
+}

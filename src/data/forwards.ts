@@ -25,7 +25,7 @@ export const FORWARDS: Player[] = [
   },
   {
     name: 'Giannis Antetokounmpo',
-    team: 'Milwaukee Bucks',
+    team: 'Miami Heat',
     primaryPosition: 'PF',
     secondaryPositions: ['C'],
     eligibleGroups: ['Forwards', 'Centers'],
@@ -46,7 +46,7 @@ export const FORWARDS: Player[] = [
   },
   {
     name: 'Kawhi Leonard',
-    team: 'LA Clippers',
+    team: 'Toronto Raptors',
     primaryPosition: 'SF',
     secondaryPositions: ['PF'],
     eligibleGroups: ['Forwards'],
@@ -76,7 +76,7 @@ export const FORWARDS: Player[] = [
   },
   {
     name: 'Jaylen Brown',
-    team: 'Boston Celtics',
+    team: 'Philadelphia 76ers',
     primaryPosition: 'SG',
     secondaryPositions: ['SF'],
     eligibleGroups: ['Guards', 'Forwards'],
@@ -147,7 +147,7 @@ export const FORWARDS: Player[] = [
   },
   {
     name: 'Julius Randle',
-    team: 'Minnesota Timberwolves',
+    team: 'Brooklyn Nets',
     primaryPosition: 'PF',
     secondaryPositions: ['C'],
     eligibleGroups: ['Forwards', 'Centers'],
@@ -256,7 +256,7 @@ export const FORWARDS: Player[] = [
   },
   {
     name: 'Anthony Davis',
-    team: 'Dallas Mavericks',
+    team: 'Washington Wizards',
     primaryPosition: 'PF',
     secondaryPositions: ['C'],
     eligibleGroups: ['Forwards', 'Centers'],
@@ -267,7 +267,7 @@ export const FORWARDS: Player[] = [
   },
   {
     name: 'Kristaps Porzingis',
-    team: 'Atlanta Hawks',
+    team: 'Golden State Warriors',
     primaryPosition: 'C',
     secondaryPositions: ['PF'],
     eligibleGroups: ['Forwards', 'Centers'],
@@ -289,7 +289,7 @@ export const FORWARDS: Player[] = [
   },
   {
     name: 'Bobby Portis',
-    team: 'Milwaukee Bucks',
+    team: 'Miami Heat',
     primaryPosition: 'PF',
     secondaryPositions: ['C'],
     eligibleGroups: ['Forwards', 'Centers'],
@@ -300,7 +300,7 @@ export const FORWARDS: Player[] = [
   },
   {
     name: 'Naz Reid',
-    team: 'Minnesota Timberwolves',
+    team: 'Charlotte Hornets',
     primaryPosition: 'C',
     secondaryPositions: ['PF'],
     eligibleGroups: ['Forwards', 'Centers'],
@@ -308,6 +308,26 @@ export const FORWARDS: Player[] = [
     centerType: 'hybrid-big',
     grades: { frame: 'B+', athleticism: 'B+', shooting: 'B+', finishing: 'B+', ballHandling: 'B', playmaking: 'B-', defense: 'B-', rebounding: 'B', iqClutch: 'B' },
     tags: ['stretch', 'microwave', 'fan-favorite'],
+  },
+  {
+    name: 'Paul George',
+    team: 'Boston Celtics',
+    primaryPosition: 'SF',
+    secondaryPositions: ['SG', 'PF'],
+    eligibleGroups: ['Forwards'],
+    rarity: 'Rare',
+    grades: { frame: 'B+', athleticism: 'B+', shooting: 'A-', finishing: 'B+', ballHandling: 'B+', playmaking: 'B+', defense: 'B+', rebounding: 'B', iqClutch: 'B' },
+    tags: ['two-way', 'shooter', 'vet'],
+  },
+  {
+    name: 'Brandon Ingram',
+    team: 'LA Clippers',
+    primaryPosition: 'SF',
+    secondaryPositions: ['PF'],
+    eligibleGroups: ['Forwards'],
+    rarity: 'Rare',
+    grades: { frame: 'B+', athleticism: 'B+', shooting: 'B+', finishing: 'A-', ballHandling: 'A-', playmaking: 'B+', defense: 'C+', rebounding: 'B-', iqClutch: 'B' },
+    tags: ['midrange', 'smooth', 'length'],
   },
   {
     name: 'RJ Barrett',
@@ -328,5 +348,15 @@ export const FORWARDS: Player[] = [
     rarity: 'Common',
     grades: { frame: 'B', athleticism: 'A-', shooting: 'C+', finishing: 'B', ballHandling: 'B-', playmaking: 'B-', defense: 'B+', rebounding: 'B-', iqClutch: 'C+' },
     tags: ['defense', 'wingspan', 'rising'],
+  },
+  {
+    name: 'Jaylen Wells',
+    team: 'Memphis Grizzlies',
+    primaryPosition: 'SF',
+    secondaryPositions: ['SG'],
+    eligibleGroups: ['Forwards'],
+    rarity: 'Common',
+    grades: { frame: 'B', athleticism: 'B', shooting: 'B+', finishing: 'B-', ballHandling: 'B-', playmaking: 'C+', defense: 'B+', rebounding: 'C+', iqClutch: 'B-' },
+    tags: ['3-and-D', 'young', 'wing'],
   },
 ]
