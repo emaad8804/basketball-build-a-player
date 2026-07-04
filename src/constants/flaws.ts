@@ -23,7 +23,7 @@ export interface Flaw {
   linkedAttribute: AttributeKey
 }
 
-export const NO_FLAW_WEIGHT = 65
+export const NO_FLAW_WEIGHT = 50
 
 /** Rating on the linked attribute at which a flaw's effect is halved. */
 export const SOFTEN_THRESHOLD = 95
@@ -34,7 +34,7 @@ export const FLAWS: Flaw[] = [
     name: 'Brick at the Line',
     tier: 'Minor',
     emoji: '🧱',
-    weight: 9,
+    weight: 13,
     description:
       'Free throws betray you in tight games — close playoff losses pile up.',
     linkedAttribute: 'shooting',
@@ -44,7 +44,7 @@ export const FLAWS: Flaw[] = [
     name: 'Slow Starter',
     tier: 'Minor',
     emoji: '🐌',
-    weight: 9,
+    weight: 13,
     description:
       'You sleepwalk through Games 1 and 2 of every playoff series.',
     linkedAttribute: 'iqClutch',
@@ -54,7 +54,7 @@ export const FLAWS: Flaw[] = [
     name: 'Injury Prone',
     tier: 'Moderate',
     emoji: '🩹',
-    weight: 6,
+    weight: 8.5,
     description:
       'Every playoff game risks a knock that sits you for the next two.',
     linkedAttribute: 'frame',
@@ -64,7 +64,7 @@ export const FLAWS: Flaw[] = [
     name: 'Playoff Shrink',
     tier: 'Moderate',
     emoji: '📉',
-    weight: 6,
+    weight: 8.5,
     description:
       'Regular-season monster, postseason mortal — your game shrinks when it counts.',
     linkedAttribute: 'iqClutch',
@@ -74,7 +74,7 @@ export const FLAWS: Flaw[] = [
     name: 'Ice Cold in the Clutch',
     tier: 'Severe',
     emoji: '🧊',
-    weight: 2.5,
+    weight: 3.5,
     description:
       'Game 7s freeze you solid. The biggest moments are your worst.',
     linkedAttribute: 'iqClutch',
@@ -84,7 +84,7 @@ export const FLAWS: Flaw[] = [
     name: 'Glass Bones',
     tier: 'Severe',
     emoji: '💀',
-    weight: 2.5,
+    weight: 3.5,
     description:
       'Every playoff round rolls the dice on a season-ending injury.',
     linkedAttribute: 'frame',

@@ -11,15 +11,20 @@ import { ATTRIBUTE_LABELS } from '../../constants/attributes'
 import { useGame } from '../../state/GameContext'
 import { Button } from '../shared/atoms'
 
-/** Wheel segments in fixed draw order; colors escalate toward blood red. */
+/** Segment colors escalate toward blood red as severity rises. */
+const SEGMENT_COLORS: Record<FlawId, string> = {
+  'brick-at-the-line': '#a16207',
+  'slow-starter': '#ca8a04',
+  'injury-prone': '#c2410c',
+  'playoff-shrink': '#ea580c',
+  'ice-cold': '#b91c1c',
+  'glass-bones': '#7f1d1d',
+}
+
+/** Wheel segments derived from FLAWS so odds and visuals can't drift. */
 const SEGMENTS: { id: FlawId | null; weight: number; color: string }[] = [
   { id: null, weight: NO_FLAW_WEIGHT, color: '#14532d' },
-  { id: 'brick-at-the-line', weight: 9, color: '#a16207' },
-  { id: 'slow-starter', weight: 9, color: '#ca8a04' },
-  { id: 'injury-prone', weight: 6, color: '#c2410c' },
-  { id: 'playoff-shrink', weight: 6, color: '#ea580c' },
-  { id: 'ice-cold', weight: 2.5, color: '#b91c1c' },
-  { id: 'glass-bones', weight: 2.5, color: '#7f1d1d' },
+  ...FLAWS.map((f) => ({ id: f.id, weight: f.weight, color: SEGMENT_COLORS[f.id] })),
 ]
 const TOTAL_WEIGHT = SEGMENTS.reduce((s, x) => s + x.weight, 0)
 const SPIN_MS = 3800
