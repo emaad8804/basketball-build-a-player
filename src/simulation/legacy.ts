@@ -30,6 +30,11 @@ export function deriveLegacyLabel(
     ratings.shooting >= 90 && ratings.ballHandling >= 90 && ratings.playmaking >= 86
   const eliteDefense = ratings.defense >= 94
 
+  // Glass Bones ended the run — the great what-if outranks everything else
+  if (playoffs?.seasonEndingInjury) {
+    return overall >= 93 ? 'What Could Have Been' : 'Star-Crossed Season'
+  }
+
   if (champion && finalsMvp && season.wonMvp) return 'First Ballot Hall of Famer'
   if (champion && finalsMvp && overall >= 95) return 'All-Time Great'
   if (champion && elitePlayoffStats) return 'Playoff Legend'

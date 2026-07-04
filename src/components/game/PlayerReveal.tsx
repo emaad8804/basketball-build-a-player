@@ -1,9 +1,18 @@
 import { ATTRIBUTE_KEYS, ATTRIBUTE_LABELS } from '../../constants/attributes'
 import { TEAM_BY_NAME } from '../../constants/teams'
 import { convertGradeToRating } from '../../game-logic/grades'
+import { getPlayersByTeamAndGroup } from '../../game-logic/spin'
 import { useGame } from '../../state/GameContext'
-import type { AttributeKey, Player } from '../../types'
+import type { AttributeKey, Player, Rarity } from '../../types'
 import { Button, GradeBadge, RarityBadge, TeamBadge } from '../shared/atoms'
+
+const RARITY_ORDER: Rarity[] = ['Common', 'Rare', 'Elite', 'Legendary']
+const RARITY_CHIP_COLORS: Record<Rarity, string> = {
+  Common: 'text-slate-300',
+  Rare: 'text-sky-300',
+  Elite: 'text-purple-300',
+  Legendary: 'text-amber-300',
+}
 
 export function PlayerReveal({ player }: { player: Player }) {
   const { state, dispatch } = useGame()
@@ -12,6 +21,16 @@ export function PlayerReveal({ player }: { player: Player }) {
     (k) => !(k in state.lockedAttributes),
   )
   const canRespin = state.respinsLeft > 0
+
+  // Risk It odds preview: who else is in this team's pool if you reroll
+  const riskPool = state.group
+    ? getPlayersByTeamAndGroup(player.team, state.group).filter(
+        (p) => p.name !== player.name,
+      )
+    : []
+  const riskCounts = RARITY_ORDER.map(
+    (r) => [r, riskPool.filter((p) => p.rarity === r).length] as const,
+  ).filter(([, n]) => n > 0)
 
   // Rarity flair: gold burst for Legendary, purple shimmer for Elite;
   // card border/glow picks up the dealt team's color
@@ -115,16 +134,29 @@ export function PlayerReveal({ player }: { player: Player }) {
         </Button>
         <Button
           variant="danger"
-          disabled={!canRespin}
+          disabled={!canRespin || riskPool.length === 0}
           onClick={() => dispatch({ type: 'RISK_IT' })}
         >
           🎲 Risk It
         </Button>
-        <span className="text-xs text-gray-500">
-          {canRespin
-            ? `${state.respinsLeft} respin${state.respinsLeft === 1 ? '' : 's'} left — both cost 1`
-            : 'No respins left'}
-        </span>
+        {canRespin && riskPool.length > 0 && (
+          <span className="text-xs text-gray-400">
+            Risk It pool — {riskPool.length} other{riskPool.length === 1 ? '' : 's'}:{' '}
+            {riskCounts.map(([rarity, n], i) => (
+              <span key={rarity}>
+                {i > 0 && ' · '}
+                <span className={`font-semibold ${RARITY_CHIP_COLORS[rarity]}`}>
+                  {n} {rarity}
+                </span>
+              </span>
+            ))}
+          </span>
+        )}
+      </div>
+      <div className="mt-2 text-xs text-gray-500">
+        {canRespin
+          ? `${state.respinsLeft} respin${state.respinsLeft === 1 ? '' : 's'} banked — both cost 1, and unused respins can reroll the Fatal Flaw wheel`
+          : 'No respins left — the Fatal Flaw wheel will be final'}
       </div>
     </div>
   )

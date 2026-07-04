@@ -45,6 +45,10 @@ export interface SeriesGame {
   }
   recap: string
   isGame7: boolean
+  /** Set when the player's Fatal Flaw visibly shaped this game. */
+  flawEvent?: string
+  /** Player sat this game out (Injury Prone). */
+  dnp?: boolean
 }
 
 export interface PlayoffRound {
@@ -63,6 +67,8 @@ export interface PlayoffResult {
   reachedFinals: boolean
   eliminatedIn: PlayoffRoundName | null
   playoffStats: StatLine
+  /** Glass Bones struck entering this round — the run ends here. */
+  seasonEndingInjury?: PlayoffRoundName
 }
 
 export type FinalsGame = SeriesGame

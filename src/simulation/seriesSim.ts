@@ -1,6 +1,12 @@
 import type { SeriesGame } from '../types'
 import { clamp, gaussian, pickRandom } from './random'
 import type { BuildProfile } from './profile'
+import {
+  flawPGameDelta,
+  flawPGame7Delta,
+  flawLabel,
+  injuryPerGameChance,
+} from './flawEffects'
 
 const WIN_RECAPS = [
   'Your build controlled the fourth quarter with elite shot creation.',
@@ -31,6 +37,25 @@ const GAME7_LOSS_RECAPS = [
   'A legendary duel ended in agony as the final shot rimmed out.',
 ]
 
+const BRICK_LOSS_RECAPS = [
+  'Six missed free throws down the stretch handed the game away.',
+  'Hack-a-strategy worked to perfection — the line was unkind again.',
+]
+const SLOW_START_LOSS_RECAPS = [
+  'A sleepy first half dug a hole the comeback never escaped.',
+  'The series opened with your build a step behind everything.',
+]
+const ICE_COLD_G7_RECAPS = [
+  'Frozen solid in Game 7 — 2-for-13 with the season on the line.',
+  'The moment arrived and your build shrank from it. Ice in the worst way.',
+]
+
+/** Clean-build flavor for won elimination games — light touch only. */
+const CLEAN_ELIMINATION_RECAPS = [
+  'No weakness to attack — your build was pure ice when it mattered.',
+  'A flawless closer: no crack in the armor for the opponent to pry open.',
+]
+
 function generateGameStats(
   profile: BuildProfile,
   won: boolean,
@@ -39,7 +64,15 @@ function generateGameStats(
   const r = profile.ratings
   const d = (x: number) => x - 70
   const boost = won ? 1.05 : 0.94
-  const g7Boost = isGame7 && r.iqClutch >= 94 ? 1.12 : 1
+  const iceCold = profile.flaw?.id === 'ice-cold'
+  // Ice Cold suppresses the clutch stat bump (and dampens Game 7 lines)
+  const g7Boost = isGame7
+    ? iceCold
+      ? 0.85 + (profile.flaw!.softened ? 0.07 : 0)
+      : r.iqClutch >= 94
+        ? 1.12
+        : 1
+    : 1
 
   const pts = clamp(
     Math.round(
@@ -94,20 +127,36 @@ export interface DetailedSeries {
 /**
  * Best-of-7 played one Bernoulli game at a time with full per-game
  * detail (score, stat line, recap). Game 7 uses its own win prob.
+ * The build's Fatal Flaw hooks in per game: win-prob deltas, Injury
+ * Prone DNP stretches, and explicit flaw event lines on affected games.
  */
 export function simulateDetailedSeries(
   profile: BuildProfile,
   pGame: number,
   pGame7: number,
 ): DetailedSeries {
+  const flaw = profile.flaw
   const games: SeriesGame[] = []
   let winsFor = 0
   let winsAgainst = 0
+  let injuredGamesLeft = 0
 
   while (winsFor < 4 && winsAgainst < 4) {
     const gameNumber = games.length + 1
     const isGame7 = gameNumber === 7
-    const won = Math.random() < (isGame7 ? pGame7 : pGame)
+    const sitting = injuredGamesLeft > 0
+
+    // Team plays badly without its star; flaw deltas only apply when playing
+    const p = sitting
+      ? 0.25
+      : clamp(
+          isGame7
+            ? pGame7 + flawPGame7Delta(flaw)
+            : pGame + flawPGameDelta(flaw, gameNumber),
+          0.1,
+          0.9,
+        )
+    const won = Math.random() < p
     if (won) winsFor++
     else winsAgainst++
 
@@ -117,11 +166,45 @@ export function simulateDetailedSeries(
       isGame7,
     )
     const clinched = winsFor === 4
+    const eliminationGame = winsFor === 3 || winsAgainst === 3
 
+    let flawEvent: string | undefined
     let recap: string
-    if (isGame7) recap = won ? pickRandom(GAME7_WIN_RECAPS) : pickRandom(GAME7_LOSS_RECAPS)
-    else if (clinched) recap = pickRandom(CLINCH_RECAPS)
-    else recap = won ? pickRandom(WIN_RECAPS) : pickRandom(LOSS_RECAPS)
+
+    if (sitting) {
+      injuredGamesLeft--
+      flawEvent = `${flawLabel(flaw!)} — DNP (injury)`
+      recap = won
+        ? 'The supporting cast survived a game without their star.'
+        : 'Without their star, the team never stood a chance.'
+    } else if (isGame7) {
+      if (flaw?.id === 'ice-cold' && !won) {
+        flawEvent = flawLabel(flaw)
+        recap = pickRandom(ICE_COLD_G7_RECAPS)
+      } else {
+        recap = won ? pickRandom(GAME7_WIN_RECAPS) : pickRandom(GAME7_LOSS_RECAPS)
+        if (won && !flaw && eliminationGame && Math.random() < 0.5) {
+          recap = pickRandom(CLEAN_ELIMINATION_RECAPS)
+        }
+      }
+    } else if (clinched) {
+      recap = pickRandom(CLINCH_RECAPS)
+    } else if (!won && flaw?.id === 'brick-at-the-line' && scoreAgainst - scoreFor <= 6) {
+      flawEvent = flawLabel(flaw)
+      recap = pickRandom(BRICK_LOSS_RECAPS)
+    } else if (!won && flaw?.id === 'slow-starter' && gameNumber <= 2) {
+      flawEvent = flawLabel(flaw)
+      recap = pickRandom(SLOW_START_LOSS_RECAPS)
+    } else {
+      recap = won ? pickRandom(WIN_RECAPS) : pickRandom(LOSS_RECAPS)
+      if (won && !flaw && eliminationGame && Math.random() < 0.35) {
+        recap = pickRandom(CLEAN_ELIMINATION_RECAPS)
+      }
+    }
+
+    const statLine = sitting
+      ? { pts: 0, reb: 0, ast: 0, stl: 0, blk: 0 }
+      : generateGameStats(profile, won, isGame7)
 
     games.push({
       gameNumber,
@@ -130,10 +213,19 @@ export function simulateDetailedSeries(
       scoreAgainst,
       seriesFor: winsFor,
       seriesAgainst: winsAgainst,
-      statLine: generateGameStats(profile, won, isGame7),
+      statLine,
       recap,
       isGame7,
+      ...(flawEvent ? { flawEvent } : {}),
+      ...(sitting ? { dnp: true } : {}),
     })
+
+    // Injury Prone: each game actually played risks sitting the next two
+    if (!sitting && winsFor < 4 && winsAgainst < 4) {
+      if (Math.random() < injuryPerGameChance(flaw)) {
+        injuredGamesLeft = 2
+      }
+    }
   }
 
   return { games, won: winsFor === 4, winsFor, winsAgainst }

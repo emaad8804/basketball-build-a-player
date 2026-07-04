@@ -6,6 +6,7 @@ import type {
   Player,
 } from '../types'
 import { convertGradeToRating } from './grades'
+import { zeroRngCounters } from './rng'
 
 export function getAvailableAttributes(
   locked: Partial<Record<AttributeKey, LockedAttribute>>,
@@ -28,6 +29,7 @@ export function lockAttribute(
       playerTeam: player.team,
       grade,
       rating: convertGradeToRating(grade),
+      rarity: player.rarity,
     },
   }
 }
@@ -40,10 +42,14 @@ export function isBuildComplete(
 
 export function emptyBuildState(): Pick<
   GameState,
+  | 'rngCounters'
   | 'lockedAttributes'
   | 'currentTeam'
   | 'currentPlayer'
   | 'respinsLeft'
+  | 'flawId'
+  | 'flawSpun'
+  | 'flawRerolled'
   | 'overall'
   | 'baseOverall'
   | 'chemistryBonuses'
@@ -56,10 +62,14 @@ export function emptyBuildState(): Pick<
   | 'legacyLabel'
 > {
   return {
+    rngCounters: zeroRngCounters(),
     lockedAttributes: {},
     currentTeam: null,
     currentPlayer: null,
     respinsLeft: RESPINS_PER_BUILD,
+    flawId: null,
+    flawSpun: false,
+    flawRerolled: false,
     overall: null,
     baseOverall: null,
     chemistryBonuses: [],

@@ -61,12 +61,17 @@ export function GameScreen() {
         <div>
           <h2 className="text-2xl font-black text-white">
             Build-A-{GROUP_LABELS[group]}
+            {state.mode === 'daily' && (
+              <span className="ml-2 align-middle text-xs font-bold uppercase tracking-wider text-ball-bright bg-ball/15 border border-ball/50 rounded-full px-2.5 py-1">
+                Daily #{state.dailyNumber}
+              </span>
+            )}
           </h2>
           <button
             onClick={() => dispatch({ type: 'PLAY_AGAIN' })}
             className="text-xs text-gray-500 hover:text-gray-300 cursor-pointer"
           >
-            ← Change build group
+            {state.mode === 'daily' ? '← Abandon daily run' : '← Change build group'}
           </button>
         </div>
         <div className="flex items-center gap-2">

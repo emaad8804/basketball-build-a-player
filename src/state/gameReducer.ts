@@ -1,29 +1,45 @@
-import type { AttributeKey, GameState, Group } from '../types'
+import type { AttributeKey, GameMode, GameState, Group } from '../types'
 import {
   emptyBuildState,
   isBuildComplete,
   lockAttribute,
 } from '../game-logic/build'
+import { spinFlaw } from '../game-logic/flaw'
+import { eventRng, randomSeed, zeroRngCounters } from '../game-logic/rng'
+import type { Rand, RngCounters, RngEventType } from '../game-logic/rng'
 import { spinPlayer, spinTeam } from '../game-logic/spin'
 import { evaluateChemistryBonuses } from '../game-logic/chemistry'
 import { computeFinalOverall } from '../game-logic/overall'
 import { assignArchetype } from '../game-logic/archetype'
 import { makeBuildProfile } from '../simulation/profile'
+import { rollGlassBones } from '../simulation/flawEffects'
 import { simulateSeason } from '../simulation/seasonSim'
 import { simulatePlayoffs } from '../simulation/playoffSim'
 import { simulateFinals } from '../simulation/finalsSim'
 import { deriveLegacyLabel } from '../simulation/legacy'
 
 export type GameAction =
-  | { type: 'SELECT_GROUP'; group: Group }
+  | {
+      type: 'SELECT_GROUP'
+      group: Group
+      seed?: number
+      mode?: GameMode
+      dailyNumber?: number
+      dailyDateKey?: string
+    }
   | { type: 'SPIN_PLAYER' }
   | { type: 'RESPIN' }
   | { type: 'RISK_IT' }
   | { type: 'LOCK_ATTRIBUTE'; attribute: AttributeKey }
+  | { type: 'SPIN_FLAW' }
+  | { type: 'REROLL_FLAW' }
+  | { type: 'ACCEPT_FLAW' }
   | { type: 'SIMULATE_SEASON' }
   | { type: 'SIMULATE_PLAYOFFS' }
   | { type: 'REVEAL_NEXT_PLAYOFF_GAME' }
+  | { type: 'REVEAL_ALL_PLAYOFF_GAMES' }
   | { type: 'REVEAL_NEXT_FINALS_GAME' }
+  | { type: 'REVEAL_ALL_FINALS_GAMES' }
   | { type: 'GOTO_SHARE' }
   | { type: 'PLAY_AGAIN' }
   | { type: 'RESET_BUILD' }
@@ -31,40 +47,78 @@ export type GameAction =
 export const initialGameState: GameState = {
   screen: 'landing',
   group: null,
+  mode: 'free',
+  dailyNumber: null,
+  dailyDateKey: null,
+  runSeed: 0,
   ...emptyBuildState(),
+}
+
+/**
+ * Consume one counter-keyed RNG event: returns the event's private PRNG
+ * and the bumped counters to store back into state. Keying by (seed,
+ * type, counter) instead of one sequential stream is what keeps daily
+ * runs comparable — the Nth team deal is the same for everyone.
+ */
+function drawRng(
+  state: GameState,
+  type: RngEventType,
+): { rand: Rand; rngCounters: RngCounters } {
+  const counter = state.rngCounters[type]
+  return {
+    rand: eventRng(state.runSeed, type, counter),
+    rngCounters: { ...state.rngCounters, [type]: counter + 1 },
+  }
 }
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
-    case 'SELECT_GROUP':
+    case 'SELECT_GROUP': {
       // Team is dealt automatically — no free team rerolls
+      const runSeed = action.seed ?? randomSeed()
+      const rand = eventRng(runSeed, 'team', 0)
       return {
         ...initialGameState,
         screen: 'game',
         group: action.group,
-        currentTeam: spinTeam(action.group),
+        mode: action.mode ?? 'free',
+        dailyNumber: action.dailyNumber ?? null,
+        dailyDateKey: action.dailyDateKey ?? null,
+        runSeed,
+        rngCounters: { ...zeroRngCounters(), team: 1 },
+        currentTeam: spinTeam(action.group, rand),
       }
+    }
 
     case 'SPIN_PLAYER': {
       if (!state.group || !state.currentTeam) return state
-      const player = spinPlayer(state.currentTeam.name, state.group)
+      const { rand, rngCounters } = drawRng(state, 'player')
+      const player = spinPlayer(state.currentTeam.name, state.group, rand)
       if (!player) {
         // Dead team (shouldn't happen — spinTeam filters); respin team gracefully
-        const team = spinTeam(state.group, state.currentTeam.name)
-        return { ...state, currentTeam: team, currentPlayer: null }
+        const teamDraw = drawRng(state, 'team')
+        const team = spinTeam(state.group, teamDraw.rand, state.currentTeam.name)
+        return {
+          ...state,
+          currentTeam: team,
+          currentPlayer: null,
+          rngCounters: teamDraw.rngCounters,
+        }
       }
-      return { ...state, currentPlayer: player }
+      return { ...state, currentPlayer: player, rngCounters }
     }
 
     case 'RESPIN': {
       // Loses current player, spins a fresh team, costs 1 respin
       if (state.respinsLeft <= 0 || !state.group) return state
-      const team = spinTeam(state.group, state.currentTeam?.name)
+      const { rand, rngCounters } = drawRng(state, 'team')
+      const team = spinTeam(state.group, rand, state.currentTeam?.name)
       return {
         ...state,
         currentTeam: team,
         currentPlayer: null,
         respinsLeft: state.respinsLeft - 1,
+        rngCounters,
       }
     }
 
@@ -77,15 +131,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         !state.currentPlayer
       )
         return state
+      const { rand, rngCounters } = drawRng(state, 'riskit')
       const player = spinPlayer(
         state.currentTeam.name,
         state.group,
+        rand,
         state.currentPlayer.name,
       )
       return {
         ...state,
         currentPlayer: player,
         respinsLeft: state.respinsLeft - 1,
+        rngCounters,
       }
     }
 
@@ -101,15 +158,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       if (!isBuildComplete(locked)) {
         // Next team is auto-dealt immediately after every lock
+        const { rand, rngCounters } = drawRng(state, 'team')
         return {
           ...state,
           lockedAttributes: locked,
-          currentTeam: spinTeam(state.group, state.currentTeam?.name),
+          currentTeam: spinTeam(state.group, rand, state.currentTeam?.name),
           currentPlayer: null,
+          rngCounters,
         }
       }
 
-      // Build complete: compute final overall, chemistry, archetype
+      // Build complete: compute final overall, chemistry, archetype —
+      // then face the Fatal Flaw wheel before the result reveal
       const bonuses = evaluateChemistryBonuses(locked)
       const { baseOverall, overall } = computeFinalOverall(
         state.group,
@@ -119,7 +179,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const archetype = assignArchetype(state.group, locked)
       return {
         ...state,
-        screen: 'result',
+        screen: 'flaw',
         lockedAttributes: locked,
         currentTeam: null,
         currentPlayer: null,
@@ -130,12 +190,51 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       }
     }
 
+    case 'SPIN_FLAW': {
+      if (state.screen !== 'flaw' || state.flawSpun) return state
+      // Dedicated flaw stream, counter 0: in daily mode every player
+      // faces the same flaw outcome regardless of earlier choices
+      const rand = eventRng(state.runSeed, 'flaw', 0)
+      return {
+        ...state,
+        flawId: spinFlaw(rand),
+        flawSpun: true,
+        rngCounters: { ...state.rngCounters, flaw: 1 },
+      }
+    }
+
+    case 'REROLL_FLAW': {
+      // Burn a banked Respin for one full-wheel reroll — true insurance
+      if (
+        state.screen !== 'flaw' ||
+        !state.flawSpun ||
+        state.flawId === null ||
+        state.flawRerolled ||
+        state.respinsLeft <= 0
+      )
+        return state
+      const rand = eventRng(state.runSeed, 'flaw', 1)
+      return {
+        ...state,
+        flawId: spinFlaw(rand),
+        flawRerolled: true,
+        respinsLeft: state.respinsLeft - 1,
+        rngCounters: { ...state.rngCounters, flaw: 2 },
+      }
+    }
+
+    case 'ACCEPT_FLAW': {
+      if (state.screen !== 'flaw' || !state.flawSpun) return state
+      return { ...state, screen: 'result' }
+    }
+
     case 'SIMULATE_SEASON': {
       if (!state.group || state.overall === null) return state
       const profile = makeBuildProfile(
         state.group,
         state.overall,
         state.lockedAttributes,
+        state.flawId,
       )
       const seasonResult = simulateSeason(profile)
       return { ...state, screen: 'season', seasonResult }
@@ -148,6 +247,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         state.group,
         state.overall,
         state.lockedAttributes,
+        state.flawId,
       )
 
       if (!state.seasonResult.madePlayoffs) {
@@ -174,6 +274,27 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           ...state,
           screen: 'playoffs',
           playoffResult,
+          playoffGamesRevealed: 0,
+          legacyLabel,
+        }
+      }
+
+      // Glass Bones rolls once more at the door of the NBA Finals
+      if (rollGlassBones(profile.flaw)) {
+        const injured = {
+          ...playoffResult,
+          seasonEndingInjury: 'NBA Finals' as const,
+        }
+        const legacyLabel = deriveLegacyLabel(
+          profile,
+          state.seasonResult,
+          injured,
+          null,
+        )
+        return {
+          ...state,
+          screen: 'playoffs',
+          playoffResult: injured,
           playoffGamesRevealed: 0,
           legacyLabel,
         }
@@ -212,6 +333,24 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       }
     }
 
+    case 'REVEAL_ALL_PLAYOFF_GAMES': {
+      if (!state.playoffResult) return state
+      const totalGames = state.playoffResult.rounds.reduce(
+        (sum, r) => sum + r.games.length,
+        0,
+      )
+      return { ...state, playoffGamesRevealed: totalGames }
+    }
+
+    case 'REVEAL_ALL_FINALS_GAMES': {
+      if (!state.finalsResult) return state
+      return {
+        ...state,
+        screen: 'finals',
+        finalsGamesRevealed: state.finalsResult.games.length,
+      }
+    }
+
     case 'REVEAL_NEXT_FINALS_GAME': {
       if (!state.finalsResult) return state
       const next = Math.min(
@@ -228,12 +367,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...initialGameState }
 
     case 'RESET_BUILD': {
+      // Daily runs are one-shot: no mid-run resets, back to landing instead
+      if (state.mode === 'daily') return { ...initialGameState }
       if (!state.group) return { ...initialGameState }
+      const runSeed = randomSeed()
+      const rand = eventRng(runSeed, 'team', 0)
       return {
         ...initialGameState,
         screen: 'game',
         group: state.group,
-        currentTeam: spinTeam(state.group),
+        runSeed,
+        rngCounters: { ...zeroRngCounters(), team: 1 },
+        currentTeam: spinTeam(state.group, rand),
       }
     }
 

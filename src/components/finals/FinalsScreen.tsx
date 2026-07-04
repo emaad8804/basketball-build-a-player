@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
 import confetti from 'canvas-confetti'
 import { useGame } from '../../state/GameContext'
-import { Button, Card, StatChip } from '../shared/atoms'
+import { Button, StatChip } from '../shared/atoms'
+import { GameCard } from '../playoffs/PlayoffsScreen'
+import { useAutoTicker } from '../shared/useAutoTicker'
 
 function fireChampionConfetti() {
   const defaults = { spread: 90, ticks: 220, gravity: 0.9, scalar: 1.1 }
@@ -15,12 +17,29 @@ export function FinalsScreen() {
   const finals = state.finalsResult!
   const revealed = finals.games.slice(0, state.finalsGamesRevealed)
   const allRevealed = state.finalsGamesRevealed >= finals.games.length
+  const started = state.finalsGamesRevealed > 0
 
   useEffect(() => {
     if (allRevealed && finals.won) fireChampionConfetti()
   }, [allRevealed, finals.won])
-  const nextIsGame7 =
-    !allRevealed && finals.games[state.finalsGamesRevealed].isGame7
+
+  const pendingGame = allRevealed
+    ? undefined
+    : finals.games[state.finalsGamesRevealed]
+  const lastRevealed = revealed[revealed.length - 1]
+  const nextIsDrama =
+    !!pendingGame &&
+    (pendingGame.isGame7 ||
+      !!pendingGame.flawEvent ||
+      lastRevealed?.seriesFor === 3 ||
+      lastRevealed?.seriesAgainst === 3)
+
+  useAutoTicker({
+    running: started && !allRevealed,
+    revealedCount: state.finalsGamesRevealed,
+    nextIsDrama,
+    advance: () => dispatch({ type: 'REVEAL_NEXT_FINALS_GAME' }),
+  })
 
   return (
     <div className="min-h-dvh px-4 py-8 max-w-3xl mx-auto">
@@ -34,60 +53,51 @@ export function FinalsScreen() {
       </div>
 
       <div className="mt-8 space-y-3">
-        {revealed.map((game, i) => {
-          const isLatest = i === revealed.length - 1
-          return (
-            <Card
-              key={game.gameNumber}
-              className={`p-4 ${isLatest ? 'anim-card-flip' : ''} ${
-                game.won ? '' : 'border-red-500/40'
-              } ${game.isGame7 ? 'border-amber-500/60 anim-glow-pulse' : ''}`}
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs uppercase tracking-wider text-gray-400 font-semibold">
-                      {game.isGame7 ? '🔥 GAME 7' : `Game ${game.gameNumber}`}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      Series {game.seriesFor}–{game.seriesAgainst}
-                    </span>
-                  </div>
-                  <div className="mt-0.5 text-lg font-bold text-white">
-                    {game.won ? 'Win' : 'Loss'}, {game.scoreFor}–{game.scoreAgainst}
-                  </div>
-                  <div className="mt-0.5 text-sm text-gray-300 font-medium">
-                    {game.statLine.pts} PTS · {game.statLine.reb} REB ·{' '}
-                    {game.statLine.ast} AST · {game.statLine.stl} STL ·{' '}
-                    {game.statLine.blk} BLK
-                  </div>
-                  <div className="mt-1 text-sm text-gray-400">{game.recap}</div>
-                </div>
-                <div
-                  className={`text-3xl font-black shrink-0 ${
-                    game.won ? 'text-emerald-400' : 'text-red-400'
-                  }`}
-                >
-                  {game.won ? 'W' : 'L'}
-                </div>
-              </div>
-            </Card>
-          )
-        })}
+        {revealed.map((game, i) => (
+          <GameCard
+            key={game.gameNumber}
+            game={game}
+            isLatest={i === revealed.length - 1}
+          />
+        ))}
       </div>
+
+      {/* Drama tension frame while the ticker holds */}
+      {started && !allRevealed && nextIsDrama && (
+        <div className="mt-4 anim-glow-pulse text-center text-sm font-bold text-amber-300 bg-amber-500/10 border border-amber-500/40 rounded-xl px-4 py-3">
+          {pendingGame?.isGame7
+            ? '🔥 GAME 7 OF THE NBA FINALS. Legacy on the line.'
+            : pendingGame?.flawEvent
+              ? '⚠️ Something is wrong in the locker room…'
+              : '⏳ A championship hangs on the next game.'}
+        </div>
+      )}
 
       <div className="mt-8 text-center">
         {!allRevealed ? (
-          <Button
-            onClick={() => dispatch({ type: 'REVEAL_NEXT_FINALS_GAME' })}
-            className={`text-lg px-8 ${nextIsGame7 ? 'anim-glow-pulse' : ''}`}
-          >
-            {revealed.length === 0
-              ? '▶️ Tip Off Game 1'
-              : nextIsGame7
-                ? '🔥 GAME 7 — Winner Takes All'
-                : `▶️ Next Game (Game ${revealed.length + 1})`}
-          </Button>
+          started ? (
+            <div className="flex justify-center gap-3">
+              <Button
+                variant="secondary"
+                onClick={() => dispatch({ type: 'REVEAL_NEXT_FINALS_GAME' })}
+              >
+                ⏩ Fast Forward
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => dispatch({ type: 'REVEAL_ALL_FINALS_GAMES' })}
+              >
+                ⏭ Skip to Result
+              </Button>
+            </div>
+          ) : (
+            <Button
+              onClick={() => dispatch({ type: 'REVEAL_NEXT_FINALS_GAME' })}
+              className="text-lg px-8"
+            >
+              ▶️ Tip Off Game 1
+            </Button>
+          )
         ) : (
           <div className="anim-pop-in">
             <div

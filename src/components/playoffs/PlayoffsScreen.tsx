@@ -1,20 +1,21 @@
 import { useGame } from '../../state/GameContext'
 import type { PlayoffRound, SeriesGame } from '../../types'
 import { Button, Card, StatChip } from '../shared/atoms'
+import { useAutoTicker } from '../shared/useAutoTicker'
 
 const ordinal = (n: number) =>
   n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`
 
-function GameCard({ game, isLatest }: { game: SeriesGame; isLatest: boolean }) {
+export function GameCard({ game, isLatest }: { game: SeriesGame; isLatest: boolean }) {
   return (
     <Card
       className={`p-3 sm:p-4 ${isLatest ? 'anim-card-flip' : ''} ${
         game.won ? '' : 'border-red-500/40'
-      } ${game.isGame7 ? 'border-amber-500/60' : ''}`}
+      } ${game.isGame7 ? 'border-amber-500/60' : ''} ${game.dnp ? 'opacity-75' : ''}`}
     >
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs uppercase tracking-wider text-gray-400 font-semibold">
               {game.isGame7 ? '🔥 GAME 7' : `Game ${game.gameNumber}`}
             </span>
@@ -22,13 +23,24 @@ function GameCard({ game, isLatest }: { game: SeriesGame; isLatest: boolean }) {
               Series {game.seriesFor}–{game.seriesAgainst}
             </span>
           </div>
+          {game.flawEvent && (
+            <div className="mt-1 inline-block text-xs font-bold text-red-300 bg-red-500/15 border border-red-500/40 rounded-full px-2.5 py-0.5">
+              {game.flawEvent}
+            </div>
+          )}
           <div className="mt-0.5 font-bold text-white">
             {game.won ? 'Win' : 'Loss'}, {game.scoreFor}–{game.scoreAgainst}
           </div>
           <div className="mt-0.5 text-sm text-gray-300">
-            {game.statLine.pts} PTS · {game.statLine.reb} REB ·{' '}
-            {game.statLine.ast} AST · {game.statLine.stl} STL ·{' '}
-            {game.statLine.blk} BLK
+            {game.dnp ? (
+              <span className="italic text-gray-500">Did not play</span>
+            ) : (
+              <>
+                {game.statLine.pts} PTS · {game.statLine.reb} REB ·{' '}
+                {game.statLine.ast} AST · {game.statLine.stl} STL ·{' '}
+                {game.statLine.blk} BLK
+              </>
+            )}
           </div>
           <div className="mt-1 text-xs sm:text-sm text-gray-400">{game.recap}</div>
         </div>
@@ -114,6 +126,7 @@ export function PlayoffsScreen() {
   })
   const totalGames = playoffs.rounds.reduce((s, r) => s + r.games.length, 0)
   const allRevealed = state.playoffGamesRevealed >= totalGames
+  const started = state.playoffGamesRevealed > 0
 
   const activeRoundIdx = roundReveals.findIndex(
     (shown, i) => shown < playoffs.rounds[i].games.length,
@@ -122,9 +135,31 @@ export function PlayoffsScreen() {
     activeRoundIdx === -1
       ? playoffs.rounds[playoffs.rounds.length - 1]
       : playoffs.rounds[activeRoundIdx]
-  const nextIsGame7 =
-    activeRoundIdx !== -1 &&
-    currentRound.games[roundReveals[activeRoundIdx]]?.isGame7
+  const pendingGame =
+    activeRoundIdx === -1
+      ? undefined
+      : currentRound.games[roundReveals[activeRoundIdx]]
+  const lastRevealedInRound =
+    activeRoundIdx === -1 || roundReveals[activeRoundIdx] === 0
+      ? undefined
+      : currentRound.games[roundReveals[activeRoundIdx] - 1]
+  // Drama beat when the pending game is a Game 7, an elimination game,
+  // or a moment the Fatal Flaw authored
+  const nextIsDrama =
+    !!pendingGame &&
+    (pendingGame.isGame7 ||
+      !!pendingGame.flawEvent ||
+      lastRevealedInRound?.seriesFor === 3 ||
+      lastRevealedInRound?.seriesAgainst === 3)
+
+  useAutoTicker({
+    running: started && !allRevealed,
+    revealedCount: state.playoffGamesRevealed,
+    nextIsDrama,
+    advance: () => dispatch({ type: 'REVEAL_NEXT_PLAYOFF_GAME' }),
+  })
+
+  const injuryRound = playoffs.seasonEndingInjury
 
   return (
     <div className="min-h-dvh px-4 py-8 max-w-3xl mx-auto">
@@ -183,21 +218,64 @@ export function PlayoffsScreen() {
         )}
       </div>
 
+      {/* Drama tension frame while the ticker holds */}
+      {started && !allRevealed && nextIsDrama && (
+        <div className="mt-4 anim-glow-pulse text-center text-sm font-bold text-amber-300 bg-amber-500/10 border border-amber-500/40 rounded-xl px-4 py-3">
+          {pendingGame?.isGame7
+            ? '🔥 GAME 7. Winner moves on. Loser goes home.'
+            : pendingGame?.flawEvent
+              ? '⚠️ Something is wrong in the locker room…'
+              : '⏳ Elimination stakes. Everything on the line.'}
+        </div>
+      )}
+
       <div className="mt-8 text-center">
         {!allRevealed ? (
-          <Button
-            onClick={() => dispatch({ type: 'REVEAL_NEXT_PLAYOFF_GAME' })}
-            className={`text-lg px-8 ${nextIsGame7 ? 'anim-glow-pulse' : ''}`}
-          >
-            {state.playoffGamesRevealed === 0
-              ? '▶️ Tip Off the Playoffs'
-              : nextIsGame7
-                ? '🔥 GAME 7 — Winner Takes All'
-                : '▶️ Next Game'}
-          </Button>
+          started ? (
+            <div className="flex justify-center gap-3">
+              <Button
+                variant="secondary"
+                onClick={() => dispatch({ type: 'REVEAL_NEXT_PLAYOFF_GAME' })}
+              >
+                ⏩ Fast Forward
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => dispatch({ type: 'REVEAL_ALL_PLAYOFF_GAMES' })}
+              >
+                ⏭ Skip to Result
+              </Button>
+            </div>
+          ) : (
+            <Button
+              onClick={() => dispatch({ type: 'REVEAL_NEXT_PLAYOFF_GAME' })}
+              className="text-lg px-8"
+            >
+              ▶️ Tip Off the Playoffs
+            </Button>
+          )
         ) : (
           <div className="anim-pop-in">
-            {playoffs.reachedFinals ? (
+            {injuryRound ? (
+              <>
+                <div className="anim-burn-in text-2xl font-black text-red-400">
+                  💀 Glass Bones Strikes
+                </div>
+                <p className="mt-2 text-gray-300 max-w-md mx-auto">
+                  A season-ending injury before the {injuryRound}. The run is
+                  over — not by a better team, but by a body that betrayed a
+                  championship build.
+                </p>
+                <div className="mt-6">
+                  <Button
+                    onClick={() => dispatch({ type: 'GOTO_SHARE' })}
+                    className="text-lg px-8"
+                  >
+                    See Final Legacy
+                  </Button>
+                </div>
+              </>
+            ) : playoffs.reachedFinals ? (
               <>
                 <div className="text-2xl font-black text-ball-bright">
                   Through to the NBA Finals!

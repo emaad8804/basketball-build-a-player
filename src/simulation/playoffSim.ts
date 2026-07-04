@@ -14,6 +14,7 @@ import type {
 } from '../types'
 import { clamp, gaussian, pickRandom } from './random'
 import type { BuildProfile } from './profile'
+import { flawStrengthDelta, rollGlassBones } from './flawEffects'
 import { generateStatLine } from './seasonSim'
 import { simulateDetailedSeries } from './seriesSim'
 
@@ -27,7 +28,8 @@ export function playoffStrength(profile: BuildProfile): number {
     r.shooting * PLAYOFF_WEIGHTS.shooting +
     r.playmaking * PLAYOFF_WEIGHTS.playmaking +
     r.frame * PLAYOFF_WEIGHTS.frame +
-    r.rebounding * PLAYOFF_WEIGHTS.rebounding
+    r.rebounding * PLAYOFF_WEIGHTS.rebounding +
+    flawStrengthDelta(profile.flaw)
   )
 }
 
@@ -122,9 +124,17 @@ export function simulatePlayoffs(
   }
 
   let eliminatedIn: PlayoffRoundName | null = null
+  let seasonEndingInjury: PlayoffRoundName | undefined
 
   for (let i = 0; i < ROUNDS.length; i++) {
     const round = ROUNDS[i]
+
+    // Glass Bones: every round entry rolls the dice on the whole season
+    if (rollGlassBones(profile.flaw)) {
+      seasonEndingInjury = round
+      eliminatedIn = round
+      break
+    }
     const opponentSeed = clamp(Math.round(opponentSeeds[i]), 1, 8)
     const pGame = clamp(
       strengthToWinProb(strength) -
@@ -169,5 +179,11 @@ export function simulatePlayoffs(
   // Playoff stats run slightly hotter than regular season for good builds
   const playoffStats = generateStatLine(profile, 1.04, 1.2)
 
-  return { rounds, reachedFinals, eliminatedIn, playoffStats }
+  return {
+    rounds,
+    reachedFinals,
+    eliminatedIn,
+    playoffStats,
+    ...(seasonEndingInjury ? { seasonEndingInjury } : {}),
+  }
 }

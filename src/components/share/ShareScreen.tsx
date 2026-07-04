@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { GROUP_LABELS } from '../../constants/attributes'
+import { ATTRIBUTE_KEYS, GROUP_LABELS } from '../../constants/attributes'
 import { ATTRIBUTE_LABELS } from '../../constants/attributes'
+import { FLAW_BY_ID, FLAW_TIER_COLORS } from '../../constants/flaws'
+import { saveDailyRecord } from '../../game-logic/dailyStore'
 import { useGame } from '../../state/GameContext'
 import { saveIfBest } from '../../utils/bestBuild'
+import { buildShareText, rarityRow, resultLine } from '../../utils/shareText'
+import { shareCard } from '../../utils/shareCard'
 import { Button, Card } from '../shared/atoms'
 
 export function ShareScreen() {
@@ -13,6 +17,7 @@ export function ShareScreen() {
   const season = state.seasonResult
   const playoffs = state.playoffResult
   const finals = state.finalsResult
+  const flaw = state.flawId ? FLAW_BY_ID[state.flawId] : null
 
   useEffect(() => {
     if (state.overall === null || !state.legacyLabel || !state.archetype) return
@@ -25,6 +30,30 @@ export function ShareScreen() {
       date: new Date().toISOString().slice(0, 10),
     })
     setNewBest(becameBest)
+
+    // Lock the official daily run into history (first finish wins)
+    if (
+      state.mode === 'daily' &&
+      state.dailyDateKey !== null &&
+      state.dailyNumber !== null
+    ) {
+      saveDailyRecord({
+        dateKey: state.dailyDateKey,
+        dayNumber: state.dailyNumber,
+        group,
+        overall: state.overall,
+        archetype: state.archetype,
+        legacyLabel: state.legacyLabel,
+        raritySquares: ATTRIBUTE_KEYS.map(
+          (k) => state.lockedAttributes[k]?.rarity ?? 'Common',
+        ),
+        flawId: state.flawId,
+        flawRerolled: state.flawRerolled,
+        respinSaved: state.respinsLeft > 0,
+        champion: finals?.won ?? false,
+        resultLine: resultLine(state),
+      })
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -41,25 +70,17 @@ export function ShareScreen() {
     ? ''
     : !season.madePlayoffs
       ? 'Missed the playoffs'
-      : playoffs === null
-        ? ''
-        : finals
-          ? finals.won
-            ? `NBA Champion (beat ${finals.opponent} ${finals.winsFor}–${finals.winsAgainst})`
-            : `Lost NBA Finals to ${finals.opponent} ${finals.winsFor}–${finals.winsAgainst}`
-          : `Eliminated in ${playoffs.eliminatedIn}`
+      : playoffs?.seasonEndingInjury
+        ? `Season-ending injury (${playoffs.seasonEndingInjury})`
+        : playoffs === null
+          ? ''
+          : finals
+            ? finals.won
+              ? `NBA Champion (beat ${finals.opponent} ${finals.winsFor}–${finals.winsAgainst})`
+              : `Lost NBA Finals to ${finals.opponent} ${finals.winsFor}–${finals.winsAgainst}`
+            : `Eliminated in ${playoffs.eliminatedIn}`
 
-  const shareText = [
-    `🏀 BUILD-A-PLAYER — ${GROUP_LABELS[group]}`,
-    `${state.overall} OVR ${state.archetype}`,
-    `Top picks: ${topPicks.map((p) => `${p.playerName} (${ATTRIBUTE_LABELS[p.attribute]} ${p.grade})`).join(', ')}`,
-    season ? `Season: ${season.wins}–${season.losses}` : '',
-    playoffSummary,
-    finals?.won && finals.finalsMvp ? 'Finals MVP 🏆' : '',
-    `Legacy: ${state.legacyLabel}`,
-  ]
-    .filter(Boolean)
-    .join('\n')
+  const shareText = buildShareText(state)
 
   const copy = async () => {
     try {
@@ -88,7 +109,9 @@ export function ShareScreen() {
       <Card glow className="w-full p-6 sm:p-8 anim-card-flip">
         <div className="text-center">
           <div className="text-xs uppercase tracking-widest text-gray-400">
-            Career Complete
+            {state.mode === 'daily'
+              ? `Daily Challenge #${state.dailyNumber} Complete`
+              : 'Career Complete'}
           </div>
           <div className="mt-3 text-5xl font-black text-white">
             {state.overall}{' '}
@@ -99,7 +122,29 @@ export function ShareScreen() {
           </div>
           <div className="text-sm text-gray-400">{GROUP_LABELS[group]} Build</div>
 
-          <div className="mt-5 inline-block bg-gradient-to-r from-amber-400/20 via-amber-300/30 to-amber-400/20 border border-amber-400/50 rounded-full px-6 py-2">
+          {/* Fatal Flaw verdict */}
+          {state.flawSpun && (
+            <div className="mt-3">
+              {flaw ? (
+                <span
+                  className="inline-block text-xs font-bold rounded-full border px-3 py-1"
+                  style={{
+                    color: FLAW_TIER_COLORS[flaw.tier],
+                    borderColor: `${FLAW_TIER_COLORS[flaw.tier]}88`,
+                    backgroundColor: `${FLAW_TIER_COLORS[flaw.tier]}14`,
+                  }}
+                >
+                  {flaw.emoji} {flaw.name}
+                </span>
+              ) : (
+                <span className="inline-block text-xs font-bold text-emerald-300 bg-emerald-500/10 border border-emerald-500/50 rounded-full px-3 py-1">
+                  🍀 CLEAN BUILD
+                </span>
+              )}
+            </div>
+          )}
+
+          <div className="mt-4 inline-block bg-gradient-to-r from-amber-400/20 via-amber-300/30 to-amber-400/20 border border-amber-400/50 rounded-full px-6 py-2">
             <span className="text-lg font-black text-amber-300">
               {state.legacyLabel}
             </span>
@@ -109,6 +154,12 @@ export function ShareScreen() {
               ★ New personal best!
             </div>
           )}
+
+          {/* Emoji share preview */}
+          <div className="mt-4 text-2xl tracking-widest">{rarityRow(state)}</div>
+          <div className="text-[10px] text-gray-500 mt-1">
+            ⬜ common · 🟦 rare · 🟪 elite · 🟨 legendary
+          </div>
         </div>
 
         <div className="mt-6 border-t border-court-border pt-4 space-y-2 text-sm">
@@ -149,15 +200,20 @@ export function ShareScreen() {
 
       <div className="mt-6 flex flex-wrap justify-center gap-3">
         <Button onClick={share}>📤 Share Build</Button>
+        <Button variant="secondary" onClick={() => shareCard(state)}>
+          🖼️ Share Card
+        </Button>
         <Button variant="secondary" onClick={copy}>
           {copied ? '✅ Copied!' : '📋 Copy Result'}
         </Button>
         <Button variant="secondary" onClick={() => dispatch({ type: 'PLAY_AGAIN' })}>
           🔁 Play Again
         </Button>
-        <Button variant="ghost" onClick={() => dispatch({ type: 'RESET_BUILD' })}>
-          Reset Build
-        </Button>
+        {state.mode === 'free' && (
+          <Button variant="ghost" onClick={() => dispatch({ type: 'RESET_BUILD' })}>
+            Reset Build
+          </Button>
+        )}
       </div>
     </div>
   )

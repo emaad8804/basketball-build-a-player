@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { GROUP_LABELS } from '../../constants/attributes'
+import { FLAW_BY_ID, FLAW_TIER_COLORS } from '../../constants/flaws'
 import { analyzeBuild } from '../../game-logic/report'
 import { useGame } from '../../state/GameContext'
 import { Button, Card } from '../shared/atoms'
@@ -28,6 +29,33 @@ export function ResultScreen() {
           </div>
         </div>
         <h2 className="mt-4 text-3xl font-black text-white">{state.archetype}</h2>
+        {/* Fatal Flaw verdict */}
+        {state.flawSpun && (
+          <div className="mt-3">
+            {state.flawId ? (
+              (() => {
+                const flaw = FLAW_BY_ID[state.flawId]
+                return (
+                  <span
+                    className="inline-block text-sm font-bold rounded-full border px-4 py-1.5"
+                    style={{
+                      color: FLAW_TIER_COLORS[flaw.tier],
+                      borderColor: `${FLAW_TIER_COLORS[flaw.tier]}88`,
+                      backgroundColor: `${FLAW_TIER_COLORS[flaw.tier]}14`,
+                    }}
+                    title={flaw.description}
+                  >
+                    {flaw.emoji} Fatal Flaw: {flaw.name}
+                  </span>
+                )
+              })()
+            ) : (
+              <span className="inline-block text-sm font-bold text-emerald-300 bg-emerald-500/10 border border-emerald-500/50 rounded-full px-4 py-1.5">
+                🍀 CLEAN BUILD — no fatal flaw
+              </span>
+            )}
+          </div>
+        )}
         {state.chemistryBonuses.length > 0 && (
           <div className="mt-2 flex flex-wrap justify-center gap-2">
             {state.chemistryBonuses.map((b) => (
@@ -100,9 +128,11 @@ export function ResultScreen() {
         <Button onClick={() => dispatch({ type: 'SIMULATE_SEASON' })} className="text-lg px-8">
           🏆 Simulate Season
         </Button>
-        <Button variant="ghost" onClick={() => dispatch({ type: 'RESET_BUILD' })}>
-          Reset Build
-        </Button>
+        {state.mode === 'free' && (
+          <Button variant="ghost" onClick={() => dispatch({ type: 'RESET_BUILD' })}>
+            Reset Build
+          </Button>
+        )}
       </div>
     </div>
   )

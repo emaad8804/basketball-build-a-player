@@ -9,6 +9,7 @@ import {
 import type { FinalsResult, SeasonResult, SeriesGame, StatLine } from '../types'
 import { clamp, gaussian, pickRandom, round1 } from './random'
 import type { BuildProfile } from './profile'
+import { flawStrengthDelta } from './flawEffects'
 import { simulateDetailedSeries } from './seriesSim'
 
 function finalsStrength(profile: BuildProfile): number {
@@ -19,7 +20,8 @@ function finalsStrength(profile: BuildProfile): number {
     r.defense * FINALS_WEIGHTS.defense +
     r.shooting * FINALS_WEIGHTS.shooting +
     r.playmaking * FINALS_WEIGHTS.playmaking +
-    r.frame * FINALS_WEIGHTS.frame
+    r.frame * FINALS_WEIGHTS.frame +
+    flawStrengthDelta(profile.flaw)
   )
 }
 
@@ -64,9 +66,11 @@ export function simulateFinals(
     pGame7,
   )
 
-  const n = games.length
+  // DNP games (Injury Prone) don't drag down the series averages
+  const played = games.filter((g) => !g.dnp)
+  const n = Math.max(played.length, 1)
   const avg = (f: (g: SeriesGame) => number) =>
-    round1(games.reduce((s, g) => s + f(g), 0) / n)
+    round1(played.reduce((s, g) => s + f(g), 0) / n)
 
   const averages: StatLine = {
     ppg: avg((g) => g.statLine.pts),
