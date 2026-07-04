@@ -84,6 +84,9 @@ export const WIN_PCT_ANCHORS: [number, number][] = [
   [99, 0.9],
 ]
 
+/** Hard playoff gate: seasons below this many wins end in the lottery. */
+export const PLAYOFF_WIN_CUTOFF = 44
+
 /** Extra difficulty subtracted from per-game win prob as rounds deepen. */
 export const ROUND_DIFFICULTY: Record<string, number> = {
   'First Round': 0.0,

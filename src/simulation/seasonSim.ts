@@ -1,4 +1,5 @@
 import {
+  PLAYOFF_WIN_CUTOFF,
   SEASON_VARIANCE_STD,
   WIN_PCT_ANCHORS,
 } from '../constants/weights'
@@ -104,21 +105,25 @@ export function simulateSeason(profile: BuildProfile): SeasonResult {
   const wins = Math.round(winPct * 82)
   const losses = 82 - wins
 
-  // Seed: derived from wins with light jitter
+  // Seed: derived from wins with light jitter. Hard gate: below the win
+  // cutoff the season is over — no play-in mercy, straight to the lottery.
   let seed: number
-  if (wins >= 58) seed = 1
-  else if (wins >= 53) seed = 2
-  else if (wins >= 49) seed = 3
-  else if (wins >= 45) seed = 4
-  else if (wins >= 42) seed = 5
-  else if (wins >= 39) seed = 6
-  else if (wins >= 36) seed = Math.random() < 0.5 ? 7 : 8
-  else if (wins >= 33) seed = Math.random() < 0.5 ? 9 : 10
-  else seed = 11 + Math.floor(Math.random() * 4)
-  if (seed >= 2 && seed <= 5 && Math.random() < 0.3) seed += Math.random() < 0.5 ? -1 : 1
-  seed = clamp(seed, 1, 14)
+  if (wins < PLAYOFF_WIN_CUTOFF) {
+    seed =
+      wins >= 39
+        ? 9 + Math.floor(Math.random() * 2)
+        : 11 + Math.floor(Math.random() * 4)
+  } else {
+    if (wins >= 58) seed = 1
+    else if (wins >= 53) seed = 2
+    else if (wins >= 49) seed = 3
+    else if (wins >= 46) seed = 4
+    else seed = 5 + Math.floor(Math.random() * 4)
+    if (seed >= 2 && seed <= 5 && Math.random() < 0.3) seed += Math.random() < 0.5 ? -1 : 1
+    seed = clamp(seed, 1, 8)
+  }
 
-  const madePlayoffs = seed <= 8
+  const madePlayoffs = wins >= PLAYOFF_WIN_CUTOFF
   const conference: 'East' | 'West' = Math.random() < 0.5 ? 'East' : 'West'
 
   const stats = generateStatLine(profile)
