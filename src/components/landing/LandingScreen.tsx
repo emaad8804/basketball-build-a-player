@@ -1,4 +1,5 @@
 import { useGame } from '../../state/GameContext'
+import { loadBestBuild } from '../../utils/bestBuild'
 import type { Group } from '../../types'
 
 const GROUP_CARDS: {
@@ -29,6 +30,7 @@ const GROUP_CARDS: {
 
 export function LandingScreen() {
   const { dispatch } = useGame()
+  const best = loadBestBuild()
 
   return (
     <div className="min-h-dvh flex flex-col items-center justify-center px-4 py-12">
@@ -61,7 +63,19 @@ export function LandingScreen() {
         ))}
       </div>
 
-      <p className="mt-10 text-xs text-gray-500">
+      {best && (
+        <div className="mt-8 anim-rise-in flex items-center gap-2 bg-court-card border border-amber-400/40 rounded-full px-4 py-2">
+          <span className="text-amber-300">★</span>
+          <span className="text-sm text-gray-300">
+            Personal best:{' '}
+            <span className="font-bold text-white">{best.overall} OVR</span>{' '}
+            {best.archetype} · {best.legacyLabel}
+            {best.champion && ' 🏆'}
+          </span>
+        </div>
+      )}
+
+      <p className="mt-6 text-xs text-gray-500">
         2 respins per build · 9 attributes · 1 legacy
       </p>
     </div>

@@ -51,6 +51,28 @@ body {
   100% { transform: translateY(0); opacity: 1; }
 }
 
+@keyframes legendaryBurst {
+  0% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.75); }
+  60% { box-shadow: 0 0 60px 22px rgba(251, 191, 36, 0.35); }
+  100% { box-shadow: 0 0 24px 6px rgba(251, 191, 36, 0.3); }
+}
+
+@keyframes eliteShimmer {
+  0% { box-shadow: 0 0 0 0 rgba(192, 132, 252, 0.6); }
+  60% { box-shadow: 0 0 40px 14px rgba(192, 132, 252, 0.28); }
+  100% { box-shadow: 0 0 16px 4px rgba(192, 132, 252, 0.22); }
+}
+
+@keyframes ringPop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+.anim-legendary { animation: cardFlipIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both, legendaryBurst 1.4s ease-out 0.4s both; }
+.anim-elite { animation: cardFlipIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both, eliteShimmer 1.2s ease-out 0.4s both; }
+.anim-ring-pop { animation: ringPop 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
+
 .anim-card-flip { animation: cardFlipIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; transform-style: preserve-3d; }
 .anim-slot-spin { animation: slotSpin 0.22s ease-out both; }
 .anim-glow-pulse { animation: glowPulse 2.2s ease-in-out infinite; }

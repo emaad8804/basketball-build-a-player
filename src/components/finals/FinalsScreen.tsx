@@ -1,11 +1,24 @@
+import { useEffect } from 'react'
+import confetti from 'canvas-confetti'
 import { useGame } from '../../state/GameContext'
 import { Button, Card, StatChip } from '../shared/atoms'
+
+function fireChampionConfetti() {
+  const defaults = { spread: 90, ticks: 220, gravity: 0.9, scalar: 1.1 }
+  confetti({ ...defaults, particleCount: 120, origin: { x: 0.5, y: 0.6 }, colors: ['#f97316', '#fbbf24', '#ffffff'] })
+  setTimeout(() => confetti({ ...defaults, particleCount: 80, angle: 60, origin: { x: 0, y: 0.7 } }), 250)
+  setTimeout(() => confetti({ ...defaults, particleCount: 80, angle: 120, origin: { x: 1, y: 0.7 } }), 450)
+}
 
 export function FinalsScreen() {
   const { state, dispatch } = useGame()
   const finals = state.finalsResult!
   const revealed = finals.games.slice(0, state.finalsGamesRevealed)
   const allRevealed = state.finalsGamesRevealed >= finals.games.length
+
+  useEffect(() => {
+    if (allRevealed && finals.won) fireChampionConfetti()
+  }, [allRevealed, finals.won])
   const nextIsGame7 =
     !allRevealed && finals.games[state.finalsGamesRevealed].isGame7
 

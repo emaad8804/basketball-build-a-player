@@ -28,23 +28,8 @@ export type PlayoffRoundName =
   | 'Conference Finals'
   | 'NBA Finals'
 
-export interface PlayoffRound {
-  round: PlayoffRoundName
-  opponent: string
-  won: boolean
-  winsFor: number
-  winsAgainst: number
-  recap: string
-}
-
-export interface PlayoffResult {
-  rounds: PlayoffRound[]
-  reachedFinals: boolean
-  eliminatedIn: PlayoffRoundName | null
-  playoffStats: StatLine
-}
-
-export interface FinalsGame {
+/** One game of any best-of-7 series (playoffs or Finals). */
+export interface SeriesGame {
   gameNumber: number
   won: boolean
   scoreFor: number
@@ -62,9 +47,29 @@ export interface FinalsGame {
   isGame7: boolean
 }
 
+export interface PlayoffRound {
+  round: PlayoffRoundName
+  opponent: string
+  opponentSeed: number
+  won: boolean
+  winsFor: number
+  winsAgainst: number
+  games: SeriesGame[]
+  recap: string
+}
+
+export interface PlayoffResult {
+  rounds: PlayoffRound[]
+  reachedFinals: boolean
+  eliminatedIn: PlayoffRoundName | null
+  playoffStats: StatLine
+}
+
+export type FinalsGame = SeriesGame
+
 export interface FinalsResult {
   opponent: string
-  games: FinalsGame[]
+  games: SeriesGame[]
   won: boolean
   winsFor: number
   winsAgainst: number

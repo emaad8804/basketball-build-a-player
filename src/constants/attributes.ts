@@ -45,8 +45,8 @@ export const CENTER_TYPE_WEIGHTS: Record<string, number> = {
  * Weights renormalize over the tiers actually present in a team's pool.
  */
 export const RARITY_WEIGHTS: Record<string, number> = {
-  Common: 46,
+  Common: 50,
   Rare: 30,
-  Elite: 16,
-  Legendary: 8,
+  Elite: 14,
+  Legendary: 6,
 }

@@ -13,8 +13,27 @@ export function PlayerReveal({ player }: { player: Player }) {
   )
   const canRespin = state.respinsLeft > 0
 
+  // Rarity flair: gold burst for Legendary, purple shimmer for Elite;
+  // card border/glow picks up the dealt team's color
+  const flairClass =
+    player.rarity === 'Legendary'
+      ? 'anim-legendary border-amber-400/70'
+      : player.rarity === 'Elite'
+        ? 'anim-elite border-purple-400/60'
+        : 'anim-card-flip'
+
   return (
-    <div className="anim-card-flip bg-court-card border border-ball/50 rounded-2xl p-4 sm:p-5 shadow-xl shadow-ball/10">
+    <div
+      className={`${flairClass} bg-court-card border rounded-2xl p-4 sm:p-5 shadow-xl`}
+      style={
+        player.rarity === 'Legendary' || player.rarity === 'Elite'
+          ? undefined
+          : {
+              borderColor: team ? `${team.primaryColor}99` : undefined,
+              boxShadow: team ? `0 0 22px ${team.primaryColor}33` : undefined,
+            }
+      }
+    >
       <div className="flex items-start gap-3">
         {team && <TeamBadge team={team} size="lg" />}
         <div className="min-w-0 flex-1">

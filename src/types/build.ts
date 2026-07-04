@@ -42,6 +42,7 @@ export interface GameState {
   seasonResult: SeasonResult | null
   playoffResult: PlayoffResult | null
   finalsResult: FinalsResult | null
+  playoffGamesRevealed: number
   finalsGamesRevealed: number
   legacyLabel: string | null
 }

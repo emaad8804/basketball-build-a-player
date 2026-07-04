@@ -7,37 +7,32 @@ import { useGame } from '../../state/GameContext'
 import { Button, StatChip, TeamBadge } from '../shared/atoms'
 import { AttributeBoard } from './AttributeBoard'
 import { PlayerReveal } from './PlayerReveal'
+import { OverallRing } from './OverallRing'
 
-/** Brief slot-machine name cycle before the real spin result lands. */
-function useSpinAnimation(onDone: () => void) {
-  const [spinning, setSpinning] = useState(false)
+/**
+ * Slot-machine flash that plays automatically whenever a new team is
+ * dealt (teams can no longer be manually re-spun for free).
+ */
+function useTeamDealFlash(teamName: string | undefined) {
   const [flashName, setFlashName] = useState<string | null>(null)
-  const timer = useRef<ReturnType<typeof setInterval> | null>(null)
+  const lastTeam = useRef<string | undefined>(undefined)
 
-  const start = () => {
-    if (spinning) return
-    setSpinning(true)
+  useEffect(() => {
+    if (!teamName || teamName === lastTeam.current) return
+    lastTeam.current = teamName
     let ticks = 0
-    timer.current = setInterval(() => {
+    const timer = setInterval(() => {
       setFlashName(NBA_TEAMS[Math.floor(Math.random() * NBA_TEAMS.length)].abbr)
       ticks++
-      if (ticks >= 12) {
-        if (timer.current) clearInterval(timer.current)
+      if (ticks >= 10) {
+        clearInterval(timer)
         setFlashName(null)
-        setSpinning(false)
-        onDone()
       }
     }, 55)
-  }
+    return () => clearInterval(timer)
+  }, [teamName])
 
-  useEffect(
-    () => () => {
-      if (timer.current) clearInterval(timer.current)
-    },
-    [],
-  )
-
-  return { spinning, flashName, start }
+  return flashName
 }
 
 export function GameScreen() {
@@ -47,8 +42,17 @@ export function GameScreen() {
   const slotsRemaining = available.length
   const projected = computeBaseOverall(group, state.lockedAttributes)
 
-  const teamSpin = useSpinAnimation(() => dispatch({ type: 'SPIN_TEAM' }))
-  const playerSpin = useSpinAnimation(() => dispatch({ type: 'SPIN_PLAYER' }))
+  const teamFlash = useTeamDealFlash(state.currentTeam?.name)
+  const [playerSpinning, setPlayerSpinning] = useState(false)
+
+  const spinPlayer = () => {
+    if (playerSpinning) return
+    setPlayerSpinning(true)
+    setTimeout(() => {
+      setPlayerSpinning(false)
+      dispatch({ type: 'SPIN_PLAYER' })
+    }, 650)
+  }
 
   return (
     <div className="min-h-dvh px-4 py-6 max-w-5xl mx-auto">
@@ -65,43 +69,22 @@ export function GameScreen() {
             ← Change build group
           </button>
         </div>
-        <div className="grid grid-cols-3 gap-2">
-          <StatChip label="Projected" value={projected} />
+        <div className="flex items-center gap-2">
+          <OverallRing value={projected} />
           <StatChip label="Slots Left" value={slotsRemaining} />
           <StatChip label="Respins" value={state.respinsLeft} />
         </div>
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_1.1fr]">
-        {/* Left: spin zone */}
+        {/* Left: dealt team + spin player */}
         <div>
           <div className="bg-court-card border border-court-border rounded-2xl p-4 sm:p-5">
-            <div className="flex items-center gap-3">
-              <Button
-                onClick={teamSpin.start}
-                disabled={teamSpin.spinning || playerSpin.spinning || state.currentPlayer !== null}
-              >
-                🎰 Spin Team
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={playerSpin.start}
-                disabled={
-                  !state.currentTeam ||
-                  state.currentPlayer !== null ||
-                  teamSpin.spinning ||
-                  playerSpin.spinning
-                }
-              >
-                👤 Spin Player
-              </Button>
-            </div>
-
-            {/* Current team display */}
-            <div className="mt-4 min-h-[64px] flex items-center gap-3">
-              {teamSpin.flashName ? (
+            {/* Dealt team display */}
+            <div className="min-h-[64px] flex items-center gap-3">
+              {teamFlash ? (
                 <div className="anim-slot-spin text-3xl font-black text-ball-bright tracking-widest">
-                  {teamSpin.flashName}
+                  {teamFlash}
                 </div>
               ) : state.currentTeam ? (
                 <>
@@ -113,27 +96,37 @@ export function GameScreen() {
                     <div className="text-xs text-gray-500">
                       {state.currentPlayer
                         ? 'Player revealed below'
-                        : playerSpin.flashName
-                          ? 'Spinning player…'
-                          : 'Now spin a player'}
+                        : playerSpinning
+                          ? 'Scouting…'
+                          : 'Your dealt team — spin a player'}
                     </div>
                   </div>
                 </>
-              ) : (
-                <div className="text-sm text-gray-500 italic">
-                  Spin a team to start building
-                </div>
+              ) : null}
+            </div>
+
+            <div className="mt-3 flex items-center gap-3">
+              <Button
+                onClick={spinPlayer}
+                disabled={
+                  !state.currentTeam ||
+                  state.currentPlayer !== null ||
+                  playerSpinning ||
+                  teamFlash !== null
+                }
+              >
+                🎰 Spin Player
+              </Button>
+              {playerSpinning && (
+                <span className="anim-slot-spin text-xl font-bold text-gray-300">
+                  🔍
+                </span>
               )}
             </div>
-            {playerSpin.flashName && (
-              <div className="anim-slot-spin text-xl font-bold text-gray-300">
-                🔍 Scouting…
-              </div>
-            )}
           </div>
 
           {/* Player reveal */}
-          {state.currentPlayer && (
+          {state.currentPlayer && !playerSpinning && (
             <div className="mt-4">
               <PlayerReveal player={state.currentPlayer} />
             </div>

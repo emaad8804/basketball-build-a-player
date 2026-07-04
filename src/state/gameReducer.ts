@@ -16,13 +16,13 @@ import { deriveLegacyLabel } from '../simulation/legacy'
 
 export type GameAction =
   | { type: 'SELECT_GROUP'; group: Group }
-  | { type: 'SPIN_TEAM' }
   | { type: 'SPIN_PLAYER' }
   | { type: 'RESPIN' }
   | { type: 'RISK_IT' }
   | { type: 'LOCK_ATTRIBUTE'; attribute: AttributeKey }
   | { type: 'SIMULATE_SEASON' }
   | { type: 'SIMULATE_PLAYOFFS' }
+  | { type: 'REVEAL_NEXT_PLAYOFF_GAME' }
   | { type: 'REVEAL_NEXT_FINALS_GAME' }
   | { type: 'GOTO_SHARE' }
   | { type: 'PLAY_AGAIN' }
@@ -37,17 +37,13 @@ export const initialGameState: GameState = {
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'SELECT_GROUP':
+      // Team is dealt automatically — no free team rerolls
       return {
         ...initialGameState,
         screen: 'game',
         group: action.group,
+        currentTeam: spinTeam(action.group),
       }
-
-    case 'SPIN_TEAM': {
-      if (!state.group) return state
-      const team = spinTeam(state.group)
-      return { ...state, currentTeam: team, currentPlayer: null }
-    }
 
     case 'SPIN_PLAYER': {
       if (!state.group || !state.currentTeam) return state
@@ -104,10 +100,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       )
 
       if (!isBuildComplete(locked)) {
+        // Next team is auto-dealt immediately after every lock
         return {
           ...state,
           lockedAttributes: locked,
-          currentTeam: null,
+          currentTeam: spinTeam(state.group, state.currentTeam?.name),
           currentPlayer: null,
         }
       }
@@ -173,7 +170,13 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           playoffResult,
           null,
         )
-        return { ...state, screen: 'playoffs', playoffResult, legacyLabel }
+        return {
+          ...state,
+          screen: 'playoffs',
+          playoffResult,
+          playoffGamesRevealed: 0,
+          legacyLabel,
+        }
       }
 
       const finalsResult = simulateFinals(profile, state.seasonResult)
@@ -188,8 +191,24 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         screen: 'playoffs',
         playoffResult,
         finalsResult,
+        playoffGamesRevealed: 0,
         finalsGamesRevealed: 0,
         legacyLabel,
+      }
+    }
+
+    case 'REVEAL_NEXT_PLAYOFF_GAME': {
+      if (!state.playoffResult) return state
+      const totalGames = state.playoffResult.rounds.reduce(
+        (sum, r) => sum + r.games.length,
+        0,
+      )
+      return {
+        ...state,
+        playoffGamesRevealed: Math.min(
+          state.playoffGamesRevealed + 1,
+          totalGames,
+        ),
       }
     }
 
@@ -214,6 +233,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         ...initialGameState,
         screen: 'game',
         group: state.group,
+        currentTeam: spinTeam(state.group),
       }
     }
 

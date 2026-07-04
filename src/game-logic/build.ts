@@ -51,6 +51,7 @@ export function emptyBuildState(): Pick<
   | 'seasonResult'
   | 'playoffResult'
   | 'finalsResult'
+  | 'playoffGamesRevealed'
   | 'finalsGamesRevealed'
   | 'legacyLabel'
 > {
@@ -66,6 +67,7 @@ export function emptyBuildState(): Pick<
     seasonResult: null,
     playoffResult: null,
     finalsResult: null,
+    playoffGamesRevealed: 0,
     finalsGamesRevealed: 0,
     legacyLabel: null,
   }

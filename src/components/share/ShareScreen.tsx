@@ -1,16 +1,32 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { GROUP_LABELS } from '../../constants/attributes'
 import { ATTRIBUTE_LABELS } from '../../constants/attributes'
 import { useGame } from '../../state/GameContext'
+import { saveIfBest } from '../../utils/bestBuild'
 import { Button, Card } from '../shared/atoms'
 
 export function ShareScreen() {
   const { state, dispatch } = useGame()
   const [copied, setCopied] = useState(false)
+  const [newBest, setNewBest] = useState(false)
   const group = state.group!
   const season = state.seasonResult
   const playoffs = state.playoffResult
   const finals = state.finalsResult
+
+  useEffect(() => {
+    if (state.overall === null || !state.legacyLabel || !state.archetype) return
+    const becameBest = saveIfBest({
+      overall: state.overall,
+      archetype: state.archetype,
+      legacyLabel: state.legacyLabel,
+      group,
+      champion: finals?.won ?? false,
+      date: new Date().toISOString().slice(0, 10),
+    })
+    setNewBest(becameBest)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Top 3 locked attributes by rating
   const topPicks = useMemo(
@@ -88,6 +104,11 @@ export function ShareScreen() {
               {state.legacyLabel}
             </span>
           </div>
+          {newBest && (
+            <div className="mt-2 anim-pop-in text-xs font-bold uppercase tracking-wider text-emerald-300">
+              ★ New personal best!
+            </div>
+          )}
         </div>
 
         <div className="mt-6 border-t border-court-border pt-4 space-y-2 text-sm">
