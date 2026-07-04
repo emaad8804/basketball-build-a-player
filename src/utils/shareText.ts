@@ -55,7 +55,9 @@ export function buildShareText(state: GameState): string {
 
   return [
     header,
-    `${GROUP_LABELS[state.group!].toUpperCase()} · ${state.overall} OVR`,
+    `${GROUP_LABELS[state.group!].toUpperCase()} · ${state.overall} OVR${
+      state.homeTeam ? ` · ${state.homeTeam.abbr}` : ''
+    }`,
     rarityRow(state),
     flawLine(state),
     `${resultLine(state)}${respinNote}`,

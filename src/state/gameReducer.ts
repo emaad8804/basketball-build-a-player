@@ -8,6 +8,7 @@ import { spinFlaw } from '../game-logic/flaw'
 import { eventRng, randomSeed, zeroRngCounters } from '../game-logic/rng'
 import type { Rand, RngCounters, RngEventType } from '../game-logic/rng'
 import { spinPlayer, spinTeam } from '../game-logic/spin'
+import { NBA_TEAMS } from '../constants/teams'
 import { evaluateChemistryBonuses } from '../game-logic/chemistry'
 import { computeFinalOverall } from '../game-logic/overall'
 import { assignArchetype } from '../game-logic/archetype'
@@ -34,6 +35,8 @@ export type GameAction =
   | { type: 'SPIN_FLAW' }
   | { type: 'REROLL_FLAW' }
   | { type: 'ACCEPT_FLAW' }
+  | { type: 'SPIN_HOME_TEAM' }
+  | { type: 'ACCEPT_TEAM' }
   | { type: 'SIMULATE_SEASON' }
   | { type: 'SIMULATE_PLAYOFFS' }
   | { type: 'REVEAL_NEXT_PLAYOFF_GAME' }
@@ -225,6 +228,25 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'ACCEPT_FLAW': {
       if (state.screen !== 'flaw' || !state.flawSpun) return state
+      // Fate's last stop: the Team Destiny spin
+      return { ...state, screen: 'team' }
+    }
+
+    case 'SPIN_HOME_TEAM': {
+      if (state.screen !== 'team' || state.homeTeam !== null) return state
+      // Dedicated stream, counter 0: in daily mode everyone lands on the
+      // same team regardless of earlier choices. Equal 1/30 odds. Final.
+      const rand = eventRng(state.runSeed, 'hometeam', 0)
+      const homeTeam = NBA_TEAMS[Math.floor(rand() * NBA_TEAMS.length)]
+      return {
+        ...state,
+        homeTeam,
+        rngCounters: { ...state.rngCounters, hometeam: 1 },
+      }
+    }
+
+    case 'ACCEPT_TEAM': {
+      if (state.screen !== 'team' || state.homeTeam === null) return state
       return { ...state, screen: 'result' }
     }
 
@@ -235,6 +257,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         state.overall,
         state.lockedAttributes,
         state.flawId,
+        state.homeTeam,
       )
       const seasonResult = simulateSeason(profile)
       return { ...state, screen: 'season', seasonResult }
@@ -248,6 +271,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         state.overall,
         state.lockedAttributes,
         state.flawId,
+        state.homeTeam,
       )
 
       if (!state.seasonResult.madePlayoffs) {

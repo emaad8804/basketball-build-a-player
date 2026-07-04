@@ -14,6 +14,9 @@ export interface DailyRecord {
   raritySquares: Rarity[]
   flawId: FlawId | null
   flawRerolled: boolean
+  /** Team Destiny landing (absent on records from before the feature). */
+  teamAbbr?: string
+  teamTierLabel?: string
   /** Had a Respin still banked when the run ended. */
   respinSaved: boolean
   champion: boolean

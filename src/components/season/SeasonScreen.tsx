@@ -1,9 +1,12 @@
+import { teamTierFor } from '../../constants/teamStrength'
 import { useGame } from '../../state/GameContext'
-import { Button, Card, StatChip } from '../shared/atoms'
+import { Button, Card, StatChip, TeamBadge } from '../shared/atoms'
 
 export function SeasonScreen() {
   const { state, dispatch } = useGame()
   const season = state.seasonResult!
+  const homeTeam = state.homeTeam
+  const tier = homeTeam ? teamTierFor(homeTeam.name) : null
 
   const ordinal = (n: number) =>
     n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`
@@ -14,6 +17,22 @@ export function SeasonScreen() {
         <div className="text-xs uppercase tracking-widest text-gray-400">
           Regular Season Result
         </div>
+        {homeTeam && tier && (
+          <div className="mt-3 flex items-center justify-center gap-2">
+            <TeamBadge team={homeTeam} />
+            <span className="text-lg font-bold text-white">{homeTeam.name}</span>
+            <span
+              className="text-[11px] font-bold uppercase tracking-wider rounded-full border px-2 py-0.5"
+              style={{
+                color: tier.color,
+                borderColor: `${tier.color}88`,
+                backgroundColor: `${tier.color}14`,
+              }}
+            >
+              {tier.emoji} {tier.label}
+            </span>
+          </div>
+        )}
         <h2 className="mt-2 text-5xl font-black text-white">
           {season.wins}–{season.losses}
         </h2>

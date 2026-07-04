@@ -29,7 +29,8 @@ export function playoffStrength(profile: BuildProfile): number {
     r.playmaking * PLAYOFF_WEIGHTS.playmaking +
     r.frame * PLAYOFF_WEIGHTS.frame +
     r.rebounding * PLAYOFF_WEIGHTS.rebounding +
-    flawStrengthDelta(profile.flaw)
+    flawStrengthDelta(profile.flaw) +
+    profile.teamStrengthDelta
   )
 }
 
@@ -113,7 +114,10 @@ export function simulatePlayoffs(
   const rounds: PlayoffRound[] = []
   const opponentSeeds = opponentSeedsForPath(season.seed)
 
-  const usedOpponents = new Set<string>()
+  // Never draw your own team as an opponent
+  const usedOpponents = new Set<string>(
+    profile.homeTeamName ? [profile.homeTeamName] : [],
+  )
   const pickOpponent = (conf: 'East' | 'West'): string => {
     const pool = NBA_TEAMS.filter(
       (t) => t.conference === conf && !usedOpponents.has(t.name),

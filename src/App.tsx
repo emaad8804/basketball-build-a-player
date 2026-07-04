@@ -2,6 +2,7 @@ import { GameProvider, useGame } from './state/GameContext'
 import { LandingScreen } from './components/landing/LandingScreen'
 import { GameScreen } from './components/game/GameScreen'
 import { FlawScreen } from './components/flaw/FlawScreen'
+import { TeamSpinScreen } from './components/team/TeamSpinScreen'
 import { ResultScreen } from './components/result/ResultScreen'
 import { SeasonScreen } from './components/season/SeasonScreen'
 import { PlayoffsScreen } from './components/playoffs/PlayoffsScreen'
@@ -17,6 +18,8 @@ function Screens() {
       return <GameScreen />
     case 'flaw':
       return <FlawScreen />
+    case 'team':
+      return <TeamSpinScreen />
     case 'result':
       return <ResultScreen />
     case 'season':

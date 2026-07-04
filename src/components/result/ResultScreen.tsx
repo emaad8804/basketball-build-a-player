@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { GROUP_LABELS } from '../../constants/attributes'
 import { FLAW_BY_ID, FLAW_TIER_COLORS } from '../../constants/flaws'
+import { teamTierFor } from '../../constants/teamStrength'
 import { analyzeBuild } from '../../game-logic/report'
 import { useGame } from '../../state/GameContext'
 import { Button, Card } from '../shared/atoms'
@@ -29,6 +30,27 @@ export function ResultScreen() {
           </div>
         </div>
         <h2 className="mt-4 text-3xl font-black text-white">{state.archetype}</h2>
+        {/* Team Destiny landing */}
+        {state.homeTeam && (
+          <div className="mt-2 text-sm text-gray-300">
+            {state.homeTeam.name}
+            {(() => {
+              const tier = teamTierFor(state.homeTeam!.name)
+              return (
+                <span
+                  className="ml-2 text-[11px] font-bold uppercase tracking-wider rounded-full border px-2 py-0.5"
+                  style={{
+                    color: tier.color,
+                    borderColor: `${tier.color}88`,
+                    backgroundColor: `${tier.color}14`,
+                  }}
+                >
+                  {tier.emoji} {tier.label}
+                </span>
+              )
+            })()}
+          </div>
+        )}
         {/* Fatal Flaw verdict */}
         {state.flawSpun && (
           <div className="mt-3">

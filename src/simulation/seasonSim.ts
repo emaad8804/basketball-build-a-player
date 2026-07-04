@@ -98,6 +98,7 @@ export function simulateSeason(profile: BuildProfile): SeasonResult {
     lerpAnchors(WIN_PCT_ANCHORS, overall) +
       iqTilt +
       playmakingTilt +
+      profile.teamWinPctDelta +
       gaussian(0, SEASON_VARIANCE_STD),
     0.12,
     0.93,
@@ -124,7 +125,9 @@ export function simulateSeason(profile: BuildProfile): SeasonResult {
   }
 
   const madePlayoffs = wins >= PLAYOFF_WIN_CUTOFF
-  const conference: 'East' | 'West' = Math.random() < 0.5 ? 'East' : 'West'
+  // Conference comes from the Team Destiny landing when there is one
+  const conference: 'East' | 'West' =
+    profile.homeConference ?? (Math.random() < 0.5 ? 'East' : 'West')
 
   const stats = generateStatLine(profile)
 

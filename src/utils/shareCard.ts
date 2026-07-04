@@ -1,5 +1,6 @@
 import { ATTRIBUTE_KEYS, ATTRIBUTE_LABELS, GROUP_LABELS } from '../constants/attributes'
 import { FLAW_BY_ID, FLAW_TIER_COLORS } from '../constants/flaws'
+import { teamTierFor } from '../constants/teamStrength'
 import type { GameState, Rarity } from '../types'
 import { resultLine } from './shareText'
 
@@ -86,13 +87,16 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
   ctx.font = font(22, 700)
   ctx.fillText('OVERALL', cx, cy + 62)
 
-  // Archetype + group
+  // Archetype + group + team landing
   ctx.fillStyle = '#ffffff'
   ctx.font = font(52, 900)
   ctx.fillText(state.archetype ?? '', W / 2, 520)
   ctx.fillStyle = '#9ca3af'
   ctx.font = font(30, 600)
-  ctx.fillText(`${GROUP_LABELS[state.group!]} Build`, W / 2, 566)
+  const teamSuffix = state.homeTeam
+    ? ` · ${state.homeTeam.name} (${teamTierFor(state.homeTeam.name).label})`
+    : ''
+  ctx.fillText(`${GROUP_LABELS[state.group!]} Build${teamSuffix}`, W / 2, 566)
 
   // Fatal Flaw / clean pill
   const flaw = state.flawId ? FLAW_BY_ID[state.flawId] : null

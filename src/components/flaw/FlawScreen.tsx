@@ -240,7 +240,7 @@ export function FlawScreen() {
           <>
             {clean ? (
               <Button onClick={() => dispatch({ type: 'ACCEPT_FLAW' })} className="px-8">
-                Reveal Your Player →
+                Find Your Team →
               </Button>
             ) : (
               <>

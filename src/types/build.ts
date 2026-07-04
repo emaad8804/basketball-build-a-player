@@ -27,6 +27,7 @@ export type Screen =
   | 'landing'
   | 'game'
   | 'flaw'
+  | 'team'
   | 'result'
   | 'season'
   | 'playoffs'
@@ -54,6 +55,8 @@ export interface GameState {
   flawId: FlawId | null
   flawSpun: boolean
   flawRerolled: boolean
+  /** Team Destiny spin result — final, no rerolls. */
+  homeTeam: Team | null
   overall: number | null
   baseOverall: number | null
   chemistryBonuses: ChemistryBonus[]

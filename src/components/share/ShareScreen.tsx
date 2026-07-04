@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ATTRIBUTE_KEYS, GROUP_LABELS } from '../../constants/attributes'
 import { ATTRIBUTE_LABELS } from '../../constants/attributes'
 import { FLAW_BY_ID, FLAW_TIER_COLORS } from '../../constants/flaws'
+import { teamTierFor } from '../../constants/teamStrength'
 import { saveDailyRecord } from '../../game-logic/dailyStore'
 import { useGame } from '../../state/GameContext'
 import { saveIfBest } from '../../utils/bestBuild'
@@ -49,6 +50,10 @@ export function ShareScreen() {
         ),
         flawId: state.flawId,
         flawRerolled: state.flawRerolled,
+        teamAbbr: state.homeTeam?.abbr,
+        teamTierLabel: state.homeTeam
+          ? teamTierFor(state.homeTeam.name).label
+          : undefined,
         respinSaved: state.respinsLeft > 0,
         champion: finals?.won ?? false,
         resultLine: resultLine(state),
@@ -120,7 +125,10 @@ export function ShareScreen() {
           <div className="mt-1 text-xl font-bold text-ball-bright">
             {state.archetype}
           </div>
-          <div className="text-sm text-gray-400">{GROUP_LABELS[group]} Build</div>
+          <div className="text-sm text-gray-400">
+            {GROUP_LABELS[group]} Build
+            {state.homeTeam && ` · ${state.homeTeam.name}`}
+          </div>
 
           {/* Fatal Flaw verdict */}
           {state.flawSpun && (

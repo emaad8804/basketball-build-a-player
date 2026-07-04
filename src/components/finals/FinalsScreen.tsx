@@ -48,7 +48,8 @@ export function FinalsScreen() {
           NBA Finals
         </div>
         <h2 className="mt-2 text-2xl sm:text-3xl font-black text-white">
-          Your Build <span className="text-gray-500">vs</span> {finals.opponent}
+          {state.homeTeam?.name ?? 'Your Build'}{' '}
+          <span className="text-gray-500">vs</span> {finals.opponent}
         </h2>
       </div>
 

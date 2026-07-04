@@ -84,6 +84,7 @@ export function LandingScreen() {
                   {played.overall} OVR {played.archetype}
                 </div>
                 <div className="mt-0.5 text-sm text-gray-400">
+                  {played.teamAbbr && `${played.teamAbbr} · `}
                   {played.resultLine} · {played.legacyLabel}
                 </div>
               </div>

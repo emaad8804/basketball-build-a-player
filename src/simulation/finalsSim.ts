@@ -21,7 +21,8 @@ function finalsStrength(profile: BuildProfile): number {
     r.shooting * FINALS_WEIGHTS.shooting +
     r.playmaking * FINALS_WEIGHTS.playmaking +
     r.frame * FINALS_WEIGHTS.frame +
-    flawStrengthDelta(profile.flaw)
+    flawStrengthDelta(profile.flaw) +
+    profile.teamStrengthDelta
   )
 }
 

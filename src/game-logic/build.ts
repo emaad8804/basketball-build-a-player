@@ -50,6 +50,7 @@ export function emptyBuildState(): Pick<
   | 'flawId'
   | 'flawSpun'
   | 'flawRerolled'
+  | 'homeTeam'
   | 'overall'
   | 'baseOverall'
   | 'chemistryBonuses'
@@ -70,6 +71,7 @@ export function emptyBuildState(): Pick<
     flawId: null,
     flawSpun: false,
     flawRerolled: false,
+    homeTeam: null,
     overall: null,
     baseOverall: null,
     chemistryBonuses: [],

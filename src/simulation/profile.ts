@@ -1,7 +1,8 @@
-import type { AttributeKey, Group, LockedAttribute } from '../types'
+import type { AttributeKey, Group, LockedAttribute, Team } from '../types'
 import { ATTRIBUTE_KEYS } from '../constants/attributes'
 import { FLAW_BY_ID, SOFTEN_THRESHOLD } from '../constants/flaws'
 import type { FlawId } from '../constants/flaws'
+import { teamTierFor } from '../constants/teamStrength'
 
 /** The build's Fatal Flaw as the sims see it. */
 export interface ActiveFlaw {
@@ -18,6 +19,11 @@ export interface BuildProfile {
   overall: number
   ratings: Record<AttributeKey, number>
   flaw: ActiveFlaw | null
+  /** Team Destiny: the roster around you. */
+  homeTeamName: string | null
+  homeConference: 'East' | 'West' | null
+  teamStrengthDelta: number
+  teamWinPctDelta: number
 }
 
 export function makeBuildProfile(
@@ -25,6 +31,7 @@ export function makeBuildProfile(
   overall: number,
   locked: Partial<Record<AttributeKey, LockedAttribute>>,
   flawId: FlawId | null = null,
+  homeTeam: Team | null = null,
 ): BuildProfile {
   const ratings = {} as Record<AttributeKey, number>
   for (const key of ATTRIBUTE_KEYS) {
@@ -38,5 +45,16 @@ export function makeBuildProfile(
     flaw = { id: flawId, softened, mult: softened ? 0.5 : 1 }
   }
 
-  return { group, overall, ratings, flaw }
+  const tier = homeTeam ? teamTierFor(homeTeam.name) : null
+
+  return {
+    group,
+    overall,
+    ratings,
+    flaw,
+    homeTeamName: homeTeam?.name ?? null,
+    homeConference: homeTeam?.conference ?? null,
+    teamStrengthDelta: tier?.strengthDelta ?? 0,
+    teamWinPctDelta: tier?.winPctDelta ?? 0,
+  }
 }
