@@ -14,6 +14,10 @@ import {
   normalizeName, computeStatGrades, computeTwoKGrades,
   rarityFromComposite, positionToGroups, deriveTags,
 } from './lib/grade-mapping.js';
+import { buildSTierIndex } from './lib/s-tier.js';
+
+// AttributeKey order (matches src/types/player.ts).
+const ATTR_ORDER = ['frame', 'athleticism', 'shooting', 'finishing', 'ballHandling', 'playmaking', 'defense', 'rebounding', 'iqClutch'];
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -61,8 +65,9 @@ function tsPlayer(p) {
   const sec = `[${p.secondaryPositions.map((s) => `'${s}'`).join(', ')}]`;
   const groups = `[${p.eligibleGroups.map((s) => `'${s}'`).join(', ')}]`;
   const tags = `[${p.tags.map((s) => `'${esc(s)}'`).join(', ')}]`;
+  const sTier = `[${p.sTierAttributes.map((s) => `'${s}'`).join(', ')}]`;
   return `  { name: '${esc(p.name)}', team: '${esc(p.team)}', primaryPosition: '${p.primaryPosition}', ` +
-    `secondaryPositions: ${sec}, eligibleGroups: ${groups}, rarity: '${p.rarity}', grades: ${grades}, tags: ${tags} },`;
+    `secondaryPositions: ${sec}, eligibleGroups: ${groups}, rarity: '${p.rarity}', grades: ${grades}, tags: ${tags}, sTierAttributes: ${sTier} },`;
 }
 
 function main() {
@@ -72,6 +77,10 @@ function main() {
   const statPrimary = loadStatGrades(PRIMARY_SEASON);
   const statFallback = loadStatGrades(FALLBACK_SEASON);
   const twoKGrades = computeTwoKGrades(twoK);
+
+  // Curated S-tier override: only listed players may hold an 'S'.
+  const { attrToNames, allNames } = buildSTierIndex();
+  const rosterNorm = new Set(twoK.map((p) => normalizeName(p.name)));
 
   const players = [];
   const noStats = [];
@@ -86,6 +95,14 @@ function main() {
       shooting: stat.shooting, finishing: stat.finishing, playmaking: stat.playmaking,
       defense: stat.defense, rebounding: stat.rebounding,
     };
+
+    // Apply the S-tier override: grant S where curated, demote every other S to A+.
+    const sTierAttributes = ATTR_ORDER.filter((a) => attrToNames[a]?.has(key));
+    for (const a of ATTR_ORDER) {
+      if (sTierAttributes.includes(a)) grades[a] = 'S';
+      else if (grades[a] === 'S') grades[a] = 'A+';
+    }
+
     const composite = (
       stat._scores.shooting + stat._scores.finishing + stat._scores.playmaking +
       stat._scores.defense + stat._scores.rebounding +
@@ -101,8 +118,12 @@ function main() {
       rarity: rarityFromComposite(composite),
       grades,
       tags: deriveTags(grades),
+      sTierAttributes,
     });
   }
+
+  // Flag curated names that don't match any rostered player.
+  const unmatched = allNames.filter((n) => !rosterNorm.has(normalizeName(n)));
 
   players.sort((a, b) => a.team.localeCompare(b.team) || a.name.localeCompare(b.name));
 
@@ -121,9 +142,17 @@ function main() {
   for (const p of players) byTeam[p.team] = (byTeam[p.team] ?? 0) + 1;
   const rarity = {};
   for (const p of players) rarity[p.rarity] = (rarity[p.rarity] ?? 0) + 1;
+  const sTierCount = players.filter((p) => p.sTierAttributes.length).length;
   console.log(`Wrote ${players.length} players -> ${path.relative(ROOT, OUT)}`);
   console.log('Teams:', Object.keys(byTeam).length, '| rarity:', JSON.stringify(rarity));
+  console.log(`S-tier players: ${sTierCount}`);
   console.log(`No-stat players (neutral C for 5 stat attrs): ${noStats.length}`, noStats.length ? `-> ${noStats.join(', ')}` : '');
+  if (unmatched.length) {
+    console.log(`\n⚠️  S-tier names NOT found in roster (skipped): ${unmatched.length}`);
+    for (const n of unmatched) console.log(`   - ${n}`);
+  } else {
+    console.log('All S-tier names matched the roster ✓');
+  }
 }
 
 main();
