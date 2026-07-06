@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "data:build": "node scripts/fetch-nbastats.js 2025-26 && node scripts/fetch-nbastats.js 2024-25 && node scripts/build-player-data.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.2",
