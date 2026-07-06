@@ -5,7 +5,7 @@
 // each player's `sTierAttributes` field (using the game's 9 attribute keys).
 //
 // Note: `clutch` and `basketballIQ` both fold into the game's single `iqClutch`
-// attribute; `rebounding` is intentionally empty (no S-tier rebounders).
+// attribute.
 
 import { normalizeName } from './grade-mapping.js';
 
@@ -20,6 +20,7 @@ export const S_TIER_RAW = {
   playmaking: ['Nikola Jokić', 'Luka Dončić', 'LeBron James', 'Tyrese Haliburton', 'Trae Young'],
   ballHandle: ['Kyrie Irving', 'Trae Young', 'Shai Gilgeous-Alexander'],
   basketballIQ: ['Nikola Jokić', 'LeBron James', 'Kawhi Leonard'],
+  rebounding: ['Nikola Jokić', 'Domantas Sabonis', 'Rudy Gobert', 'Giannis Antetokounmpo', 'Anthony Davis', 'Victor Wembanyama'],
 };
 
 // Map the user's categories onto the game's AttributeKey values.
@@ -33,6 +34,7 @@ const CATEGORY_TO_ATTR = {
   playmaking: 'playmaking',
   ballHandle: 'ballHandling',
   basketballIQ: 'iqClutch',
+  rebounding: 'rebounding',
 };
 
 /**
