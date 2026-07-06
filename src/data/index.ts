@@ -1,9 +1,9 @@
 import type { Group, Player } from '../types'
-import { GUARDS } from './guards'
-import { FORWARDS } from './forwards'
-import { CENTERS } from './centers'
+import { ALL_GENERATED_PLAYERS } from './generated/players.generated'
 
-export const ALL_PLAYERS: Player[] = [...GUARDS, ...FORWARDS, ...CENTERS]
+// Roster + grades are generated from the 2K sheet + real stats.
+// Regenerate with: npm run data:build  (see scripts/build-player-data.js)
+export const ALL_PLAYERS: Player[] = ALL_GENERATED_PLAYERS
 
 /** team name -> group -> players. Precomputed so spin logic is O(1). */
 const teamGroupIndex = new Map<string, Map<Group, Player[]>>()
