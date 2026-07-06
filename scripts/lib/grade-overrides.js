@@ -180,4 +180,34 @@ export const GRADE_OVERRIDES = {
   'Anthony Davis': { defense: 'A+', finishing: 'A-' },
   'Alex Sarr': { defense: 'B+' },
   'Bilal Coulibaly': { defense: 'B+' },
+
+  // --- Deeper sweep: trim small-sample playmaking inflation (backup guards
+  //     graded A/A+ off high AST% in few minutes) ---
+  'Cam Spencer': { playmaking: 'B+' },
+  'Ryan Nembhard': { playmaking: 'B+' },
+  'Tyler Kolek': { playmaking: 'B+' },
+  'Jamal Shead': { playmaking: 'A-' },
+  'Yuki Kawamura': { playmaking: 'B+' },
+  'Keaton Wallace': { playmaking: 'B' },
+  'Walter Clayton Jr.': { playmaking: 'B+' },
+  'Javon Small': { playmaking: 'B+' },
+  'Pat Spencer': { playmaking: 'B+' },
+  'TyTy Washington Jr.': { playmaking: 'B' },
+  'Killian Hayes': { playmaking: 'B+' },
+  'Daniss Jenkins': { playmaking: 'B' },
+  'RayJ Dennis': { playmaking: 'B' },
+  'Craig Porter Jr.': { playmaking: 'B' },
+  'Quenton Jackson': { playmaking: 'B' },
+  'Blake Wesley': { playmaking: 'B' },
+  'Sharife Cooper': { playmaking: 'B+' },
+
+  // --- Deeper sweep: more defense fixes ---
+  'Andrew Nembhard': { defense: 'B+' },
+  'De\'Anthony Melton': { defense: 'A-' },
+  'Jose Alvarado': { defense: 'B+' },
+
+  // --- Deeper sweep: lob-finisher bigs undervalued by 2P%/volume ---
+  'Mark Williams': { finishing: 'A-' },
+  'Clint Capela': { finishing: 'B+' },
+  'Isaiah Jackson': { finishing: 'B+' },
 };

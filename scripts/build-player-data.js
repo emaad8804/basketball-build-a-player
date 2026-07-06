@@ -16,6 +16,7 @@ import {
 } from './lib/grade-mapping.js';
 import { buildSTierIndex } from './lib/s-tier.js';
 import { GRADE_OVERRIDES } from './lib/grade-overrides.js';
+import { RARITY_OVERRIDES } from './lib/rarity-overrides.js';
 
 // AttributeKey order (matches src/types/player.ts).
 const ATTR_ORDER = ['frame', 'athleticism', 'shooting', 'finishing', 'ballHandling', 'playmaking', 'defense', 'rebounding', 'iqClutch'];
@@ -87,6 +88,12 @@ function main() {
   const overrideByNorm = new Map(
     Object.entries(GRADE_OVERRIDES).map(([name, grades]) => [normalizeName(name), { name, grades }]),
   );
+  // Consensus rarity re-badges, keyed by normalized name.
+  const rarityByNorm = new Map(
+    Object.entries(RARITY_OVERRIDES).map(([name, rarity]) => [normalizeName(name), { name, rarity }]),
+  );
+  const computedRarityCount = {};
+  const finalRarityCount = {};
 
   const players = [];
   const noStats = [];
@@ -122,13 +129,18 @@ function main() {
       tk._scores.frame + tk._scores.athleticism + tk._scores.ballHandling + tk._scores.iqClutch
     ) / 9;
 
+    const computedRarity = rarityFromComposite(composite);
+    const rarity = rarityByNorm.get(key)?.rarity ?? computedRarity;
+    computedRarityCount[computedRarity] = (computedRarityCount[computedRarity] ?? 0) + 1;
+    finalRarityCount[rarity] = (finalRarityCount[rarity] ?? 0) + 1;
+
     players.push({
       name: p.name,
       team: p.team,
       primaryPosition: p.positions[0] ?? 'F',
       secondaryPositions: p.positions.slice(1),
       eligibleGroups: positionToGroups(p.positions.join('/')),
-      rarity: rarityFromComposite(composite),
+      rarity,
       grades,
       tags: deriveTags(grades),
       sTierAttributes,
@@ -138,6 +150,9 @@ function main() {
   // Flag curated names that don't match any rostered player.
   const unmatched = allNames.filter((n) => !rosterNorm.has(normalizeName(n)));
   const unmatchedOverrides = [...overrideByNorm.values()]
+    .filter((v) => !rosterNorm.has(normalizeName(v.name)))
+    .map((v) => v.name);
+  const unmatchedRarity = [...rarityByNorm.values()]
     .filter((v) => !rosterNorm.has(normalizeName(v.name)))
     .map((v) => v.name);
 
@@ -175,6 +190,15 @@ function main() {
   } else {
     console.log(`Grade overrides applied: ${overrideByNorm.size} (all matched) ✓`);
   }
+  if (unmatchedRarity.length) {
+    console.log(`\n⚠️  Rarity-override names NOT found in roster (skipped): ${unmatchedRarity.length}`);
+    for (const n of unmatchedRarity) console.log(`   - ${n}`);
+  } else {
+    console.log(`Rarity re-badges applied: ${rarityByNorm.size} (all matched) ✓`);
+  }
+  const fmt = (c) => `L:${c.Legendary ?? 0} E:${c.Elite ?? 0} R:${c.Rare ?? 0} C:${c.Common ?? 0}`;
+  console.log(`Rarity  computed -> ${fmt(computedRarityCount)}`);
+  console.log(`        final    -> ${fmt(finalRarityCount)}`);
 }
 
 main();
