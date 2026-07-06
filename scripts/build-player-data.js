@@ -15,6 +15,7 @@ import {
   rarityFromComposite, positionToGroups, deriveTags,
 } from './lib/grade-mapping.js';
 import { buildSTierIndex } from './lib/s-tier.js';
+import { GRADE_OVERRIDES } from './lib/grade-overrides.js';
 
 // AttributeKey order (matches src/types/player.ts).
 const ATTR_ORDER = ['frame', 'athleticism', 'shooting', 'finishing', 'ballHandling', 'playmaking', 'defense', 'rebounding', 'iqClutch'];
@@ -82,6 +83,11 @@ function main() {
   const { attrToNames, allNames } = buildSTierIndex();
   const rosterNorm = new Set(twoK.map((p) => normalizeName(p.name)));
 
+  // Consensus/eye-test grade overrides, keyed by normalized name.
+  const overrideByNorm = new Map(
+    Object.entries(GRADE_OVERRIDES).map(([name, grades]) => [normalizeName(name), { name, grades }]),
+  );
+
   const players = [];
   const noStats = [];
   for (const p of twoK) {
@@ -95,6 +101,13 @@ function main() {
       shooting: stat.shooting, finishing: stat.finishing, playmaking: stat.playmaking,
       defense: stat.defense, rebounding: stat.rebounding,
     };
+
+    // Consensus/eye-test overrides — applied BEFORE the S-tier pass so 'S' stays
+    // exclusive to s-tier.js (an override 'S' would be demoted).
+    const override = overrideByNorm.get(key);
+    if (override) {
+      for (const [attr, letter] of Object.entries(override.grades)) grades[attr] = letter;
+    }
 
     // Apply the S-tier override: grant S where curated, demote every other S to A+.
     const sTierAttributes = ATTR_ORDER.filter((a) => attrToNames[a]?.has(key));
@@ -124,6 +137,9 @@ function main() {
 
   // Flag curated names that don't match any rostered player.
   const unmatched = allNames.filter((n) => !rosterNorm.has(normalizeName(n)));
+  const unmatchedOverrides = [...overrideByNorm.values()]
+    .filter((v) => !rosterNorm.has(normalizeName(v.name)))
+    .map((v) => v.name);
 
   players.sort((a, b) => a.team.localeCompare(b.team) || a.name.localeCompare(b.name));
 
@@ -152,6 +168,12 @@ function main() {
     for (const n of unmatched) console.log(`   - ${n}`);
   } else {
     console.log('All S-tier names matched the roster ✓');
+  }
+  if (unmatchedOverrides.length) {
+    console.log(`\n⚠️  Grade-override names NOT found in roster (skipped): ${unmatchedOverrides.length}`);
+    for (const n of unmatchedOverrides) console.log(`   - ${n}`);
+  } else {
+    console.log(`Grade overrides applied: ${overrideByNorm.size} (all matched) ✓`);
   }
 }
 
