@@ -29,6 +29,20 @@ const NEUTRAL_STAT = {
   _scores: { shooting: 0.4, finishing: 0.4, playmaking: 0.4, defense: 0.4, rebounding: 0.4 },
 };
 
+// A player needs this many games for a season's stats to be trusted; below it, the
+// per-possession rates are too noisy (small-sample players were earning bogus S's).
+const MIN_GAMES = 25;
+const FLOOR_GAMES = 15; // absolute minimum to use stats at all (else neutral)
+
+// Pick the stat line from the season with a real sample: prefer the primary
+// (current) season when it qualifies, else the fuller of the two, else neutral.
+function pickStat(primary, fallback) {
+  if (primary && primary.gp >= MIN_GAMES) return primary;
+  if (fallback && fallback.gp >= MIN_GAMES) return fallback;
+  const best = [primary, fallback].filter(Boolean).sort((a, b) => b.gp - a.gp)[0];
+  return best && best.gp >= FLOOR_GAMES ? best : NEUTRAL_STAT;
+}
+
 function loadStatGrades(season) {
   const file = path.join(__dirname, 'cache', `nba-stats-${season}.json`);
   if (!fs.existsSync(file)) {
@@ -63,8 +77,8 @@ function main() {
   const noStats = [];
   for (const p of twoK) {
     const key = normalizeName(p.name);
-    const stat = statPrimary.get(key) ?? statFallback.get(key) ?? NEUTRAL_STAT;
-    if (!statPrimary.get(key) && !statFallback.get(key)) noStats.push(p.name);
+    const stat = pickStat(statPrimary.get(key), statFallback.get(key));
+    if (stat === NEUTRAL_STAT) noStats.push(p.name);
     const tk = twoKGrades.get(key);
 
     const grades = {

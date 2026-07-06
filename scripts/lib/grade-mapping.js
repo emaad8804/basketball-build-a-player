@@ -179,6 +179,8 @@ export function computeStatGrades(statsPlayers) {
       rebounding: scoreToLetter(rebounding),
       defense: scoreToLetter(defense),
       _scores: { shooting, finishing, playmaking, rebounding, defense }, // for debugging/tuning
+      gp: p.gp ?? 0, // total games — used to prefer the fuller-sample season
+      min: p.min ?? 0,
     });
   });
   return grades;
@@ -222,8 +224,10 @@ export function computeTwoKGrades(twoKPlayers) {
     const iqAvg = (p.shotIQ != null && p.passIQ != null) ? (p.shotIQ + p.passIQ) / 2 : (p.shotIQ ?? p.passIQ);
     const iqScore = twoKScore(iqAvg);
 
+    // Frame is pure physical size, not an elite skill — cap it at A+ (no S).
+    const frameLetter = scoreToLetter(frameScore);
     grades.set(normalizeName(p.name), {
-      frame: scoreToLetter(frameScore),
+      frame: frameLetter === 'S' ? 'A+' : frameLetter,
       athleticism: athScore == null ? 'C' : scoreToLetter(athScore),
       ballHandling: handleScore == null ? 'C' : scoreToLetter(handleScore),
       iqClutch: iqScore == null ? 'C' : scoreToLetter(iqScore),
