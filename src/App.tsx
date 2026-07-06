@@ -1,3 +1,4 @@
+import { Analytics } from '@vercel/analytics/react'
 import { GameProvider, useGame } from './state/GameContext'
 import { LandingScreen } from './components/landing/LandingScreen'
 import { GameScreen } from './components/game/GameScreen'
@@ -40,6 +41,7 @@ export default function App() {
   return (
     <GameProvider>
       <Screens />
+      <Analytics />
     </GameProvider>
   )
 }
