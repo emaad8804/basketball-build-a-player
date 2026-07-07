@@ -12,7 +12,7 @@ import { fileURLToPath } from 'url';
 import { parseTwoKRatings } from './lib/parse-2k.js';
 import {
   normalizeName, computeStatGrades, computeTwoKGrades,
-  rarityFromComposite, positionToGroups, deriveTags,
+  rarityFromComposite, positionToGroups, deriveTags, hasPeakGrade,
 } from './lib/grade-mapping.js';
 import { buildSTierIndex } from './lib/s-tier.js';
 import { GRADE_OVERRIDES } from './lib/grade-overrides.js';
@@ -39,6 +39,10 @@ const NEUTRAL_STAT = {
 // per-possession rates are too noisy (small-sample players were earning bogus S's).
 const MIN_GAMES = 25;
 const FLOOR_GAMES = 15; // absolute minimum to use stats at all (else neutral)
+
+// Elite/Legendary require a real role: at least this many minutes per game.
+// Below it, a player is a reserve and capped at Rare regardless of grades.
+const STARTER_MIN = 22;
 
 // Pick the stat line from the season with a real sample: prefer the primary
 // (current) season when it qualifies, else the fuller of the two, else neutral.
@@ -94,6 +98,8 @@ function main() {
   );
   const computedRarityCount = {};
   const finalRarityCount = {};
+  const eliteNoPeak = []; // Elite/Legendary with no A-tier grade (must stay empty)
+  const eliteLowRole = []; // Elite/Legendary below the role line (override exceptions)
 
   const players = [];
   const noStats = [];
@@ -129,10 +135,26 @@ function main() {
       tk._scores.frame + tk._scores.athleticism + tk._scores.ballHandling + tk._scores.iqClutch
     ) / 9;
 
-    const computedRarity = rarityFromComposite(composite);
+    // Guardrail: Elite/Legendary require a peak grade (>= A-) AND a real role
+    // (>= STARTER_MIN mpg). Otherwise cap to Rare. Applied to the computed badge,
+    // before manual re-badges (which still win on top for exceptions).
+    const roleMin = stat.min ?? 0;
+    const peak = hasPeakGrade(grades);
+    let computedRarity = rarityFromComposite(composite);
+    if ((computedRarity === 'Elite' || computedRarity === 'Legendary') && (!peak || roleMin < STARTER_MIN)) {
+      computedRarity = 'Rare';
+    }
+    const overridden = rarityByNorm.has(key);
     const rarity = rarityByNorm.get(key)?.rarity ?? computedRarity;
     computedRarityCount[computedRarity] = (computedRarityCount[computedRarity] ?? 0) + 1;
     finalRarityCount[rarity] = (finalRarityCount[rarity] ?? 0) + 1;
+
+    // Track invariant violations for the report (Elite/Legendary must have a peak;
+    // flag star-tier players below the role line — expected only via override).
+    if (rarity === 'Elite' || rarity === 'Legendary') {
+      if (!peak) eliteNoPeak.push(p.name);
+      if (roleMin < STARTER_MIN) eliteLowRole.push(`${p.name} (${roleMin}mpg${overridden ? ', override' : ''})`);
+    }
 
     players.push({
       name: p.name,
@@ -199,6 +221,14 @@ function main() {
   const fmt = (c) => `L:${c.Legendary ?? 0} E:${c.Elite ?? 0} R:${c.Rare ?? 0} C:${c.Common ?? 0}`;
   console.log(`Rarity  computed -> ${fmt(computedRarityCount)}`);
   console.log(`        final    -> ${fmt(finalRarityCount)}`);
+  if (eliteNoPeak.length) {
+    console.log(`\n⚠️  INVARIANT VIOLATION — Elite/Legendary with no A grade (${eliteNoPeak.length}): ${eliteNoPeak.join(', ')}`);
+  } else {
+    console.log('Invariant: every Elite/Legendary has an A-tier grade ✓');
+  }
+  if (eliteLowRole.length) {
+    console.log(`Elite/Legendary below ${STARTER_MIN}mpg role line (override exceptions to review): ${eliteLowRole.join(', ')}`);
+  }
 }
 
 main();

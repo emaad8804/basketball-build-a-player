@@ -264,8 +264,13 @@ export function rarityFromComposite(score) {
   return 'Common';
 }
 
-const LETTER_RANK = Object.fromEntries(LETTERS.map((l, i) => [l, i]));
+export const LETTER_RANK = Object.fromEntries(LETTERS.map((l, i) => [l, i]));
 const isAtLeast = (grade, floor) => LETTER_RANK[grade] <= LETTER_RANK[floor];
+
+// True if any grade in the sheet is A- or better (a real "peak" attribute).
+export function hasPeakGrade(grades) {
+  return Object.values(grades).some((g) => LETTER_RANK[g] <= LETTER_RANK['A-']);
+}
 
 // Heuristic tags from the finished grade sheet.
 export function deriveTags(grades) {

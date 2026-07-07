@@ -77,7 +77,7 @@ export const GRADE_OVERRIDES = {
   'Marcus Smart': { defense: 'A' },
 
   // Indiana
-  'Pascal Siakam': { finishing: 'B+', defense: 'B' },
+  'Pascal Siakam': { finishing: 'A-', defense: 'B' },
   'Aaron Nesmith': { defense: 'B+' },
   'Ivica Zubac': { defense: 'B+', finishing: 'B+' },
 
@@ -210,4 +210,9 @@ export const GRADE_OVERRIDES = {
   'Mark Williams': { finishing: 'A-' },
   'Clint Capela': { finishing: 'B+' },
   'Isaiah Jackson': { finishing: 'B+' },
+
+  // --- Elite players whose flat grades left them with no A (give the deserved
+  //     peak so the Elite badge is legitimate; Siakam handled above) ---
+  'RJ Barrett': { finishing: 'A-' },
+  'Cooper Flagg': { defense: 'A-' },
 };
