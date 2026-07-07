@@ -65,7 +65,7 @@ export function TeamSpinScreen() {
         <div className="text-xs uppercase tracking-[0.35em] text-ball-bright font-semibold">
           The Draft of Fate
         </div>
-        <h2 className="mt-2 text-3xl sm:text-4xl font-black text-white">
+        <h2 className="mt-2 font-display font-normal uppercase text-3xl sm:text-4xl text-white">
           {revealed ? homeTeam.name : 'TEAM DESTINY'}
         </h2>
         <p className="mt-2 text-sm text-gray-400 max-w-md mx-auto">
@@ -89,7 +89,7 @@ export function TeamSpinScreen() {
             key={flashIdx}
           >
             <TeamBadge team={flashTeam} size="lg" />
-            <div className="text-2xl font-black tracking-widest text-white">
+            <div className="font-display font-normal uppercase text-2xl tracking-widest text-white">
               {flashTeam.abbr}
             </div>
           </div>
@@ -106,7 +106,7 @@ export function TeamSpinScreen() {
             <div className="flex justify-center">
               <TeamBadge team={homeTeam} size="lg" />
             </div>
-            <div className="mt-3 text-2xl font-black text-white">
+            <div className="mt-3 font-display font-normal uppercase text-2xl text-white">
               {homeTeam.name}
             </div>
             <div

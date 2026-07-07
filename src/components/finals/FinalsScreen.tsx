@@ -47,7 +47,7 @@ export function FinalsScreen() {
         <div className="text-xs uppercase tracking-widest text-gray-400">
           NBA Finals
         </div>
-        <h2 className="mt-2 text-2xl sm:text-3xl font-black text-white">
+        <h2 className="mt-2 font-display font-normal uppercase text-2xl sm:text-3xl text-white">
           {state.homeTeam?.name ?? 'Your Build'}{' '}
           <span className="text-gray-500">vs</span> {finals.opponent}
         </h2>

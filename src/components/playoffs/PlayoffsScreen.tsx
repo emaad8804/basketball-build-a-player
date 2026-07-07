@@ -168,7 +168,7 @@ export function PlayoffsScreen() {
         <div className="text-xs uppercase tracking-widest text-gray-400">
           Playoff Run — {ordinal(seed)} seed
         </div>
-        <h2 className="mt-2 text-3xl font-black text-white">
+        <h2 className="mt-2 font-display font-normal uppercase text-3xl text-white">
           The Road to the Finals
         </h2>
         {/* Round progress chips */}

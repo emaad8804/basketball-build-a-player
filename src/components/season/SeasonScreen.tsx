@@ -33,7 +33,7 @@ export function SeasonScreen() {
             </span>
           </div>
         )}
-        <h2 className="mt-2 text-5xl font-black text-white">
+        <h2 className="mt-2 font-display font-normal text-5xl text-white">
           {season.wins}–{season.losses}
         </h2>
         <div className="mt-1 text-lg text-gray-300">

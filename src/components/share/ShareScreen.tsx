@@ -122,7 +122,7 @@ export function ShareScreen() {
               ? `Daily Challenge #${state.dailyNumber} Complete`
               : 'Career Complete'}
           </div>
-          <div className="mt-3 text-5xl font-black text-white">
+          <div className="mt-3 font-display font-normal text-5xl text-white">
             {state.overall}{' '}
             <span className="text-lg font-bold text-gray-400">OVR</span>
           </div>

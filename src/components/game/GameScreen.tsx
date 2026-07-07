@@ -59,7 +59,7 @@ export function GameScreen() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-black text-white">
+          <h2 className="font-display font-normal uppercase text-2xl text-white">
             Build-A-{GROUP_LABELS[group]}
             {state.mode === 'daily' && (
               <span className="ml-2 align-middle text-xs font-bold uppercase tracking-wider text-ball-bright bg-ball/15 border border-ball/50 rounded-full px-2.5 py-1">
@@ -88,7 +88,7 @@ export function GameScreen() {
             {/* Dealt team display */}
             <div className="min-h-[64px] flex items-center gap-3">
               {teamFlash ? (
-                <div className="anim-slot-spin text-3xl font-black text-ball-bright tracking-widest">
+                <div className="anim-slot-spin font-display font-normal uppercase text-3xl text-ball-bright tracking-widest">
                   {teamFlash}
                 </div>
               ) : state.currentTeam ? (

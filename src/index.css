@@ -8,7 +8,12 @@
   --color-ball: #f97316;
   --color-ball-bright: #fb923c;
   --color-ball-deep: #ea580c;
-  --font-display: "Inter", system-ui, -apple-system, sans-serif;
+  /* Two-face type system (DESIGN.md §4): Anton for display moments only —
+     OVR numbers, wordmark, headlines, card names. Geist for all UI/body.
+     Anton ships a single 400 weight: pair with font-normal + uppercase,
+     never font-bold (browsers would synthesize a smeared faux-bold). */
+  --font-display: "Anton", "Arial Narrow", sans-serif;
+  --font-sans: "Geist", system-ui, -apple-system, sans-serif;
 }
 
 html {
@@ -18,7 +23,7 @@ html {
 
 body {
   margin: 0;
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   color: #e5e9f0;
   -webkit-font-smoothing: antialiased;
 }

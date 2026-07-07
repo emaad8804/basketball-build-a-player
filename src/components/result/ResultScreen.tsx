@@ -23,13 +23,13 @@ export function ResultScreen() {
         </div>
         <div className="mt-3 flex items-center justify-center gap-4">
           <div className="anim-glow-pulse bg-gradient-to-br from-ball-bright to-ball-deep text-white rounded-2xl w-24 h-24 flex flex-col items-center justify-center">
-            <span className="text-4xl font-black">{state.overall}</span>
+            <span className="font-display font-normal text-4xl">{state.overall}</span>
             <span className="text-[10px] uppercase tracking-wider opacity-80">
               Overall
             </span>
           </div>
         </div>
-        <h2 className="mt-4 text-3xl font-black text-white">{state.archetype}</h2>
+        <h2 className="mt-4 font-display font-normal uppercase text-3xl text-white">{state.archetype}</h2>
         {/* Team Destiny landing */}
         {state.homeTeam && (
           <div className="mt-2 text-sm text-gray-300">

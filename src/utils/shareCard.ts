@@ -14,6 +14,25 @@ const RARITY_COLORS: Record<Rarity, string> = {
   Legendary: '#fbbf24',
 }
 
+// Canvas text ignores CSS font loading — faces must be fetched and ready
+// before ctx.font can use them, or the card silently renders in system-ui.
+// document.fonts.load() (not just .ready) triggers the fetch for weights
+// that haven't been painted in the DOM yet.
+let cardFonts: Promise<unknown> | null = null
+function ensureCardFonts() {
+  cardFonts ??= Promise.all([
+    document.fonts.load('400 96px Anton'),
+    document.fonts.load('600 30px Geist'),
+    document.fonts.load('700 30px Geist'),
+  ]).then(() => document.fonts.ready)
+  return cardFonts
+}
+
+// Display face for hero moments (Anton is 400-only), UI face for everything else.
+const displayFont = (size: number) => `400 ${size}px Anton, "Arial Narrow", sans-serif`
+const uiFont = (size: number, weight = 600) =>
+  `${weight} ${size}px Geist, system-ui, -apple-system, sans-serif`
+
 function roundRect(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -33,14 +52,12 @@ function roundRect(
 
 /** Hand-drawn PNG player card — zero deps, pixel-identical everywhere. */
 export async function generateShareCard(state: GameState): Promise<Blob | null> {
+  await ensureCardFonts()
   const canvas = document.createElement('canvas')
   canvas.width = W
   canvas.height = H
   const ctx = canvas.getContext('2d')
   if (!ctx) return null
-
-  const font = (size: number, weight = 800) =>
-    `${weight} ${size}px Inter, system-ui, -apple-system, sans-serif`
 
   // Background
   ctx.fillStyle = '#0b0e14'
@@ -58,11 +75,11 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
   title.addColorStop(0, '#fb923c')
   title.addColorStop(1, '#ea580c')
   ctx.fillStyle = title
-  ctx.font = font(64, 900)
+  ctx.font = displayFont(64)
   ctx.fillText('🏀 BUILD-A-HOOPER', W / 2, 110)
 
   ctx.fillStyle = '#9ca3af'
-  ctx.font = font(30, 600)
+  ctx.font = uiFont(30)
   ctx.fillText(
     state.mode === 'daily' && state.dailyNumber !== null
       ? `Daily Challenge #${state.dailyNumber} · ${state.dailyDateKey}`
@@ -82,17 +99,17 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
   ctx.fillStyle = ring
   ctx.fill()
   ctx.fillStyle = '#ffffff'
-  ctx.font = font(96, 900)
+  ctx.font = displayFont(96)
   ctx.fillText(`${state.overall ?? ''}`, cx, cy + 24)
-  ctx.font = font(22, 700)
+  ctx.font = uiFont(22, 700)
   ctx.fillText('OVERALL', cx, cy + 62)
 
   // Archetype + group + team landing
   ctx.fillStyle = '#ffffff'
-  ctx.font = font(52, 900)
+  ctx.font = displayFont(52)
   ctx.fillText(state.archetype ?? '', W / 2, 520)
   ctx.fillStyle = '#9ca3af'
-  ctx.font = font(30, 600)
+  ctx.font = uiFont(30)
   const teamSuffix = state.homeTeam
     ? ` · ${state.homeTeam.name} (${teamTierFor(state.homeTeam.name).label})`
     : ''
@@ -104,7 +121,7 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
     ? `${flaw.emoji} FATAL FLAW: ${flaw.name.toUpperCase()}`
     : '🍀 CLEAN BUILD — NO FATAL FLAW'
   const pillColor = flaw ? FLAW_TIER_COLORS[flaw.tier] : '#34d399'
-  ctx.font = font(30, 800)
+  ctx.font = uiFont(30, 700)
   const pillW = ctx.measureText(pillText).width + 70
   roundRect(ctx, W / 2 - pillW / 2, 600, pillW, 62, 31)
   ctx.fillStyle = `${pillColor}22`
@@ -138,10 +155,10 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
 
     ctx.textAlign = 'left'
     ctx.fillStyle = '#9ca3af'
-    ctx.font = font(22, 700)
+    ctx.font = uiFont(22, 700)
     ctx.fillText(ATTRIBUTE_LABELS[key].toUpperCase(), x + 22, y + 40)
     ctx.fillStyle = '#e5e9f0'
-    ctx.font = font(26, 600)
+    ctx.font = uiFont(26)
     const name = locked?.playerName ?? '—'
     ctx.fillText(
       name.length > 18 ? `${name.slice(0, 17)}…` : name,
@@ -150,7 +167,7 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
     )
     ctx.textAlign = 'right'
     ctx.fillStyle = color
-    ctx.font = font(40, 900)
+    ctx.font = uiFont(40, 700)
     ctx.fillText(locked?.grade ?? '', x + tileW - 22, y + 66)
     ctx.textAlign = 'center'
   })
@@ -158,11 +175,11 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
   // Result + legacy
   const bottomY = gridTop + 3 * tileH + 2 * gap + 90
   ctx.fillStyle = '#ffffff'
-  ctx.font = font(44, 900)
+  ctx.font = displayFont(44)
   ctx.fillText(resultLine(state), W / 2, bottomY)
 
   const legacy = `Legacy: ${state.legacyLabel ?? ''}`
-  ctx.font = font(34, 800)
+  ctx.font = uiFont(34, 700)
   const legW = ctx.measureText(legacy).width + 80
   roundRect(ctx, W / 2 - legW / 2, bottomY + 32, legW, 66, 33)
   ctx.fillStyle = 'rgba(251, 191, 36, 0.15)'
@@ -176,7 +193,7 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
   // Footer
   const season = state.seasonResult
   ctx.fillStyle = '#6b7280'
-  ctx.font = font(26, 600)
+  ctx.font = uiFont(26)
   ctx.fillText(
     season ? `Regular season ${season.wins}–${season.losses}` : '',
     W / 2,

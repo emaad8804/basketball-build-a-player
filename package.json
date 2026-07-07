@@ -11,6 +11,8 @@
     "data:build": "node scripts/fetch-nbastats.js 2025-26 && node scripts/fetch-nbastats.js 2024-25 && node scripts/build-player-data.js"
   },
   "dependencies": {
+    "@fontsource/anton": "^5.2.7",
+    "@fontsource/geist": "^5.2.9",
     "@tailwindcss/vite": "^4.3.2",
     "canvas-confetti": "^1.9.4",
     "react": "^19.2.7",

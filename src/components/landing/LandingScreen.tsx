@@ -61,7 +61,7 @@ export function LandingScreen() {
     <div className="min-h-dvh flex flex-col items-center justify-center px-4 py-12">
       <div className="anim-rise-in text-center max-w-2xl">
         <div className="text-6xl mb-4">🏀</div>
-        <h1 className="text-4xl sm:text-6xl font-black tracking-tight bg-gradient-to-r from-ball-bright via-ball to-ball-deep bg-clip-text text-transparent">
+        <h1 className="font-display font-normal uppercase text-5xl sm:text-7xl text-ball">
           HOOPER
         </h1>
         <p className="mt-4 text-gray-300 text-base sm:text-lg leading-relaxed">

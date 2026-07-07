@@ -119,7 +119,7 @@ export function FlawScreen() {
         <div className="text-xs uppercase tracking-[0.35em] text-red-400/80 font-semibold">
           The Mandatory Tenth Spin
         </div>
-        <h2 className="mt-2 text-3xl sm:text-4xl font-black text-white">
+        <h2 className="mt-2 font-display font-normal uppercase text-3xl sm:text-4xl text-white">
           {clean ? 'CLEAN BUILD' : revealed && flaw ? flaw.name : 'THE FATAL FLAW'}
         </h2>
         <p className="mt-2 text-sm text-gray-400 max-w-md mx-auto">
@@ -208,7 +208,7 @@ export function FlawScreen() {
           >
             {flaw.tier} Flaw
           </div>
-          <div className="mt-1 text-2xl font-black text-white">
+          <div className="mt-1 font-display font-normal uppercase text-2xl text-white">
             {flaw.emoji} {flaw.name}
           </div>
           <p className="mt-2 text-sm text-gray-300">{flaw.description}</p>

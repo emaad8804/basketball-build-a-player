@@ -26,7 +26,7 @@ export function PlayInScreen() {
         <div className="text-xs uppercase tracking-[0.3em] text-red-400 font-bold">
           🚨 Play-In Tournament
         </div>
-        <h2 className="mt-2 text-3xl font-black text-white">Win or Go Home</h2>
+        <h2 className="mt-2 font-display font-normal uppercase text-3xl text-white">Win or Go Home</h2>
         <p className="mt-2 text-sm text-gray-400 max-w-md mx-auto">
           {playIn.path === '7-8'
             ? `${state.seasonResult!.wins} wins bought you a second life: lose the first game and one final elimination game remains.`

@@ -48,7 +48,7 @@ export function OverallRing({ value }: { value: number }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-lg sm:text-xl font-black text-white leading-none">
+        <span className="font-display font-normal text-lg sm:text-xl text-white leading-none">
           {value}
         </span>
         <span className="text-[8px] uppercase tracking-wider text-gray-400">
