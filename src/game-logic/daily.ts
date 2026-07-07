@@ -21,7 +21,11 @@ export function dailyNumber(dateKey: string = todayKey()): number {
   return Math.floor((date - epoch) / 86400000) + 1
 }
 
-/** Everyone shares this seed for a given day. */
+/**
+ * Everyone shares this seed for a given day. The 'bap-daily' prefix is a
+ * frozen historical constant from before the Build-a-Hooper rename — changing
+ * it would change every daily challenge's spin sequence, past and present.
+ */
 export function dailySeed(dateKey: string = todayKey()): number {
   return hashString(`bap-daily:${dateKey}`)
 }

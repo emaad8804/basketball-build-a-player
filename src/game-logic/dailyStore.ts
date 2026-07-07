@@ -24,10 +24,16 @@ export interface DailyRecord {
   resultLine: string
 }
 
-const KEY = 'bap-daily-history-v1'
+const KEY = 'hooper-daily-history-v1'
+const OLD_KEY = 'bap-daily-history-v1' // pre-rename key — migrated on first read
 
 export function getDailyHistory(): DailyRecord[] {
   try {
+    const old = localStorage.getItem(OLD_KEY)
+    if (old !== null && localStorage.getItem(KEY) === null) {
+      localStorage.setItem(KEY, old)
+    }
+    if (old !== null) localStorage.removeItem(OLD_KEY)
     const raw = localStorage.getItem(KEY)
     if (!raw) return []
     const parsed = JSON.parse(raw)

@@ -53,8 +53,8 @@ export function resultLine(state: GameState): string {
 export function buildShareText(state: GameState): string {
   const header =
     state.mode === 'daily' && state.dailyNumber !== null
-      ? `🏀 Build-a-Player #${state.dailyNumber}`
-      : '🏀 Build-a-Player'
+      ? `🏀 Build-a-Hooper #${state.dailyNumber}`
+      : '🏀 Build-a-Hooper'
   const respinNote =
     state.respinsLeft > 0 ? ' · respin saved ✅' : ''
 

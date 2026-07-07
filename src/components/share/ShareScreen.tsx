@@ -104,7 +104,7 @@ export function ShareScreen() {
   const share = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'Build-A-Player', text: shareText })
+        await navigator.share({ title: 'Build-a-Hooper', text: shareText })
       } catch {
         // User cancelled share sheet
       }

@@ -9,10 +9,16 @@ export interface BestBuild {
   date: string
 }
 
-const KEY = 'bap-best-build'
+const KEY = 'hooper-best-build'
+const OLD_KEY = 'bap-best-build' // pre-rename key — migrated on first read
 
 export function loadBestBuild(): BestBuild | null {
   try {
+    const old = localStorage.getItem(OLD_KEY)
+    if (old !== null && localStorage.getItem(KEY) === null) {
+      localStorage.setItem(KEY, old)
+    }
+    if (old !== null) localStorage.removeItem(OLD_KEY)
     const raw = localStorage.getItem(KEY)
     return raw ? (JSON.parse(raw) as BestBuild) : null
   } catch {

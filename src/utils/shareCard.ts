@@ -59,7 +59,7 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
   title.addColorStop(1, '#ea580c')
   ctx.fillStyle = title
   ctx.font = font(64, 900)
-  ctx.fillText('🏀 BUILD-A-PLAYER', W / 2, 110)
+  ctx.fillText('🏀 BUILD-A-HOOPER', W / 2, 110)
 
   ctx.fillStyle = '#9ca3af'
   ctx.font = font(30, 600)
@@ -190,11 +190,11 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
 export async function shareCard(state: GameState): Promise<void> {
   const blob = await generateShareCard(state)
   if (!blob) return
-  const file = new File([blob], 'build-a-player.png', { type: 'image/png' })
+  const file = new File([blob], 'build-a-hooper.png', { type: 'image/png' })
 
   if (navigator.canShare?.({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: 'Build-A-Player' })
+      await navigator.share({ files: [file], title: 'Build-a-Hooper' })
       return
     } catch {
       // fall through to download (user may have cancelled — harmless)
@@ -203,7 +203,7 @@ export async function shareCard(state: GameState): Promise<void> {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = 'build-a-player.png'
+  a.download = 'build-a-hooper.png'
   a.click()
   URL.revokeObjectURL(url)
 }
