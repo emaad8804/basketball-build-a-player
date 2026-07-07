@@ -17,13 +17,12 @@ export function Button({
   const base =
     'font-semibold rounded-xl px-5 py-3 transition-all duration-150 active:scale-95 disabled:opacity-40 disabled:pointer-events-none cursor-pointer text-sm sm:text-base'
   const variants = {
-    primary:
-      'bg-ball text-white hover:bg-ball-bright shadow-lg shadow-ball/25',
+    primary: 'bg-accent text-cream hover:bg-accent-deep',
     secondary:
-      'bg-court-raised text-gray-100 border border-court-border hover:border-ball/60',
-    ghost: 'text-gray-300 hover:text-white hover:bg-court-raised',
+      'bg-raised text-cream border border-edge hover:border-muted',
+    ghost: 'text-muted hover:text-cream hover:bg-raised',
     danger:
-      'bg-red-600/20 text-red-300 border border-red-500/40 hover:bg-red-600/35',
+      'bg-loss/15 text-loss border border-loss/40 hover:bg-loss/25',
   }
   return (
     <button
@@ -36,17 +35,19 @@ export function Button({
   )
 }
 
+// Grade ramp rides the rarity hues (S = legendary gold … C/D = common gray)
+// so grade and rarity read as one system.
 const gradeColors: Record<string, string> = {
-  S: 'bg-gradient-to-br from-amber-300 to-orange-500 text-black',
-  'A+': 'bg-gradient-to-br from-purple-400 to-fuchsia-600 text-white',
-  A: 'bg-purple-500/85 text-white',
-  'A-': 'bg-purple-500/60 text-white',
-  'B+': 'bg-blue-500/80 text-white',
-  B: 'bg-blue-500/55 text-white',
-  'B-': 'bg-blue-500/35 text-blue-100',
-  'C+': 'bg-slate-500/60 text-slate-100',
-  C: 'bg-slate-500/40 text-slate-200',
-  D: 'bg-slate-600/40 text-slate-300',
+  S: 'bg-rarity-legendary text-ink',
+  'A+': 'bg-rarity-elite text-cream',
+  A: 'bg-rarity-elite/80 text-cream',
+  'A-': 'bg-rarity-elite/55 text-cream',
+  'B+': 'bg-rarity-rare/85 text-cream',
+  B: 'bg-rarity-rare/55 text-cream',
+  'B-': 'bg-rarity-rare/35 text-cream',
+  'C+': 'bg-rarity-common/45 text-cream',
+  C: 'bg-rarity-common/30 text-cream/90',
+  D: 'bg-rarity-common/20 text-muted',
 }
 
 export function GradeBadge({
@@ -71,10 +72,18 @@ export function GradeBadge({
 }
 
 const rarityColors: Record<Rarity, string> = {
-  Common: 'text-slate-300 border-slate-500/50 bg-slate-500/10',
-  Rare: 'text-sky-300 border-sky-500/50 bg-sky-500/10',
-  Elite: 'text-purple-300 border-purple-500/50 bg-purple-500/10',
-  Legendary: 'text-amber-300 border-amber-500/60 bg-amber-500/10',
+  Common: 'text-rarity-common border-rarity-common/50 bg-rarity-common/10',
+  Rare: 'text-rarity-rare border-rarity-rare/50 bg-rarity-rare/10',
+  Elite: 'text-rarity-elite border-rarity-elite/50 bg-rarity-elite/10',
+  Legendary: 'text-rarity-legendary border-rarity-legendary/60 bg-rarity-legendary/10',
+}
+
+/** Shared rarity text-color classes for chips outside RarityBadge. */
+export const RARITY_TEXT: Record<Rarity, string> = {
+  Common: 'text-rarity-common',
+  Rare: 'text-rarity-rare',
+  Elite: 'text-rarity-elite',
+  Legendary: 'text-rarity-legendary',
 }
 
 export function RarityBadge({ rarity }: { rarity: Rarity }) {

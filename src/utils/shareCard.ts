@@ -1,18 +1,12 @@
 import { ATTRIBUTE_KEYS, ATTRIBUTE_LABELS, GROUP_LABELS } from '../constants/attributes'
 import { FLAW_BY_ID, FLAW_TIER_COLORS } from '../constants/flaws'
 import { teamTierFor } from '../constants/teamStrength'
-import type { GameState, Rarity } from '../types'
+import { PALETTE, RARITY_HEX } from '../constants/designTokens'
+import type { GameState } from '../types'
 import { resultLine } from './shareText'
 
 const W = 1080
 const H = 1350
-
-const RARITY_COLORS: Record<Rarity, string> = {
-  Common: '#94a3b8',
-  Rare: '#38bdf8',
-  Elite: '#c084fc',
-  Legendary: '#fbbf24',
-}
 
 // Canvas text ignores CSS font loading — faces must be fetched and ready
 // before ctx.font can use them, or the card silently renders in system-ui.
@@ -60,11 +54,11 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
   if (!ctx) return null
 
   // Background
-  ctx.fillStyle = '#0b0e14'
+  ctx.fillStyle = PALETTE.ink
   ctx.fillRect(0, 0, W, H)
   const glow = ctx.createRadialGradient(W / 2, 260, 60, W / 2, 260, 700)
-  glow.addColorStop(0, 'rgba(249, 115, 22, 0.16)')
-  glow.addColorStop(1, 'rgba(249, 115, 22, 0)')
+  glow.addColorStop(0, 'rgba(255, 90, 31, 0.16)')
+  glow.addColorStop(1, 'rgba(255, 90, 31, 0)')
   ctx.fillStyle = glow
   ctx.fillRect(0, 0, W, H)
 
@@ -72,13 +66,13 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
 
   // Header
   const title = ctx.createLinearGradient(W / 2 - 300, 0, W / 2 + 300, 0)
-  title.addColorStop(0, '#fb923c')
-  title.addColorStop(1, '#ea580c')
+  title.addColorStop(0, PALETTE.accent)
+  title.addColorStop(1, PALETTE.accentDeep)
   ctx.fillStyle = title
   ctx.font = displayFont(64)
   ctx.fillText('🏀 BUILD-A-HOOPER', W / 2, 110)
 
-  ctx.fillStyle = '#9ca3af'
+  ctx.fillStyle = PALETTE.muted
   ctx.font = uiFont(30)
   ctx.fillText(
     state.mode === 'daily' && state.dailyNumber !== null
@@ -94,21 +88,21 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
   ctx.beginPath()
   ctx.arc(cx, cy, 110, 0, Math.PI * 2)
   const ring = ctx.createLinearGradient(cx - 110, cy - 110, cx + 110, cy + 110)
-  ring.addColorStop(0, '#fb923c')
-  ring.addColorStop(1, '#ea580c')
+  ring.addColorStop(0, PALETTE.accent)
+  ring.addColorStop(1, PALETTE.accentDeep)
   ctx.fillStyle = ring
   ctx.fill()
-  ctx.fillStyle = '#ffffff'
+  ctx.fillStyle = PALETTE.cream
   ctx.font = displayFont(96)
   ctx.fillText(`${state.overall ?? ''}`, cx, cy + 24)
   ctx.font = uiFont(22, 700)
   ctx.fillText('OVERALL', cx, cy + 62)
 
   // Archetype + group + team landing
-  ctx.fillStyle = '#ffffff'
+  ctx.fillStyle = PALETTE.cream
   ctx.font = displayFont(52)
   ctx.fillText(state.archetype ?? '', W / 2, 520)
-  ctx.fillStyle = '#9ca3af'
+  ctx.fillStyle = PALETTE.muted
   ctx.font = uiFont(30)
   const teamSuffix = state.homeTeam
     ? ` · ${state.homeTeam.name} (${teamTierFor(state.homeTeam.name).label})`
@@ -120,7 +114,7 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
   const pillText = flaw
     ? `${flaw.emoji} FATAL FLAW: ${flaw.name.toUpperCase()}`
     : '🍀 CLEAN BUILD — NO FATAL FLAW'
-  const pillColor = flaw ? FLAW_TIER_COLORS[flaw.tier] : '#34d399'
+  const pillColor = flaw ? FLAW_TIER_COLORS[flaw.tier] : PALETTE.win
   ctx.font = uiFont(30, 700)
   const pillW = ctx.measureText(pillText).width + 70
   roundRect(ctx, W / 2 - pillW / 2, 600, pillW, 62, 31)
@@ -144,20 +138,20 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
     const row = Math.floor(i / 3)
     const x = gridLeft + col * (tileW + gap)
     const y = gridTop + row * (tileH + gap)
-    const color = locked ? RARITY_COLORS[locked.rarity] : '#334155'
+    const color = locked ? RARITY_HEX[locked.rarity] : PALETTE.edge
 
     roundRect(ctx, x, y, tileW, tileH, 18)
-    ctx.fillStyle = '#141922'
+    ctx.fillStyle = PALETTE.panel
     ctx.fill()
     ctx.strokeStyle = `${color}aa`
     ctx.lineWidth = 3
     ctx.stroke()
 
     ctx.textAlign = 'left'
-    ctx.fillStyle = '#9ca3af'
+    ctx.fillStyle = PALETTE.muted
     ctx.font = uiFont(22, 700)
     ctx.fillText(ATTRIBUTE_LABELS[key].toUpperCase(), x + 22, y + 40)
-    ctx.fillStyle = '#e5e9f0'
+    ctx.fillStyle = PALETTE.cream
     ctx.font = uiFont(26)
     const name = locked?.playerName ?? '—'
     ctx.fillText(
@@ -174,7 +168,7 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
 
   // Result + legacy
   const bottomY = gridTop + 3 * tileH + 2 * gap + 90
-  ctx.fillStyle = '#ffffff'
+  ctx.fillStyle = PALETTE.cream
   ctx.font = displayFont(44)
   ctx.fillText(resultLine(state), W / 2, bottomY)
 
@@ -182,17 +176,17 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
   ctx.font = uiFont(34, 700)
   const legW = ctx.measureText(legacy).width + 80
   roundRect(ctx, W / 2 - legW / 2, bottomY + 32, legW, 66, 33)
-  ctx.fillStyle = 'rgba(251, 191, 36, 0.15)'
+  ctx.fillStyle = 'rgba(245, 179, 1, 0.15)'
   ctx.fill()
-  ctx.strokeStyle = 'rgba(251, 191, 36, 0.6)'
+  ctx.strokeStyle = 'rgba(245, 179, 1, 0.6)'
   ctx.lineWidth = 3
   ctx.stroke()
-  ctx.fillStyle = '#fcd34d'
+  ctx.fillStyle = RARITY_HEX.Legendary
   ctx.fillText(legacy, W / 2, bottomY + 78)
 
   // Footer
   const season = state.seasonResult
-  ctx.fillStyle = '#6b7280'
+  ctx.fillStyle = PALETTE.muted
   ctx.font = uiFont(26)
   ctx.fillText(
     season ? `Regular season ${season.wins}–${season.losses}` : '',

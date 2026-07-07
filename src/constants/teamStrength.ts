@@ -5,6 +5,8 @@
  * per-game win prob); winPctDelta shifts season win% (±0.05 ≈ ±4 wins).
  */
 
+import { TEAM_TIER_HEX } from './designTokens'
+
 export type TeamTierId =
   | 'contender'
   | 'playoff-lock'
@@ -28,7 +30,7 @@ export const TEAM_TIERS: Record<TeamTierId, TeamTier> = {
     id: 'contender',
     label: 'Title Contender',
     emoji: '👑',
-    color: '#fbbf24',
+    color: TEAM_TIER_HEX.contender,
     strengthDelta: 3,
     winPctDelta: 0.05,
     flavor: 'A loaded roster built to win now — your title odds just jumped.',
@@ -37,7 +39,7 @@ export const TEAM_TIERS: Record<TeamTierId, TeamTier> = {
     id: 'playoff-lock',
     label: 'Playoff Lock',
     emoji: '🔒',
-    color: '#34d399',
+    color: TEAM_TIER_HEX['playoff-lock'],
     strengthDelta: 1.5,
     winPctDelta: 0.025,
     flavor: 'A proven playoff outfit. Real help on both ends.',
@@ -46,7 +48,7 @@ export const TEAM_TIERS: Record<TeamTierId, TeamTier> = {
     id: 'middle',
     label: 'Middle of the Pack',
     emoji: '⚖️',
-    color: '#94a3b8',
+    color: TEAM_TIER_HEX.middle,
     strengthDelta: 0,
     winPctDelta: 0,
     flavor: 'Decent pieces, no stars. This one is all on you.',
@@ -55,7 +57,7 @@ export const TEAM_TIERS: Record<TeamTierId, TeamTier> = {
     id: 'rebuilding',
     label: 'Rebuilding',
     emoji: '🧱',
-    color: '#fb923c',
+    color: TEAM_TIER_HEX.rebuilding,
     strengthDelta: -2,
     winPctDelta: -0.03,
     flavor: 'Young, raw, and inconsistent — you will have to drag them.',
@@ -64,7 +66,7 @@ export const TEAM_TIERS: Record<TeamTierId, TeamTier> = {
     id: 'tanking',
     label: 'Tanking',
     emoji: '🕳️',
-    color: '#ef4444',
+    color: TEAM_TIER_HEX.tanking,
     strengthDelta: -4,
     winPctDelta: -0.05,
     flavor: 'The front office wants lottery balls. Your title odds are slim.',

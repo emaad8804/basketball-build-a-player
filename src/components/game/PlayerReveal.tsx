@@ -4,15 +4,9 @@ import { convertGradeToRating } from '../../game-logic/grades'
 import { getPlayersByTeamAndGroup } from '../../game-logic/spin'
 import { useGame } from '../../state/GameContext'
 import type { AttributeKey, Player, Rarity } from '../../types'
-import { Button, GradeBadge, RarityBadge, TeamBadge } from '../shared/atoms'
+import { Button, GradeBadge, RarityBadge, RARITY_TEXT, TeamBadge } from '../shared/atoms'
 
 const RARITY_ORDER: Rarity[] = ['Common', 'Rare', 'Elite', 'Legendary']
-const RARITY_CHIP_COLORS: Record<Rarity, string> = {
-  Common: 'text-slate-300',
-  Rare: 'text-sky-300',
-  Elite: 'text-purple-300',
-  Legendary: 'text-amber-300',
-}
 
 export function PlayerReveal({ player }: { player: Player }) {
   const { state, dispatch } = useGame()
@@ -36,9 +30,9 @@ export function PlayerReveal({ player }: { player: Player }) {
   // card border/glow picks up the dealt team's color
   const flairClass =
     player.rarity === 'Legendary'
-      ? 'anim-legendary border-amber-400/70'
+      ? 'anim-legendary border-rarity-legendary/70'
       : player.rarity === 'Elite'
-        ? 'anim-elite border-purple-400/60'
+        ? 'anim-elite border-rarity-elite/60'
         : 'anim-card-flip'
 
   return (
@@ -145,7 +139,7 @@ export function PlayerReveal({ player }: { player: Player }) {
             {riskCounts.map(([rarity, n], i) => (
               <span key={rarity}>
                 {i > 0 && ' · '}
-                <span className={`font-semibold ${RARITY_CHIP_COLORS[rarity]}`}>
+                <span className={`font-semibold ${RARITY_TEXT[rarity]}`}>
                   {n} {rarity}
                 </span>
               </span>

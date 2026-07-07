@@ -1,13 +1,35 @@
 @import "tailwindcss";
 
 @theme {
-  --color-court: #0b0e14;
-  --color-court-card: #141922;
-  --color-court-raised: #1c2330;
-  --color-court-border: #2a3344;
-  --color-ball: #f97316;
-  --color-ball-bright: #fb923c;
-  --color-ball-deep: #ea580c;
+  /* DESIGN.md §3 palette — mirror of src/constants/designTokens.ts
+     (canvas/inline-style consumers import the TS module; keep in sync). */
+  --color-ink: #0a0a0b;
+  --color-panel: #141416;
+  --color-raised: #1c1c1f;
+  --color-edge: #26262b;
+  --color-accent: #ff5a1f;
+  --color-accent-deep: #d8410e;
+  --color-cream: #fafaf7;
+  --color-muted: #8a8a94;
+  --color-win: #3fb950;
+  --color-loss: #f04438;
+  --color-rarity-common: #9ba1a6;
+  --color-rarity-rare: #3b82f6;
+  --color-rarity-elite: #c026d3;
+  --color-rarity-legendary: #f5b301;
+
+  /* Legacy aliases — every pre-redesign class (bg-court-card, text-ball…)
+     resolves to the new palette without per-file edits. Each screen's
+     redesign pass swaps its classes to the new tokens; these aliases are
+     deleted once `grep -rn 'court-\|ball' src/` is clean. */
+  --color-court: #0a0a0b;
+  --color-court-card: #141416;
+  --color-court-raised: #1c1c1f;
+  --color-court-border: #26262b;
+  --color-ball: #ff5a1f;
+  --color-ball-bright: #ff5a1f;
+  --color-ball-deep: #d8410e;
+
   /* Two-face type system (DESIGN.md §4): Anton for display moments only —
      OVR numbers, wordmark, headlines, card names. Geist for all UI/body.
      Anton ships a single 400 weight: pair with font-normal + uppercase,
@@ -17,14 +39,14 @@
 }
 
 html {
-  background-color: var(--color-court);
+  background-color: var(--color-ink);
   color-scheme: dark;
 }
 
 body {
   margin: 0;
   font-family: var(--font-sans);
-  color: #e5e9f0;
+  color: var(--color-cream);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -42,8 +64,8 @@ body {
 }
 
 @keyframes glowPulse {
-  0%, 100% { box-shadow: 0 0 12px rgba(249, 115, 22, 0.25); }
-  50% { box-shadow: 0 0 26px rgba(249, 115, 22, 0.55); }
+  0%, 100% { box-shadow: 0 0 12px rgba(255, 90, 31, 0.25); }
+  50% { box-shadow: 0 0 26px rgba(255, 90, 31, 0.55); }
 }
 
 @keyframes popIn {
@@ -57,15 +79,15 @@ body {
 }
 
 @keyframes legendaryBurst {
-  0% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.75); }
-  60% { box-shadow: 0 0 60px 22px rgba(251, 191, 36, 0.35); }
-  100% { box-shadow: 0 0 24px 6px rgba(251, 191, 36, 0.3); }
+  0% { box-shadow: 0 0 0 0 rgba(245, 179, 1, 0.75); }
+  60% { box-shadow: 0 0 60px 22px rgba(245, 179, 1, 0.35); }
+  100% { box-shadow: 0 0 24px 6px rgba(245, 179, 1, 0.3); }
 }
 
 @keyframes eliteShimmer {
-  0% { box-shadow: 0 0 0 0 rgba(192, 132, 252, 0.6); }
-  60% { box-shadow: 0 0 40px 14px rgba(192, 132, 252, 0.28); }
-  100% { box-shadow: 0 0 16px 4px rgba(192, 132, 252, 0.22); }
+  0% { box-shadow: 0 0 0 0 rgba(192, 38, 211, 0.6); }
+  60% { box-shadow: 0 0 40px 14px rgba(192, 38, 211, 0.28); }
+  100% { box-shadow: 0 0 16px 4px rgba(192, 38, 211, 0.22); }
 }
 
 @keyframes ringPop {
@@ -75,8 +97,8 @@ body {
 }
 
 @keyframes reliefFlash {
-  0% { background: rgba(52, 211, 153, 0.55); }
-  100% { background: rgba(52, 211, 153, 0); }
+  0% { background: rgba(63, 185, 80, 0.55); }
+  100% { background: rgba(63, 185, 80, 0); }
 }
 
 @keyframes burnIn {

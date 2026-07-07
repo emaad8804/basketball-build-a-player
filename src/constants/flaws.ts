@@ -1,4 +1,5 @@
 import type { AttributeKey } from '../types'
+import { FLAW_TIER_HEX } from './designTokens'
 
 export type FlawTier = 'Minor' | 'Moderate' | 'Severe'
 
@@ -95,8 +96,4 @@ export const FLAW_BY_ID: Record<FlawId, Flaw> = Object.fromEntries(
   FLAWS.map((f) => [f.id, f]),
 ) as Record<FlawId, Flaw>
 
-export const FLAW_TIER_COLORS: Record<FlawTier, string> = {
-  Minor: '#facc15', // yellow
-  Moderate: '#fb923c', // orange
-  Severe: '#ef4444', // red
-}
+export const FLAW_TIER_COLORS: Record<FlawTier, string> = FLAW_TIER_HEX

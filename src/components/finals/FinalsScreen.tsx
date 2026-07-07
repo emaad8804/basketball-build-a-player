@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import confetti from 'canvas-confetti'
+import { PALETTE, RARITY_HEX } from '../../constants/designTokens'
 import { useGame } from '../../state/GameContext'
 import { Button, StatChip } from '../shared/atoms'
 import { GameCard } from '../playoffs/PlayoffsScreen'
@@ -7,7 +8,7 @@ import { useAutoTicker } from '../shared/useAutoTicker'
 
 function fireChampionConfetti() {
   const defaults = { spread: 90, ticks: 220, gravity: 0.9, scalar: 1.1 }
-  confetti({ ...defaults, particleCount: 120, origin: { x: 0.5, y: 0.6 }, colors: ['#f97316', '#fbbf24', '#ffffff'] })
+  confetti({ ...defaults, particleCount: 120, origin: { x: 0.5, y: 0.6 }, colors: [PALETTE.accent, RARITY_HEX.Legendary, PALETTE.cream] })
   setTimeout(() => confetti({ ...defaults, particleCount: 80, angle: 60, origin: { x: 0, y: 0.7 } }), 250)
   setTimeout(() => confetti({ ...defaults, particleCount: 80, angle: 120, origin: { x: 1, y: 0.7 } }), 450)
 }
