@@ -80,6 +80,8 @@ export const GRADE_OVERRIDES = {
   'Pascal Siakam': { finishing: 'A-', defense: 'B' },
   'Aaron Nesmith': { defense: 'B+' },
   'Ivica Zubac': { defense: 'B+', finishing: 'B+' },
+  // Backup stretch big — hot small-role rates graded him like a starter.
+  'Micah Potter': { shooting: 'B', finishing: 'B-', playmaking: 'C+', rebounding: 'B-', defense: 'C+' },
 
   // LA Clippers
   'Brandon Ingram': { shooting: 'B+' },

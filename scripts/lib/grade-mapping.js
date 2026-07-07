@@ -103,6 +103,29 @@ function percentiler(values) {
 const per36 = (perGame, min) => (min && min > 0 ? (perGame / min) * 36 : 0);
 
 // ---------------------------------------------------------------------------
+// Role dampening
+// ---------------------------------------------------------------------------
+
+// Per-36 rates from a small role overstate quality: a reserve's hot shooting or
+// garbage-time boards grade like starter production. Scores above the league
+// midpoint are shrunk toward it for low-minute players (quadratic ramp — bites
+// hard below ~20 mpg, full credit at FULL_ROLE_MIN); below-midpoint scores are
+// left alone so bad reserves don't get a free boost.
+const ROLE_MIDPOINT = 0.5;
+const FULL_ROLE_MIN = 28;
+const MIN_ROLE_CREDIT = 0.25;
+
+function roleCredit(min) {
+  const t = clamp01((min ?? 0) / FULL_ROLE_MIN);
+  return MIN_ROLE_CREDIT + (1 - MIN_ROLE_CREDIT) * t * t;
+}
+
+function dampenForRole(score, min) {
+  if (score <= ROLE_MIDPOINT) return score;
+  return ROLE_MIDPOINT + (score - ROLE_MIDPOINT) * roleCredit(min);
+}
+
+// ---------------------------------------------------------------------------
 // Stat-derived grades
 // ---------------------------------------------------------------------------
 
@@ -166,11 +189,12 @@ export function computeStatGrades(statsPlayers) {
     const m = metrics[i];
     const P = (f) => pct[f](m[f]);
     const w = WEIGHTS;
-    const shooting = w.shooting.fg3mPer36 * P('fg3mPer36') + w.shooting.fg3Pct * P('fg3Pct') + w.shooting.ftPct * P('ftPct');
-    const finishing = w.finishing.twoPct * P('twoPct') + w.finishing.ptsPer36 * P('ptsPer36') + w.finishing.ftPct * P('ftPct');
-    const playmaking = w.playmaking.astPct * P('astPct') + w.playmaking.astPer36 * P('astPer36') + w.playmaking.astTo * P('astTo');
-    const rebounding = w.rebounding.rebPct * P('rebPct') + w.rebounding.orebPer36 * P('orebPer36') + w.rebounding.drebPer36 * P('drebPer36');
-    const defense = w.defense.stocksPer36 * P('stocksPer36') + w.defense.defRatingInv * P('defRatingInv') + w.defense.drebPct * P('drebPct');
+    const D = (score) => dampenForRole(score, p.min);
+    const shooting = D(w.shooting.fg3mPer36 * P('fg3mPer36') + w.shooting.fg3Pct * P('fg3Pct') + w.shooting.ftPct * P('ftPct'));
+    const finishing = D(w.finishing.twoPct * P('twoPct') + w.finishing.ptsPer36 * P('ptsPer36') + w.finishing.ftPct * P('ftPct'));
+    const playmaking = D(w.playmaking.astPct * P('astPct') + w.playmaking.astPer36 * P('astPer36') + w.playmaking.astTo * P('astTo'));
+    const rebounding = D(w.rebounding.rebPct * P('rebPct') + w.rebounding.orebPer36 * P('orebPer36') + w.rebounding.drebPer36 * P('drebPer36'));
+    const defense = D(w.defense.stocksPer36 * P('stocksPer36') + w.defense.defRatingInv * P('defRatingInv') + w.defense.drebPct * P('drebPct'));
 
     grades.set(normalizeName(p.name), {
       shooting: scoreToLetter(shooting),
