@@ -107,6 +107,62 @@ body {
   100% { transform: scale(1); opacity: 1; filter: brightness(1) saturate(1); }
 }
 
+/* ---- Collectible foil frames (DESIGN.md §5: rarity IS the frame) ---- */
+
+/* Animatable conic-gradient angle for the legendary foil rotation.
+   Browsers without @property support simply render the static foil. */
+@property --foil-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 210deg;
+}
+
+.foil-elite {
+  background: conic-gradient(
+    from 210deg,
+    #c026d3, #f0abfc 15%, #c026d3 45%, #5b0e66 65%, #c026d3
+  );
+}
+
+.foil-legendary {
+  background: conic-gradient(
+    from var(--foil-angle),
+    #f5b301, #fff3c4 12%, #f5b301 40%, #7a5a00 60%, #f5b301
+  );
+}
+
+@keyframes foilRotate {
+  to { --foil-angle: 570deg; }
+}
+
+@keyframes sheenSweep {
+  from { transform: translateX(-160%) skewX(-18deg); }
+  to { transform: translateX(260%) skewX(-18deg); }
+}
+
+/* Sheen: a soft light band sweeping across the card face. */
+.sheen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 45%;
+  background: linear-gradient(
+    105deg,
+    transparent,
+    rgba(255, 255, 255, 0.14),
+    transparent
+  );
+  transform: translateX(-160%) skewX(-18deg);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .foil-legendary { animation: foilRotate 7s linear infinite; }
+  /* One-shot sweep on reveal (Elite); Legendary loops. */
+  .sheen-once::after { animation: sheenSweep 1.3s cubic-bezier(0.22, 1, 0.36, 1) 0.45s both; }
+  .sheen-loop::after { animation: sheenSweep 3.6s ease-in-out 0.45s infinite; }
+}
+
 .anim-relief-flash { animation: reliefFlash 1.1s ease-out both; }
 .anim-burn-in { animation: burnIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
 

@@ -4,7 +4,9 @@ import { convertGradeToRating } from '../../game-logic/grades'
 import { getPlayersByTeamAndGroup } from '../../game-logic/spin'
 import { useGame } from '../../state/GameContext'
 import type { AttributeKey, Player, Rarity } from '../../types'
+import { Dices, RotateCw } from 'lucide-react'
 import { Button, GradeBadge, RarityBadge, RARITY_TEXT, TeamBadge } from '../shared/atoms'
+import { CollectibleFrame } from '../shared/CollectibleFrame'
 
 const RARITY_ORDER: Rarity[] = ['Common', 'Rare', 'Elite', 'Legendary']
 
@@ -26,46 +28,49 @@ export function PlayerReveal({ player }: { player: Player }) {
     (r) => [r, riskPool.filter((p) => p.rarity === r).length] as const,
   ).filter(([, n]) => n > 0)
 
-  // Rarity flair: gold burst for Legendary, purple shimmer for Elite;
-  // card border/glow picks up the dealt team's color
+  // Reveal flair: the foil frame carries rarity; Legendary/Elite add their
+  // glow burst on top of the shared flip + settle.
   const flairClass =
     player.rarity === 'Legendary'
-      ? 'anim-legendary border-rarity-legendary/70'
+      ? 'anim-legendary'
       : player.rarity === 'Elite'
-        ? 'anim-elite border-rarity-elite/60'
+        ? 'anim-elite'
         : 'anim-card-flip'
 
   return (
-    <div
-      className={`${flairClass} bg-court-card border rounded-2xl p-4 sm:p-5 shadow-xl`}
-      style={
-        player.rarity === 'Legendary' || player.rarity === 'Elite'
-          ? undefined
-          : {
-              borderColor: team ? `${team.primaryColor}99` : undefined,
-              boxShadow: team ? `0 0 22px ${team.primaryColor}33` : undefined,
+    <CollectibleFrame
+      rarity={player.rarity}
+      className={flairClass}
+      contentClassName="p-4 sm:p-5"
+      // The dealt team's color washes the card head — team presence without
+      // fighting the rarity frame.
+      contentStyle={
+        team
+          ? {
+              backgroundImage: `linear-gradient(160deg, ${team.primaryColor}2e, transparent 38%)`,
             }
+          : undefined
       }
     >
       <div className="flex items-start gap-3">
         {team && <TeamBadge team={team} size="lg" />}
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-xl sm:text-2xl font-extrabold text-white">
+            <h3 className="font-display font-normal uppercase text-2xl sm:text-3xl leading-none text-cream">
               {player.name}
             </h3>
             <RarityBadge rarity={player.rarity} />
           </div>
-          <div className="mt-0.5 text-sm text-gray-400">
+          <div className="mt-1 text-sm text-muted">
             {player.team} · {player.primaryPosition}
             {player.secondaryPositions.length > 0 &&
               ` / ${player.secondaryPositions.join(' / ')}`}
           </div>
-          <div className="mt-1 flex flex-wrap gap-1.5">
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
             {player.tags.map((tag) => (
               <span
                 key={tag}
-                className="text-[10px] uppercase tracking-wide bg-court-raised text-gray-400 rounded-full px-2 py-0.5"
+                className="text-[10px] uppercase tracking-[0.08em] bg-raised text-muted rounded-full px-2 py-0.5"
               >
                 {tag}
               </span>
@@ -81,11 +86,11 @@ export function PlayerReveal({ player }: { player: Player }) {
             key={key}
             className={`flex items-center justify-between rounded-lg px-2 py-1.5 text-xs ${
               key in state.lockedAttributes
-                ? 'bg-court/60 opacity-40'
-                : 'bg-court-raised'
+                ? 'bg-ink/60 opacity-40'
+                : 'bg-raised'
             }`}
           >
-            <span className="text-gray-400 truncate mr-1">
+            <span className="text-muted truncate mr-1">
               {ATTRIBUTE_LABELS[key]}
             </span>
             <GradeBadge grade={player.grades[key]} size="sm" />
@@ -95,7 +100,7 @@ export function PlayerReveal({ player }: { player: Player }) {
 
       {/* Lock buttons — available attributes only */}
       <div className="mt-4">
-        <div className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-2">
+        <div className="text-xs uppercase tracking-wider text-muted font-semibold mb-2">
           Lock an attribute ({available.length} open)
         </div>
         <div className="flex flex-wrap gap-2">
@@ -103,13 +108,13 @@ export function PlayerReveal({ player }: { player: Player }) {
             <button
               key={key}
               onClick={() => dispatch({ type: 'LOCK_ATTRIBUTE', attribute: key })}
-              className="group flex items-center gap-2 bg-court-raised border border-court-border hover:border-ball rounded-xl px-3 py-2 transition-all hover:shadow-lg hover:shadow-ball/20 active:scale-95 cursor-pointer"
+              className="group flex items-center gap-2 bg-raised border border-edge hover:border-accent rounded-xl px-3 py-2 transition-all active:scale-95 cursor-pointer"
             >
-              <span className="text-sm font-semibold text-gray-200 group-hover:text-white">
+              <span className="text-sm font-semibold text-cream/90 group-hover:text-cream">
                 {ATTRIBUTE_LABELS[key]}
               </span>
               <GradeBadge grade={player.grades[key]} size="sm" />
-              <span className="text-[10px] text-gray-500">
+              <span className="text-[10px] text-muted">
                 {convertGradeToRating(player.grades[key])}
               </span>
             </button>
@@ -121,20 +126,24 @@ export function PlayerReveal({ player }: { player: Player }) {
       <div className="mt-4 flex flex-wrap gap-2 items-center">
         <Button
           variant="secondary"
+          className="inline-flex items-center gap-2"
           disabled={!canRespin}
           onClick={() => dispatch({ type: 'RESPIN' })}
         >
-          🔄 Respin Team
+          <RotateCw className="w-4 h-4" aria-hidden />
+          Respin Team
         </Button>
         <Button
           variant="danger"
+          className="inline-flex items-center gap-2"
           disabled={!canRespin || riskPool.length === 0}
           onClick={() => dispatch({ type: 'RISK_IT' })}
         >
-          🎲 Risk It
+          <Dices className="w-4 h-4" aria-hidden />
+          Risk It
         </Button>
         {canRespin && riskPool.length > 0 && (
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-muted">
             Risk It pool — {riskPool.length} other{riskPool.length === 1 ? '' : 's'}:{' '}
             {riskCounts.map(([rarity, n], i) => (
               <span key={rarity}>
@@ -147,11 +156,11 @@ export function PlayerReveal({ player }: { player: Player }) {
           </span>
         )}
       </div>
-      <div className="mt-2 text-xs text-gray-500">
+      <div className="mt-2 text-xs text-muted">
         {canRespin
           ? `${state.respinsLeft} respin${state.respinsLeft === 1 ? '' : 's'} banked — both cost 1, and unused respins can reroll the Fatal Flaw wheel`
           : 'No respins left — the Fatal Flaw wheel will be final'}
       </div>
-    </div>
+    </CollectibleFrame>
   )
 }

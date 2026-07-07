@@ -1,14 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Check, Clover, Copy, ImageDown, RotateCw, Share2, Trophy } from 'lucide-react'
 import { ATTRIBUTE_KEYS, GROUP_LABELS } from '../../constants/attributes'
 import { ATTRIBUTE_LABELS } from '../../constants/attributes'
+import { RARITY_HEX } from '../../constants/designTokens'
 import { FLAW_BY_ID, FLAW_TIER_COLORS } from '../../constants/flaws'
 import { teamTierFor } from '../../constants/teamStrength'
 import { saveDailyRecord } from '../../game-logic/dailyStore'
 import { useGame } from '../../state/GameContext'
 import { saveIfBest } from '../../utils/bestBuild'
-import { buildShareText, rarityRow, resultLine } from '../../utils/shareText'
-import { shareCard } from '../../utils/shareCard'
-import { Button, Card } from '../shared/atoms'
+import { buildShareText, resultLine } from '../../utils/shareText'
+import { cardRarity, shareCard } from '../../utils/shareCard'
+import { Button } from '../shared/atoms'
+import { CollectibleFrame } from '../shared/CollectibleFrame'
+import { FLAW_ICONS } from '../shared/icons'
 
 export function ShareScreen() {
   const { state, dispatch } = useGame()
@@ -113,23 +117,29 @@ export function ShareScreen() {
     }
   }
 
+  const FlawIcon = flaw ? FLAW_ICONS[flaw.id] : Clover
+
   return (
     <div className="min-h-dvh px-4 py-8 max-w-2xl mx-auto flex flex-col items-center justify-center">
-      <Card glow className="w-full p-6 sm:p-8 anim-card-flip">
+      <CollectibleFrame
+        rarity={cardRarity(state)}
+        className="w-full anim-card-flip"
+        contentClassName="p-6 sm:p-8"
+      >
         <div className="text-center">
-          <div className="text-xs uppercase tracking-widest text-gray-400">
+          <div className="text-xs uppercase tracking-widest text-muted">
             {state.mode === 'daily'
               ? `Daily Challenge #${state.dailyNumber} Complete`
               : 'Career Complete'}
           </div>
-          <div className="mt-3 font-display font-normal text-5xl text-white">
+          <div className="mt-3 font-display font-normal text-6xl text-cream">
             {state.overall}{' '}
-            <span className="text-lg font-bold text-gray-400">OVR</span>
+            <span className="text-lg font-sans font-bold text-muted">OVR</span>
           </div>
-          <div className="mt-1 text-xl font-bold text-ball-bright">
+          <div className="mt-1 font-display font-normal uppercase text-2xl text-accent">
             {state.archetype}
           </div>
-          <div className="text-sm text-gray-400">
+          <div className="mt-0.5 text-sm text-muted">
             {GROUP_LABELS[group]} Build
             {state.homeTeam && ` · ${state.homeTeam.name}`}
           </div>
@@ -137,89 +147,136 @@ export function ShareScreen() {
           {/* Fatal Flaw verdict */}
           {state.flawSpun && (
             <div className="mt-3">
-              {flaw ? (
-                <span
-                  className="inline-block text-xs font-bold rounded-full border px-3 py-1"
-                  style={{
-                    color: FLAW_TIER_COLORS[flaw.tier],
-                    borderColor: `${FLAW_TIER_COLORS[flaw.tier]}88`,
-                    backgroundColor: `${FLAW_TIER_COLORS[flaw.tier]}14`,
-                  }}
-                >
-                  {flaw.emoji} {flaw.name}
-                </span>
-              ) : (
-                <span className="inline-block text-xs font-bold text-emerald-300 bg-emerald-500/10 border border-emerald-500/50 rounded-full px-3 py-1">
-                  🍀 CLEAN BUILD
-                </span>
-              )}
+              <span
+                className="inline-flex items-center gap-1.5 text-xs font-bold rounded-full border px-3 py-1"
+                style={
+                  flaw
+                    ? {
+                        color: FLAW_TIER_COLORS[flaw.tier],
+                        borderColor: `${FLAW_TIER_COLORS[flaw.tier]}88`,
+                        backgroundColor: `${FLAW_TIER_COLORS[flaw.tier]}14`,
+                      }
+                    : undefined
+                }
+              >
+                <FlawIcon className={`w-3.5 h-3.5 ${flaw ? '' : 'text-win'}`} aria-hidden />
+                {flaw ? (
+                  flaw.name
+                ) : (
+                  <span className="text-win">CLEAN BUILD</span>
+                )}
+              </span>
             </div>
           )}
 
-          <div className="mt-4 inline-block bg-gradient-to-r from-amber-400/20 via-amber-300/30 to-amber-400/20 border border-amber-400/50 rounded-full px-6 py-2">
-            <span className="text-lg font-black text-amber-300">
+          <div className="mt-4 inline-block bg-rarity-legendary/15 border border-rarity-legendary/50 rounded-full px-6 py-2">
+            <span className="text-lg font-bold text-rarity-legendary">
               {state.legacyLabel}
             </span>
           </div>
           {newBest && (
-            <div className="mt-2 anim-pop-in text-xs font-bold uppercase tracking-wider text-emerald-300">
-              ★ New personal best!
+            <div className="mt-2 anim-pop-in text-xs font-bold uppercase tracking-wider text-win">
+              New personal best
             </div>
           )}
 
-          {/* Emoji share preview */}
-          <div className="mt-4 text-2xl tracking-widest">{rarityRow(state)}</div>
-          <div className="text-[10px] text-gray-500 mt-1">
-            ⬜ common · 🟦 rare · 🟪 elite · 🟨 legendary
+          {/* Rarity pips — one per locked attribute, in board order */}
+          <div className="mt-4 flex justify-center gap-1.5">
+            {ATTRIBUTE_KEYS.map((k) => {
+              const rarity = state.lockedAttributes[k]?.rarity ?? 'Common'
+              return (
+                <span
+                  key={k}
+                  title={`${ATTRIBUTE_LABELS[k]}: ${rarity}`}
+                  className="w-4 h-4 rounded-[4px]"
+                  style={{ backgroundColor: RARITY_HEX[rarity] }}
+                />
+              )
+            })}
+          </div>
+          <div className="text-[10px] text-muted mt-1.5 flex justify-center gap-3">
+            {(['Common', 'Rare', 'Elite', 'Legendary'] as const).map((r) => (
+              <span key={r} className="inline-flex items-center gap-1">
+                <span
+                  className="w-2 h-2 rounded-[2px] inline-block"
+                  style={{ backgroundColor: RARITY_HEX[r] }}
+                />
+                {r.toLowerCase()}
+              </span>
+            ))}
           </div>
         </div>
 
-        <div className="mt-6 border-t border-court-border pt-4 space-y-2 text-sm">
-          <div className="text-xs uppercase tracking-wider text-gray-400 font-semibold">
+        <div className="mt-6 border-t border-edge pt-4 space-y-2 text-sm">
+          <div className="text-xs uppercase tracking-wider text-muted font-semibold">
             Top Picks
           </div>
           {topPicks.map((pick) => (
             <div key={pick.attribute} className="flex justify-between">
-              <span className="text-gray-200">{pick.playerName}</span>
-              <span className="text-gray-400">
+              <span className="text-cream/90">{pick.playerName}</span>
+              <span className="text-muted">
                 {ATTRIBUTE_LABELS[pick.attribute]} · {pick.grade}
               </span>
             </div>
           ))}
         </div>
 
-        <div className="mt-4 border-t border-court-border pt-4 grid grid-cols-2 gap-3 text-sm">
+        <div className="mt-4 border-t border-edge pt-4 grid grid-cols-2 gap-3 text-sm">
           {season && (
             <div>
-              <div className="text-xs text-gray-500">Regular Season</div>
-              <div className="font-bold text-white">
+              <div className="text-xs text-muted">Regular Season</div>
+              <div className="font-bold text-cream">
                 {season.wins}–{season.losses}
               </div>
             </div>
           )}
           <div>
-            <div className="text-xs text-gray-500">Postseason</div>
-            <div className="font-bold text-white">{playoffSummary || '—'}</div>
+            <div className="text-xs text-muted">Postseason</div>
+            <div className="font-bold text-cream">{playoffSummary || '—'}</div>
           </div>
           {finals?.won && finals.finalsMvp && (
             <div>
-              <div className="text-xs text-gray-500">Finals MVP</div>
-              <div className="font-bold text-amber-300">Yes 🏆</div>
+              <div className="text-xs text-muted">Finals MVP</div>
+              <div className="font-bold text-rarity-legendary inline-flex items-center gap-1">
+                Yes <Trophy className="w-3.5 h-3.5" aria-hidden />
+              </div>
             </div>
           )}
         </div>
-      </Card>
+      </CollectibleFrame>
 
       <div className="mt-6 flex flex-wrap justify-center gap-3">
-        <Button onClick={share}>📤 Share Build</Button>
-        <Button variant="secondary" onClick={() => shareCard(state)}>
-          🖼️ Share Card
+        <Button className="inline-flex items-center gap-2" onClick={share}>
+          <Share2 className="w-4 h-4" aria-hidden />
+          Share Build
         </Button>
-        <Button variant="secondary" onClick={copy}>
-          {copied ? '✅ Copied!' : '📋 Copy Result'}
+        <Button
+          variant="secondary"
+          className="inline-flex items-center gap-2"
+          onClick={() => shareCard(state)}
+        >
+          <ImageDown className="w-4 h-4" aria-hidden />
+          Share Card
         </Button>
-        <Button variant="secondary" onClick={() => dispatch({ type: 'PLAY_AGAIN' })}>
-          🔁 Play Again
+        <Button
+          variant="secondary"
+          className="inline-flex items-center gap-2"
+          onClick={copy}
+        >
+          {copied ? (
+            <Check className="w-4 h-4 text-win" aria-hidden />
+          ) : (
+            <Copy className="w-4 h-4" aria-hidden />
+          )}
+          {copied ? 'Copied!' : 'Copy Result'}
+        </Button>
+        <Button
+          variant="secondary"
+          className="inline-flex items-center gap-2"
+          onClick={() => dispatch({ type: 'PLAY_AGAIN' })}
+        >
+          <RotateCw className="w-4 h-4" aria-hidden />
+          Play Again
         </Button>
         {state.mode === 'free' && (
           <Button variant="ghost" onClick={() => dispatch({ type: 'RESET_BUILD' })}>

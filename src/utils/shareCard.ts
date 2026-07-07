@@ -1,12 +1,24 @@
 import { ATTRIBUTE_KEYS, ATTRIBUTE_LABELS, GROUP_LABELS } from '../constants/attributes'
 import { FLAW_BY_ID, FLAW_TIER_COLORS } from '../constants/flaws'
 import { teamTierFor } from '../constants/teamStrength'
-import { PALETTE, RARITY_HEX } from '../constants/designTokens'
-import type { GameState } from '../types'
+import { FOIL_STOPS, PALETTE, RARITY_HEX } from '../constants/designTokens'
+import type { GameState, Rarity } from '../types'
 import { resultLine } from './shareText'
 
 const W = 1080
 const H = 1350
+
+/** Best locked rarity decides the card's foil frame (rarity IS the frame). */
+const RARITY_RANK: Rarity[] = ['Common', 'Rare', 'Elite', 'Legendary']
+export function cardRarity(state: GameState): Rarity {
+  return Object.values(state.lockedAttributes).reduce<Rarity>(
+    (best, lock) =>
+      lock && RARITY_RANK.indexOf(lock.rarity) > RARITY_RANK.indexOf(best)
+        ? lock.rarity
+        : best,
+    'Common',
+  )
+}
 
 // Canvas text ignores CSS font loading — faces must be fetched and ready
 // before ctx.font can use them, or the card silently renders in system-ui.
@@ -44,6 +56,43 @@ function roundRect(
   ctx.closePath()
 }
 
+/**
+ * The frame: flat stroke for Common/Rare, diagonal foil gradient for
+ * Elite/Legendary plus one frozen sheen band across the upper half —
+ * the static twin of the DOM card's .foil-* / .sheen treatment.
+ */
+function drawFrame(ctx: CanvasRenderingContext2D, rarity: Rarity) {
+  const inset = 14
+  const r = 36
+  const foil = rarity === 'Elite' || rarity === 'Legendary'
+  roundRect(ctx, inset, inset, W - inset * 2, H - inset * 2, r)
+  if (foil) {
+    const g = ctx.createLinearGradient(0, 0, W, H)
+    const stops = FOIL_STOPS[rarity as 'Elite' | 'Legendary']
+    stops.forEach((hex, i) => g.addColorStop(i / (stops.length - 1), hex))
+    ctx.strokeStyle = g
+    ctx.lineWidth = rarity === 'Legendary' ? 12 : 9
+  } else {
+    ctx.strokeStyle = rarity === 'Rare' ? RARITY_HEX.Rare : `${RARITY_HEX.Common}66`
+    ctx.lineWidth = 4
+  }
+  ctx.stroke()
+
+  if (foil) {
+    // Frozen sheen: one soft diagonal light band clipped to the card.
+    ctx.save()
+    roundRect(ctx, inset, inset, W - inset * 2, H - inset * 2, r)
+    ctx.clip()
+    const sheen = ctx.createLinearGradient(W * 0.15, 0, W * 0.65, H * 0.5)
+    sheen.addColorStop(0, 'rgba(255,255,255,0)')
+    sheen.addColorStop(0.5, 'rgba(255,255,255,0.07)')
+    sheen.addColorStop(1, 'rgba(255,255,255,0)')
+    ctx.fillStyle = sheen
+    ctx.fillRect(0, 0, W, H * 0.55)
+    ctx.restore()
+  }
+}
+
 /** Hand-drawn PNG player card — zero deps, pixel-identical everywhere. */
 export async function generateShareCard(state: GameState): Promise<Blob | null> {
   await ensureCardFonts()
@@ -53,24 +102,25 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
   const ctx = canvas.getContext('2d')
   if (!ctx) return null
 
-  // Background
+  // Background: near-black with a soft wash of the landed team's color
   ctx.fillStyle = PALETTE.ink
   ctx.fillRect(0, 0, W, H)
+  const glowHex = state.homeTeam?.primaryColor ?? PALETTE.accent
   const glow = ctx.createRadialGradient(W / 2, 260, 60, W / 2, 260, 700)
-  glow.addColorStop(0, 'rgba(255, 90, 31, 0.16)')
-  glow.addColorStop(1, 'rgba(255, 90, 31, 0)')
+  glow.addColorStop(0, `${glowHex}24`)
+  glow.addColorStop(1, `${glowHex}00`)
   ctx.fillStyle = glow
   ctx.fillRect(0, 0, W, H)
 
+  // Rarity frame — the card IS the collectible object
+  drawFrame(ctx, cardRarity(state))
+
   ctx.textAlign = 'center'
 
-  // Header
-  const title = ctx.createLinearGradient(W / 2 - 300, 0, W / 2 + 300, 0)
-  title.addColorStop(0, PALETTE.accent)
-  title.addColorStop(1, PALETTE.accentDeep)
-  ctx.fillStyle = title
+  // Wordmark
+  ctx.fillStyle = PALETTE.accent
   ctx.font = displayFont(64)
-  ctx.fillText('🏀 BUILD-A-HOOPER', W / 2, 110)
+  ctx.fillText('BUILD-A-HOOPER', W / 2, 110)
 
   ctx.fillStyle = PALETTE.muted
   ctx.font = uiFont(30)
@@ -101,7 +151,7 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
   // Archetype + group + team landing
   ctx.fillStyle = PALETTE.cream
   ctx.font = displayFont(52)
-  ctx.fillText(state.archetype ?? '', W / 2, 520)
+  ctx.fillText((state.archetype ?? '').toUpperCase(), W / 2, 520)
   ctx.fillStyle = PALETTE.muted
   ctx.font = uiFont(30)
   const teamSuffix = state.homeTeam
@@ -112,8 +162,8 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
   // Fatal Flaw / clean pill
   const flaw = state.flawId ? FLAW_BY_ID[state.flawId] : null
   const pillText = flaw
-    ? `${flaw.emoji} FATAL FLAW: ${flaw.name.toUpperCase()}`
-    : '🍀 CLEAN BUILD — NO FATAL FLAW'
+    ? `FATAL FLAW: ${flaw.name.toUpperCase()}`
+    : 'CLEAN BUILD — NO FATAL FLAW'
   const pillColor = flaw ? FLAW_TIER_COLORS[flaw.tier] : PALETTE.win
   ctx.font = uiFont(30, 700)
   const pillW = ctx.measureText(pillText).width + 70
@@ -152,10 +202,10 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
     ctx.font = uiFont(22, 700)
     ctx.fillText(ATTRIBUTE_LABELS[key].toUpperCase(), x + 22, y + 40)
     ctx.fillStyle = PALETTE.cream
-    ctx.font = uiFont(26)
+    ctx.font = uiFont(24)
     const name = locked?.playerName ?? '—'
     ctx.fillText(
-      name.length > 18 ? `${name.slice(0, 17)}…` : name,
+      name.length > 15 ? `${name.slice(0, 14)}…` : name,
       x + 22,
       y + 78,
     )
@@ -170,7 +220,7 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
   const bottomY = gridTop + 3 * tileH + 2 * gap + 90
   ctx.fillStyle = PALETTE.cream
   ctx.font = displayFont(44)
-  ctx.fillText(resultLine(state), W / 2, bottomY)
+  ctx.fillText(resultLine(state).toUpperCase(), W / 2, bottomY)
 
   const legacy = `Legacy: ${state.legacyLabel ?? ''}`
   ctx.font = uiFont(34, 700)
