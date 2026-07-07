@@ -40,6 +40,11 @@ export default function App() {
   return (
     <GameProvider>
       <Screens />
+      <footer className="py-6 text-center text-xs text-white/40">
+        Fan-Made
+        <span className="mx-1.5 text-white/25">•</span>
+        Not Affiliated with the NBA
+      </footer>
     </GameProvider>
   )
 }
