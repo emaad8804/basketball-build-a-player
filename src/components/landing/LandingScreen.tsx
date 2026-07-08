@@ -1,11 +1,26 @@
-import { CalendarDays, Clover, Flame, Play, Skull, Star, Trophy } from 'lucide-react'
+import { useState } from 'react'
+import { CalendarDays, Clover, Flame, Play, RotateCw, Skull, Star, Trash2, Trophy } from 'lucide-react'
 import { useGame } from '../../state/GameContext'
 import { GROUP_LABELS } from '../../constants/attributes'
 import { dailyGroup, dailyNumber, dailySeed, todayKey } from '../../game-logic/daily'
 import { getDailyRecord, getDailyStats } from '../../game-logic/dailyStore'
+import { clearRun, loadRun } from '../../state/persistence'
 import { loadBestBuild } from '../../utils/bestBuild'
 import { GROUP_ICONS } from '../shared/icons'
-import type { Group } from '../../types'
+import type { Group, Screen } from '../../types'
+
+/** Where a resumed run picks back up, in player language. */
+const SCREEN_LABELS: Partial<Record<Screen, string>> = {
+  game: 'mid-build',
+  flaw: 'at the Fatal Flaw wheel',
+  team: 'at Team Destiny',
+  result: 'build complete',
+  season: 'season simmed',
+  playin: 'on Play-In night',
+  playoffs: 'mid-playoffs',
+  finals: 'in the NBA Finals',
+  share: 'career complete',
+}
 
 const GROUP_CARDS: {
   group: Group
@@ -32,6 +47,12 @@ const GROUP_CARDS: {
 export function LandingScreen() {
   const { dispatch } = useGame()
   const best = loadBestBuild()
+  // Interrupted run (reload, evicted mobile tab) — offered once, discardable
+  const [savedRun, setSavedRun] = useState(loadRun)
+  const discardRun = () => {
+    clearRun()
+    setSavedRun(null)
+  }
 
   const dateKey = todayKey()
   const dayNum = dailyNumber(dateKey)
@@ -62,6 +83,42 @@ export function LandingScreen() {
           a superstar, survive the Fatal Flaw wheel — then chase a ring.
         </p>
       </div>
+
+      {/* Interrupted run — resume beats restarting a 3-minute career */}
+      {savedRun && (
+        <div className="mt-8 w-full max-w-3xl anim-rise-in bg-panel border border-edge rounded-2xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-sm font-bold text-cream">
+              {savedRun.mode === 'daily'
+                ? `Daily #${savedRun.dailyNumber} in progress`
+                : 'Run in progress'}
+            </div>
+            <div className="mt-0.5 text-sm text-muted">
+              {Object.keys(savedRun.lockedAttributes).length}/9 locked
+              {savedRun.group && ` · ${GROUP_LABELS[savedRun.group]} build`}
+              {savedRun.homeTeam && ` · ${savedRun.homeTeam.abbr}`}
+              {SCREEN_LABELS[savedRun.screen] && ` · ${SCREEN_LABELS[savedRun.screen]}`}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => dispatch({ type: 'RESUME_RUN', saved: savedRun })}
+              className="inline-flex items-center gap-2 text-sm font-bold bg-accent hover:bg-accent-deep text-cream rounded-xl px-4 py-2.5 transition-colors cursor-pointer"
+            >
+              <RotateCw className="w-4 h-4" aria-hidden />
+              Resume
+            </button>
+            <button
+              onClick={discardRun}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-cream rounded-xl px-3 py-2.5 cursor-pointer"
+              aria-label="Discard the saved run"
+            >
+              <Trash2 className="w-4 h-4" aria-hidden />
+              Discard
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Daily Challenge — the headline */}
       <div className="mt-8 w-full max-w-3xl">

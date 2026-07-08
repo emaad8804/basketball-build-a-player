@@ -16,7 +16,7 @@ import { FLAW_ICONS } from '../shared/icons'
 
 export function ShareScreen() {
   const { state, dispatch } = useGame()
-  const [copied, setCopied] = useState(false)
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle')
   const [newBest, setNewBest] = useState(false)
   const group = state.group!
   const season = state.seasonResult
@@ -98,10 +98,12 @@ export function ShareScreen() {
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(shareText)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      setCopyState('copied')
+      setTimeout(() => setCopyState('idle'), 2000)
     } catch {
-      // Clipboard unavailable (e.g. non-secure context) — no-op
+      // Clipboard API unavailable (non-secure context, permissions) —
+      // surface the text for manual copy instead of failing silently.
+      setCopyState('failed')
     }
   }
 
@@ -263,12 +265,12 @@ export function ShareScreen() {
           className="inline-flex items-center gap-2"
           onClick={copy}
         >
-          {copied ? (
+          {copyState === 'copied' ? (
             <Check className="w-4 h-4 text-win" aria-hidden />
           ) : (
             <Copy className="w-4 h-4" aria-hidden />
           )}
-          {copied ? 'Copied!' : 'Copy Result'}
+          {copyState === 'copied' ? 'Copied!' : 'Copy Result'}
         </Button>
         <Button
           variant="secondary"
@@ -284,6 +286,23 @@ export function ShareScreen() {
           </Button>
         )}
       </div>
+
+      {/* Clipboard blocked (non-secure context / permissions): manual copy */}
+      {copyState === 'failed' && (
+        <div className="mt-4 w-full anim-rise-in">
+          <div className="text-xs text-muted mb-1.5 text-center">
+            Couldn't reach the clipboard — select and copy your result below.
+          </div>
+          <textarea
+            readOnly
+            value={shareText}
+            rows={6}
+            onFocus={(e) => e.currentTarget.select()}
+            className="w-full text-sm bg-panel border border-edge rounded-xl p-3 text-cream/90 font-sans resize-none"
+            aria-label="Share text for manual copying"
+          />
+        </div>
+      )}
     </div>
   )
 }

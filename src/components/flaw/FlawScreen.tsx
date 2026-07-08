@@ -56,7 +56,9 @@ type Phase = 'idle' | 'spinning' | 'revealed'
 
 export function FlawScreen() {
   const { state, dispatch } = useGame()
-  const [phase, setPhase] = useState<Phase>('idle')
+  // Resumed runs re-enter after the spin already happened — skip straight
+  // to the reveal instead of offering a second (state-corrupting) spin.
+  const [phase, setPhase] = useState<Phase>(state.flawSpun ? 'revealed' : 'idle')
   const [rotation, setRotation] = useState(0)
   const spinTimer = useRef<number | null>(null)
   const arcs = useMemo(segmentArcs, [])

@@ -49,6 +49,7 @@ export type GameAction =
   | { type: 'GOTO_SHARE' }
   | { type: 'PLAY_AGAIN' }
   | { type: 'RESET_BUILD' }
+  | { type: 'RESUME_RUN'; saved: GameState }
 
 export const initialGameState: GameState = {
   screen: 'landing',
@@ -439,6 +440,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'PLAY_AGAIN':
       return { ...initialGameState }
+
+    // Restore a persisted mid-run snapshot (validated in persistence.ts)
+    case 'RESUME_RUN':
+      return { ...action.saved }
 
     case 'RESET_BUILD': {
       // Daily runs are one-shot: no mid-run resets, back to landing instead

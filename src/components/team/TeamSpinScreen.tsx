@@ -15,7 +15,10 @@ const SPIN_MS = 3000
  */
 export function TeamSpinScreen() {
   const { state, dispatch } = useGame()
-  const [phase, setPhase] = useState<'idle' | 'spinning' | 'revealed'>('idle')
+  // Resumed runs already have a landed team — re-enter at the reveal.
+  const [phase, setPhase] = useState<'idle' | 'spinning' | 'revealed'>(
+    state.homeTeam ? 'revealed' : 'idle',
+  )
   const [flashIdx, setFlashIdx] = useState(0)
   const timer = useRef<number | null>(null)
 
