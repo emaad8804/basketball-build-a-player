@@ -4,7 +4,9 @@
 // Covers the 5 STAT-derived attributes (shooting, finishing, playmaking,
 // rebounding, defense) for ~stars + rotation players, where box-score math
 // disagrees with consensus. The 2K-sheet attributes (frame, athleticism,
-// ballHandling, iqClutch) are left as authored.
+// ballHandling, iqClutch) are left as authored, with rare eye-test
+// exceptions (e.g. frame, where the height-anchored formula misreads a
+// player's build).
 //
 // Keyed by player name (matched via normalizeName). NOTE: 'S' is reserved for
 // scripts/lib/s-tier.js — overrides run BEFORE the S-tier pass, so an 'S' here
@@ -116,7 +118,9 @@ export const GRADE_OVERRIDES = {
   'Gary Harris': { defense: 'B+' },
 
   // Minnesota
-  'Anthony Edwards': { finishing: 'A-', defense: 'B+' },
+  // frame: the height-anchored formula punishes 6'4" guards, but Ant's
+  // 225lb build is elite for his position — eye-test correction.
+  'Anthony Edwards': { finishing: 'A-', defense: 'B+', frame: 'B+' },
   'Jaden McDaniels': { defense: 'A' },
   'LaMelo Ball': { defense: 'C+' },
 

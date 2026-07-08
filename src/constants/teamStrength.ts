@@ -74,6 +74,9 @@ const TIER_ROSTERS: Record<TeamTierId, string[]> = {
     'Cleveland Cavaliers',
     'Denver Nuggets',
     'Houston Rockets',
+    // 2026 Western Conference champions — beat the 1-seed Thunder, lost
+    // the Finals to the Knicks in 5.
+    'San Antonio Spurs',
   ],
   'playoff-lock': [
     'Boston Celtics',
@@ -93,7 +96,6 @@ const TIER_ROSTERS: Record<TeamTierId, string[]> = {
     'Memphis Grizzlies',
     'Sacramento Kings',
     'Dallas Mavericks',
-    'San Antonio Spurs',
     'Toronto Raptors',
   ],
   rebuilding: [

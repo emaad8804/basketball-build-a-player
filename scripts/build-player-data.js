@@ -35,6 +35,12 @@ const NEUTRAL_STAT = {
   _scores: { shooting: 0.4, finishing: 0.4, playmaking: 0.4, defense: 0.4, rebounding: 0.4 },
 };
 
+// Offseason moves not yet reflected in the 2K sheet CSVs (player -> new team).
+// Applied after parsing, before grading; the sheet stays authoritative otherwise.
+const ROSTER_MOVES = {
+  'Aaron Wiggins': 'Atlanta Hawks', // OKC -> ATL, July 2026 (two 2nd-rounders)
+};
+
 // A player needs this many games for a season's stats to be trusted; below it, the
 // per-possession rates are too noisy (small-sample players were earning bogus S's).
 const MIN_GAMES = 25;
@@ -79,6 +85,23 @@ function tsPlayer(p) {
 function main() {
   const twoK = parseTwoKRatings(TWOK_DIR);
   console.log(`Parsed ${twoK.length} players from 2K sheet.`);
+
+  // Apply offseason roster moves.
+  const moveByNorm = new Map(
+    Object.entries(ROSTER_MOVES).map(([name, team]) => [normalizeName(name), { name, team }]),
+  );
+  let movesApplied = 0;
+  for (const p of twoK) {
+    const move = moveByNorm.get(normalizeName(p.name));
+    if (move) {
+      console.log(`Roster move: ${p.name} ${p.team} -> ${move.team}`);
+      p.team = move.team;
+      movesApplied++;
+    }
+  }
+  if (movesApplied !== moveByNorm.size) {
+    console.log(`⚠️  ${moveByNorm.size - movesApplied} roster move(s) matched no player`);
+  }
 
   const statPrimary = loadStatGrades(PRIMARY_SEASON);
   const statFallback = loadStatGrades(FALLBACK_SEASON);
