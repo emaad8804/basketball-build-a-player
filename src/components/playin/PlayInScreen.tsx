@@ -1,3 +1,4 @@
+import { Play, Siren, Skull, Swords } from 'lucide-react'
 import { useGame } from '../../state/GameContext'
 import { Button } from '../shared/atoms'
 import { GameCard } from '../playoffs/PlayoffsScreen'
@@ -23,11 +24,12 @@ export function PlayInScreen() {
       }}
     >
       <div className="anim-rise-in text-center">
-        <div className="text-xs uppercase tracking-[0.3em] text-red-400 font-bold">
-          🚨 Play-In Tournament
+        <div className="text-xs uppercase tracking-[0.3em] text-loss font-bold inline-flex items-center gap-1.5">
+          <Siren className="w-3.5 h-3.5" aria-hidden />
+          Play-In Tournament
         </div>
         <h2 className="mt-2 font-display font-normal uppercase text-3xl text-white">Win or Go Home</h2>
-        <p className="mt-2 text-sm text-gray-400 max-w-md mx-auto">
+        <p className="mt-2 text-sm text-muted max-w-md mx-auto">
           {playIn.path === '7-8'
             ? `${state.seasonResult!.wins} wins bought you a second life: lose the first game and one final elimination game remains.`
             : `${state.seasonResult!.wins} wins means the hard road: win two straight elimination games or the season is over.`}
@@ -37,13 +39,13 @@ export function PlayInScreen() {
       <div className="mt-8 space-y-3">
         {revealed.map((game, i) => (
           <div key={game.gameNumber}>
-            <div className="mb-1 text-xs uppercase tracking-wider text-gray-400 font-semibold">
+            <div className="mb-1 text-xs uppercase tracking-wider text-muted font-semibold">
               {playIn.path === '9-10' && game.gameNumber === 2
                 ? 'Final Elimination Game'
                 : game.gameNumber === 2
                   ? 'Last Chance Game'
                   : 'Elimination Game'}{' '}
-              <span className="text-gray-500 normal-case">vs {game.opponent}</span>
+              <span className="text-muted normal-case">vs {game.opponent}</span>
             </div>
             <GameCard game={game} isLatest={i === revealed.length - 1} />
           </div>
@@ -52,10 +54,11 @@ export function PlayInScreen() {
 
       {injured && (
         <div className="mt-8 text-center anim-pop-in">
-          <div className="anim-burn-in text-2xl font-black text-red-400">
-            💀 Glass Bones Strikes
+          <div className="anim-burn-in font-display font-normal uppercase text-2xl text-loss inline-flex items-center gap-2">
+            <Skull className="w-6 h-6" aria-hidden />
+            Glass Bones Strikes
           </div>
-          <p className="mt-2 text-gray-300 max-w-md mx-auto">
+          <p className="mt-2 text-cream/80 max-w-md mx-auto">
             A season-ending injury in the play-in warmups. The one-game season
             ended before tip-off.
           </p>
@@ -68,33 +71,42 @@ export function PlayInScreen() {
             onClick={() => dispatch({ type: 'REVEAL_NEXT_PLAYIN_GAME' })}
             className="text-lg px-8 anim-glow-pulse !bg-red-700 hover:!bg-red-600 !shadow-red-900/40"
           >
-            {revealed.length === 0
-              ? '🏀 Tip Off — Season on the Line'
-              : nextGame
-                ? '🚨 One Last Chance'
-                : ''}
+            <span className="inline-flex items-center gap-2">
+              {revealed.length === 0 ? (
+                <>
+                  <Play className="w-5 h-5" aria-hidden />
+                  Tip Off — Season on the Line
+                </>
+              ) : nextGame ? (
+                <>
+                  <Siren className="w-5 h-5" aria-hidden />
+                  One Last Chance
+                </>
+              ) : null}
+            </span>
           </Button>
         ) : !injured && playIn.survived ? (
           <div className="anim-pop-in">
-            <div className="text-2xl font-black text-emerald-300">
+            <div className="font-display font-normal uppercase text-2xl text-win">
               Season Saved — 8th Seed Claimed
             </div>
-            <p className="mt-1 text-sm text-gray-400">
+            <p className="mt-1 text-sm text-muted">
               The reward: a first-round date with the 1 seed.
             </p>
             <div className="mt-6">
               <Button
                 onClick={() => dispatch({ type: 'SIMULATE_PLAYOFFS' })}
-                className="text-lg px-8 anim-glow-pulse"
+                className="text-lg px-8 anim-glow-pulse inline-flex items-center gap-2"
               >
-                ⚔️ Enter the Playoffs — 8th Seed
+                <Swords className="w-5 h-5" aria-hidden />
+                Enter the Playoffs — 8th Seed
               </Button>
             </div>
           </div>
         ) : allRevealed || injured ? (
           <div className="anim-pop-in">
             {!injured && (
-              <div className="text-2xl font-black text-gray-200">
+              <div className="font-display font-normal uppercase text-2xl text-cream/90">
                 Eliminated on Play-In Night
               </div>
             )}

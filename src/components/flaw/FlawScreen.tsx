@@ -8,8 +8,10 @@ import {
 } from '../../constants/flaws'
 import type { FlawId } from '../../constants/flaws'
 import { ATTRIBUTE_LABELS } from '../../constants/attributes'
+import { CircleHelp, Clover, RotateCw } from 'lucide-react'
 import { useGame } from '../../state/GameContext'
 import { Button } from '../shared/atoms'
+import { FLAW_ICONS } from '../shared/icons'
 
 /** Segment colors escalate toward blood red as severity rises. */
 const SEGMENT_COLORS: Record<FlawId, string> = {
@@ -122,7 +124,7 @@ export function FlawScreen() {
         <h2 className="mt-2 font-display font-normal uppercase text-3xl sm:text-4xl text-white">
           {clean ? 'CLEAN BUILD' : revealed && flaw ? flaw.name : 'THE FATAL FLAW'}
         </h2>
-        <p className="mt-2 text-sm text-gray-400 max-w-md mx-auto">
+        <p className="mt-2 text-sm text-muted max-w-md mx-auto">
           {phase === 'idle' &&
             'Every career has one question mark. Time to find yours.'}
           {phase === 'spinning' && 'The wheel decides…'}
@@ -166,7 +168,16 @@ export function FlawScreen() {
                 : 'bg-[#170606] border-red-900'
             }`}
           >
-            {clean ? '🍀' : revealed && flaw ? flaw.emoji : '🎱'}
+            {clean ? (
+              <Clover className="w-8 h-8 text-win" aria-hidden />
+            ) : revealed && flaw ? (
+              (() => {
+                const Icon = FLAW_ICONS[flaw.id]
+                return <Icon className="w-8 h-8 text-loss" aria-hidden />
+              })()
+            ) : (
+              <CircleHelp className="w-8 h-8 text-cream/60" aria-hidden />
+            )}
           </div>
         </div>
       </div>
@@ -187,7 +198,11 @@ export function FlawScreen() {
                 backgroundColor: `${FLAW_TIER_COLORS[f.tier]}14`,
               }}
             >
-              {f.emoji} {f.name} · {f.weight}%
+              {(() => {
+                const Icon = FLAW_ICONS[f.id]
+                return <Icon className="inline w-3 h-3 mr-1 align-[-1px]" aria-hidden />
+              })()}
+              {f.name} · {f.weight}%
             </span>
           ))}
         </div>
@@ -208,10 +223,14 @@ export function FlawScreen() {
           >
             {flaw.tier} Flaw
           </div>
-          <div className="mt-1 font-display font-normal uppercase text-2xl text-white">
-            {flaw.emoji} {flaw.name}
+          <div className="mt-1 font-display font-normal uppercase text-2xl text-white inline-flex items-center gap-2">
+            {(() => {
+              const Icon = FLAW_ICONS[flaw.id]
+              return <Icon className="w-6 h-6" aria-hidden />
+            })()}
+            {flaw.name}
           </div>
-          <p className="mt-2 text-sm text-gray-300">{flaw.description}</p>
+          <p className="mt-2 text-sm text-cream/80">{flaw.description}</p>
           {softened && (
             <p className="mt-2 text-xs text-emerald-300">
               Your {SOFTEN_THRESHOLD}+ {ATTRIBUTE_LABELS[flaw.linkedAttribute]} softens
@@ -228,7 +247,7 @@ export function FlawScreen() {
             <Button onClick={spin} className="!bg-red-700 hover:!bg-red-600 !shadow-red-900/40 px-8">
               Spin the Flaw Wheel
             </Button>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-muted">
               {state.respinsLeft > 0
                 ? `${state.respinsLeft} Respin${state.respinsLeft === 1 ? '' : 's'} banked — insurance if the wheel turns on you`
                 : 'No Respins banked. Whatever lands, sticks.'}
@@ -247,9 +266,10 @@ export function FlawScreen() {
                 {canReroll && (
                   <Button
                     onClick={reroll}
-                    className="!bg-red-700 hover:!bg-red-600 !shadow-red-900/40 px-6"
+                    className="!bg-red-700 hover:!bg-red-600 !shadow-red-900/40 px-6 inline-flex items-center gap-2"
                   >
-                    🔄 Burn a Respin — Reroll the Wheel
+                    <RotateCw className="w-4 h-4" aria-hidden />
+                    Burn a Respin — Reroll the Wheel
                   </Button>
                 )}
                 <Button
@@ -260,7 +280,7 @@ export function FlawScreen() {
                   Accept Your Fate →
                 </Button>
                 {canReroll && (
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-muted">
                     The reroll spins the full wheel — same {NO_FLAW_WEIGHT}% escape odds.
                   </span>
                 )}

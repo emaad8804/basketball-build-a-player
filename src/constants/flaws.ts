@@ -15,7 +15,6 @@ export interface Flaw {
   id: FlawId
   name: string
   tier: FlawTier
-  emoji: string
   /** Wheel weight; all flaw weights + NO_FLAW_WEIGHT sum to 100. */
   weight: number
   /** Player-facing effect summary shown when the flaw lands. */
@@ -34,7 +33,6 @@ export const FLAWS: Flaw[] = [
     id: 'brick-at-the-line',
     name: 'Brick at the Line',
     tier: 'Minor',
-    emoji: '🧱',
     weight: 13,
     description:
       'Free throws betray you in tight games — close playoff losses pile up.',
@@ -44,7 +42,6 @@ export const FLAWS: Flaw[] = [
     id: 'slow-starter',
     name: 'Slow Starter',
     tier: 'Minor',
-    emoji: '🐌',
     weight: 13,
     description:
       'You sleepwalk through Games 1 and 2 of every playoff series.',
@@ -54,7 +51,6 @@ export const FLAWS: Flaw[] = [
     id: 'injury-prone',
     name: 'Injury Prone',
     tier: 'Moderate',
-    emoji: '🩹',
     weight: 8.5,
     description:
       'Every playoff game risks a knock that sits you for the next two.',
@@ -64,7 +60,6 @@ export const FLAWS: Flaw[] = [
     id: 'playoff-shrink',
     name: 'Playoff Shrink',
     tier: 'Moderate',
-    emoji: '📉',
     weight: 8.5,
     description:
       'Regular-season monster, postseason mortal — your game shrinks when it counts.',
@@ -74,7 +69,6 @@ export const FLAWS: Flaw[] = [
     id: 'ice-cold',
     name: 'Ice Cold in the Clutch',
     tier: 'Severe',
-    emoji: '🧊',
     weight: 3.5,
     description:
       'Game 7s freeze you solid. The biggest moments are your worst.',
@@ -84,7 +78,6 @@ export const FLAWS: Flaw[] = [
     id: 'glass-bones',
     name: 'Glass Bones',
     tier: 'Severe',
-    emoji: '💀',
     weight: 3.5,
     description:
       'Every playoff round rolls the dice on a season-ending injury.',

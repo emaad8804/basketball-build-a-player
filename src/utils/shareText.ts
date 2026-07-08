@@ -22,7 +22,7 @@ export function flawLine(state: GameState): string {
     return `🍀 No Flaw${state.flawRerolled ? ' (rerolled 🔄)' : ''}`
   }
   const flaw = FLAW_BY_ID[state.flawId]
-  return `${flaw.emoji} ${flaw.name}${state.flawRerolled ? ' (rerolled 🔄)' : ''}`
+  return `${flaw.name}${state.flawRerolled ? ' (rerolled)' : ''}`
 }
 
 /** One-line run outcome for share text and daily history. */

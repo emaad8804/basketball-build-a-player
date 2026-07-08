@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
 import confetti from 'canvas-confetti'
+import { FastForward, Flame, Hourglass, Play, SkipForward, TriangleAlert, Trophy } from 'lucide-react'
 import { PALETTE, RARITY_HEX } from '../../constants/designTokens'
 import { useGame } from '../../state/GameContext'
-import { Button, StatChip } from '../shared/atoms'
+import { Button, CountUpValue, StatChip } from '../shared/atoms'
 import { GameCard } from '../playoffs/PlayoffsScreen'
 import { useAutoTicker } from '../shared/useAutoTicker'
 
@@ -45,12 +46,12 @@ export function FinalsScreen() {
   return (
     <div className="min-h-dvh px-4 py-8 max-w-3xl mx-auto">
       <div className="anim-rise-in text-center">
-        <div className="text-xs uppercase tracking-widest text-gray-400">
+        <div className="text-xs uppercase tracking-widest text-muted">
           NBA Finals
         </div>
         <h2 className="mt-2 font-display font-normal uppercase text-2xl sm:text-3xl text-white">
           {state.homeTeam?.name ?? 'Your Build'}{' '}
-          <span className="text-gray-500">vs</span> {finals.opponent}
+          <span className="text-muted">vs</span> {finals.opponent}
         </h2>
       </div>
 
@@ -66,12 +67,21 @@ export function FinalsScreen() {
 
       {/* Drama tension frame while the ticker holds */}
       {started && !allRevealed && nextIsDrama && (
-        <div className="mt-4 anim-glow-pulse text-center text-sm font-bold text-amber-300 bg-amber-500/10 border border-amber-500/40 rounded-xl px-4 py-3">
-          {pendingGame?.isGame7
-            ? '🔥 GAME 7 OF THE NBA FINALS. Legacy on the line.'
-            : pendingGame?.flawEvent
-              ? '⚠️ Something is wrong in the locker room…'
-              : '⏳ A championship hangs on the next game.'}
+        <div className="mt-4 anim-glow-pulse text-center text-sm font-bold text-rarity-legendary bg-rarity-legendary/10 border border-rarity-legendary/40 rounded-xl px-4 py-3">
+          <span className="inline-flex items-center gap-2">
+            {pendingGame?.isGame7 ? (
+              <Flame className="w-4 h-4" aria-hidden />
+            ) : pendingGame?.flawEvent ? (
+              <TriangleAlert className="w-4 h-4" aria-hidden />
+            ) : (
+              <Hourglass className="w-4 h-4" aria-hidden />
+            )}
+            {pendingGame?.isGame7
+              ? 'GAME 7 OF THE NBA FINALS. Legacy on the line.'
+              : pendingGame?.flawEvent
+                ? 'Something is wrong in the locker room…'
+                : 'A championship hangs on the next game.'}
+          </span>
         </div>
       )}
 
@@ -82,34 +92,40 @@ export function FinalsScreen() {
               <Button
                 variant="secondary"
                 onClick={() => dispatch({ type: 'REVEAL_NEXT_FINALS_GAME' })}
+                className="inline-flex items-center gap-2"
               >
-                ⏩ Fast Forward
+                <FastForward className="w-4 h-4" aria-hidden />
+                Fast Forward
               </Button>
               <Button
                 variant="ghost"
                 onClick={() => dispatch({ type: 'REVEAL_ALL_FINALS_GAMES' })}
+                className="inline-flex items-center gap-2"
               >
-                ⏭ Skip to Result
+                <SkipForward className="w-4 h-4" aria-hidden />
+                Skip to Result
               </Button>
             </div>
           ) : (
             <Button
               onClick={() => dispatch({ type: 'REVEAL_NEXT_FINALS_GAME' })}
-              className="text-lg px-8"
+              className="text-lg px-8 inline-flex items-center gap-2"
             >
-              ▶️ Tip Off Game 1
+              <Play className="w-5 h-5" aria-hidden />
+              Tip Off Game 1
             </Button>
           )
         ) : (
           <div className="anim-pop-in">
             <div
-              className={`text-4xl font-black ${
-                finals.won ? 'text-amber-300' : 'text-gray-300'
+              className={`font-display font-normal uppercase text-4xl inline-flex items-center gap-3 ${
+                finals.won ? 'text-rarity-legendary' : 'text-cream/80'
               }`}
             >
-              {finals.won ? '🏆 NBA CHAMPION' : 'Runner-Up'}
+              {finals.won && <Trophy className="w-9 h-9" aria-hidden />}
+              {finals.won ? 'NBA Champion' : 'Runner-Up'}
             </div>
-            <div className="mt-1 text-gray-400">
+            <div className="mt-1 text-muted">
               {finals.won
                 ? `Won the series ${finals.winsFor}–${finals.winsAgainst}`
                 : `Lost the series ${finals.winsFor}–${finals.winsAgainst}`}
@@ -117,13 +133,13 @@ export function FinalsScreen() {
             </div>
 
             <div className="mt-6 grid grid-cols-3 sm:grid-cols-7 gap-2 text-left">
-              <StatChip label="PPG" value={finals.averages.ppg} />
-              <StatChip label="RPG" value={finals.averages.rpg} />
-              <StatChip label="APG" value={finals.averages.apg} />
-              <StatChip label="SPG" value={finals.averages.spg} />
-              <StatChip label="BPG" value={finals.averages.bpg} />
-              <StatChip label="FG%" value={finals.averages.fgPct} />
-              <StatChip label="3PT%" value={finals.averages.threePct} />
+              <StatChip label="PPG" value={<CountUpValue value={finals.averages.ppg} decimals={1} />} />
+              <StatChip label="RPG" value={<CountUpValue value={finals.averages.rpg} decimals={1} />} />
+              <StatChip label="APG" value={<CountUpValue value={finals.averages.apg} decimals={1} />} />
+              <StatChip label="SPG" value={<CountUpValue value={finals.averages.spg} decimals={1} />} />
+              <StatChip label="BPG" value={<CountUpValue value={finals.averages.bpg} decimals={1} />} />
+              <StatChip label="FG%" value={<CountUpValue value={finals.averages.fgPct} decimals={1} />} />
+              <StatChip label="3PT%" value={<CountUpValue value={finals.averages.threePct} decimals={1} />} />
             </div>
 
             <div className="mt-8">

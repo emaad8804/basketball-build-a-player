@@ -52,5 +52,5 @@ export function rollGlassBones(flaw: ActiveFlaw | null): boolean {
 /** Display name helper for sim event lines. */
 export function flawLabel(flaw: ActiveFlaw): string {
   const f = FLAW_BY_ID[flaw.id]
-  return `${f.emoji} ${f.name}`
+  return f.name
 }

@@ -1,5 +1,5 @@
 import type { SeriesGame } from '../types'
-import { clamp, gaussian, pickRandom } from './random'
+import { clamp, gaussian } from './random'
 import type { BuildProfile } from './profile'
 import {
   flawPGameDelta,
@@ -7,54 +7,18 @@ import {
   flawLabel,
   injuryPerGameChance,
 } from './flawEffects'
-
-const WIN_RECAPS = [
-  'Your build controlled the fourth quarter with elite shot creation.',
-  'A dominant two-way performance put the opponent on their heels.',
-  'Timely defensive stops and efficient offense carried the night.',
-  'Your build caught fire from deep and never looked back.',
-  'The opponent had no answer inside as your build owned the paint.',
-  'A fast start set the tone and the lead never slipped away.',
-]
-const LOSS_RECAPS = [
-  'The opponent forced tough shots late and stole one.',
-  'Cold shooting in the fourth quarter proved costly.',
-  'A hot night from the opposing star evened things up.',
-  'Turnovers in crunch time flipped a winnable game.',
-  'The bench battle went the wrong way in a physical game.',
-]
-const CLINCH_RECAPS = [
-  'Your build delivered a series-clinching performance.',
-  'An ice-cold closing stretch sealed the series.',
-  'Your build slammed the door with a statement win.',
-]
-const GAME7_WIN_RECAPS = [
-  'In a winner-take-all Game 7, your build delivered an all-time clutch performance.',
-  'Game 7 legend status: your build took over when it mattered most.',
-]
-const GAME7_LOSS_RECAPS = [
-  'Heartbreak in Game 7 — the opponent made one more play.',
-  'A legendary duel ended in agony as the final shot rimmed out.',
-]
-
-const BRICK_LOSS_RECAPS = [
-  'Six missed free throws down the stretch handed the game away.',
-  'Hack-a-strategy worked to perfection — the line was unkind again.',
-]
-const SLOW_START_LOSS_RECAPS = [
-  'A sleepy first half dug a hole the comeback never escaped.',
-  'The series opened with your build a step behind everything.',
-]
-const ICE_COLD_G7_RECAPS = [
-  'Frozen solid in Game 7 — 2-for-13 with the season on the line.',
-  'The moment arrived and your build shrank from it. Ice in the worst way.',
-]
-
-/** Clean-build flavor for won elimination games — light touch only. */
-const CLEAN_ELIMINATION_RECAPS = [
-  'No weakness to attack — your build was pure ice when it mattered.',
-  'A flawless closer: no crack in the armor for the opponent to pry open.',
-]
+import {
+  BRICK_LOSS_RECAPS,
+  CLEAN_ELIMINATION_RECAPS,
+  CLINCH_RECAPS,
+  GAME7_LOSS_RECAPS,
+  GAME7_WIN_RECAPS,
+  ICE_COLD_G7_RECAPS,
+  SLOW_START_LOSS_RECAPS,
+  pickFrom,
+  pickRecap,
+  type RecapContext,
+} from './recaps'
 
 export function generateGameStats(
   profile: BuildProfile,
@@ -140,6 +104,7 @@ export function simulateDetailedSeries(
   let winsFor = 0
   let winsAgainst = 0
   let injuredGamesLeft = 0
+  const usedRecaps = new Set<string>() // no repeated line within one series
 
   while (winsFor < 4 && winsAgainst < 4) {
     const gameNumber = games.length + 1
@@ -168,6 +133,21 @@ export function simulateDetailedSeries(
     const clinched = winsFor === 4
     const eliminationGame = winsFor === 3 || winsAgainst === 3
 
+    // Stat line first — recap pools read the box score.
+    const statLine = sitting
+      ? { pts: 0, reb: 0, ast: 0, stl: 0, blk: 0 }
+      : generateGameStats(profile, won, isGame7)
+    const ctx: RecapContext = {
+      won,
+      isGame7,
+      clinched,
+      eliminationGame,
+      gameNumber,
+      margin: Math.abs(scoreFor - scoreAgainst),
+      statLine,
+      flawId: flaw?.id ?? null,
+    }
+
     let flawEvent: string | undefined
     let recap: string
 
@@ -180,31 +160,29 @@ export function simulateDetailedSeries(
     } else if (isGame7) {
       if (flaw?.id === 'ice-cold' && !won) {
         flawEvent = flawLabel(flaw)
-        recap = pickRandom(ICE_COLD_G7_RECAPS)
+        recap = pickFrom(ICE_COLD_G7_RECAPS, ctx, usedRecaps)
       } else {
-        recap = won ? pickRandom(GAME7_WIN_RECAPS) : pickRandom(GAME7_LOSS_RECAPS)
+        recap = won
+          ? pickFrom(GAME7_WIN_RECAPS, ctx, usedRecaps)
+          : pickFrom(GAME7_LOSS_RECAPS, ctx, usedRecaps)
         if (won && !flaw && eliminationGame && Math.random() < 0.5) {
-          recap = pickRandom(CLEAN_ELIMINATION_RECAPS)
+          recap = pickFrom(CLEAN_ELIMINATION_RECAPS, ctx, usedRecaps)
         }
       }
     } else if (clinched) {
-      recap = pickRandom(CLINCH_RECAPS)
+      recap = pickFrom(CLINCH_RECAPS, ctx, usedRecaps)
     } else if (!won && flaw?.id === 'brick-at-the-line' && scoreAgainst - scoreFor <= 6) {
       flawEvent = flawLabel(flaw)
-      recap = pickRandom(BRICK_LOSS_RECAPS)
+      recap = pickFrom(BRICK_LOSS_RECAPS, ctx, usedRecaps)
     } else if (!won && flaw?.id === 'slow-starter' && gameNumber <= 2) {
       flawEvent = flawLabel(flaw)
-      recap = pickRandom(SLOW_START_LOSS_RECAPS)
+      recap = pickFrom(SLOW_START_LOSS_RECAPS, ctx, usedRecaps)
     } else {
-      recap = won ? pickRandom(WIN_RECAPS) : pickRandom(LOSS_RECAPS)
+      recap = pickRecap(ctx, usedRecaps)
       if (won && !flaw && eliminationGame && Math.random() < 0.35) {
-        recap = pickRandom(CLEAN_ELIMINATION_RECAPS)
+        recap = pickFrom(CLEAN_ELIMINATION_RECAPS, ctx, usedRecaps)
       }
     }
-
-    const statLine = sitting
-      ? { pts: 0, reb: 0, ast: 0, stl: 0, blk: 0 }
-      : generateGameStats(profile, won, isGame7)
 
     games.push({
       gameNumber,

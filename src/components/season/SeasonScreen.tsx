@@ -1,6 +1,8 @@
 import { teamTierFor } from '../../constants/teamStrength'
 import { useGame } from '../../state/GameContext'
-import { Button, Card, StatChip, TeamBadge } from '../shared/atoms'
+import { Crown, Siren, Swords } from 'lucide-react'
+import { Button, Card, CountUpValue, StatChip, TeamBadge } from '../shared/atoms'
+import { TIER_ICONS } from '../shared/icons'
 
 export function SeasonScreen() {
   const { state, dispatch } = useGame()
@@ -14,13 +16,13 @@ export function SeasonScreen() {
   return (
     <div className="min-h-dvh px-4 py-8 max-w-3xl mx-auto">
       <div className="anim-rise-in text-center">
-        <div className="text-xs uppercase tracking-widest text-gray-400">
+        <div className="text-xs uppercase tracking-widest text-muted">
           Regular Season Result
         </div>
         {homeTeam && tier && (
           <div className="mt-3 flex items-center justify-center gap-2">
             <TeamBadge team={homeTeam} />
-            <span className="text-lg font-bold text-white">{homeTeam.name}</span>
+            <span className="text-lg font-bold text-cream">{homeTeam.name}</span>
             <span
               className="text-[11px] font-bold uppercase tracking-wider rounded-full border px-2 py-0.5"
               style={{
@@ -29,14 +31,18 @@ export function SeasonScreen() {
                 backgroundColor: `${tier.color}14`,
               }}
             >
-              {tier.emoji} {tier.label}
+              {(() => {
+                const Icon = TIER_ICONS[tier.id]
+                return <Icon className="inline w-3 h-3 mr-1 align-[-1px]" aria-hidden />
+              })()}
+              {tier.label}
             </span>
           </div>
         )}
         <h2 className="mt-2 font-display font-normal text-5xl text-white">
           {season.wins}–{season.losses}
         </h2>
-        <div className="mt-1 text-lg text-gray-300">
+        <div className="mt-1 text-lg text-cream/80">
           {ordinal(season.seed)} seed in the {season.conference}
           {!season.madePlayoffs &&
             (season.playInEligible ? ' — play-in bound' : ' — missed the playoffs')}
@@ -44,17 +50,17 @@ export function SeasonScreen() {
       </div>
 
       <div className="mt-8 grid grid-cols-3 sm:grid-cols-7 gap-2">
-        <StatChip label="PPG" value={season.stats.ppg} />
-        <StatChip label="RPG" value={season.stats.rpg} />
-        <StatChip label="APG" value={season.stats.apg} />
-        <StatChip label="SPG" value={season.stats.spg} />
-        <StatChip label="BPG" value={season.stats.bpg} />
-        <StatChip label="FG%" value={`${season.stats.fgPct}`} />
-        <StatChip label="3PT%" value={`${season.stats.threePct}`} />
+        <StatChip label="PPG" value={<CountUpValue value={season.stats.ppg} decimals={1} />} />
+        <StatChip label="RPG" value={<CountUpValue value={season.stats.rpg} decimals={1} />} />
+        <StatChip label="APG" value={<CountUpValue value={season.stats.apg} decimals={1} />} />
+        <StatChip label="SPG" value={<CountUpValue value={season.stats.spg} decimals={1} />} />
+        <StatChip label="BPG" value={<CountUpValue value={season.stats.bpg} decimals={1} />} />
+        <StatChip label="FG%" value={<CountUpValue value={season.stats.fgPct} decimals={1} />} />
+        <StatChip label="3PT%" value={<CountUpValue value={season.stats.threePct} decimals={1} />} />
       </div>
 
       <Card className="mt-6 p-5">
-        <div className="text-xs uppercase tracking-wider text-gray-400 font-semibold">
+        <div className="text-xs uppercase tracking-wider text-muted font-semibold">
           Awards & Honors
         </div>
         {season.awards.length > 0 ? (
@@ -64,21 +70,28 @@ export function SeasonScreen() {
                 key={award}
                 className={`text-sm font-semibold rounded-full px-3 py-1 border ${
                   award === 'MVP'
-                    ? 'bg-amber-500/15 text-amber-300 border-amber-500/50'
-                    : 'bg-court-raised text-gray-200 border-court-border'
+                    ? 'bg-rarity-legendary/15 text-rarity-legendary border-rarity-legendary/50'
+                    : 'bg-raised text-cream/90 border-edge'
                 }`}
               >
-                {award === 'MVP' ? '👑 MVP' : award}
+                {award === 'MVP' ? (
+                  <span className="inline-flex items-center gap-1">
+                    <Crown className="w-3.5 h-3.5" aria-hidden />
+                    MVP
+                  </span>
+                ) : (
+                  award
+                )}
               </span>
             ))}
           </div>
         ) : (
-          <div className="mt-2 text-sm text-gray-500 italic">
+          <div className="mt-2 text-sm text-muted italic">
             No hardware this season.
           </div>
         )}
-        <div className="mt-3 text-sm text-gray-300">
-          <span className="text-gray-500">MVP Voting:</span> {season.mvpVoting}
+        <div className="mt-3 text-sm text-cream/80">
+          <span className="text-muted">MVP Voting:</span> {season.mvpVoting}
         </div>
       </Card>
 
@@ -86,16 +99,18 @@ export function SeasonScreen() {
         {season.madePlayoffs ? (
           <Button
             onClick={() => dispatch({ type: 'SIMULATE_PLAYOFFS' })}
-            className="text-lg px-8"
+            className="text-lg px-8 inline-flex items-center gap-2"
           >
-            ⚔️ Enter the Playoffs
+            <Swords className="w-5 h-5" aria-hidden />
+            Enter the Playoffs
           </Button>
         ) : season.playInEligible ? (
           <Button
             onClick={() => dispatch({ type: 'SIMULATE_PLAY_IN' })}
-            className="text-lg px-8 anim-glow-pulse !bg-red-700 hover:!bg-red-600 !shadow-red-900/40"
+            className="text-lg px-8 anim-glow-pulse !bg-red-700 hover:!bg-red-600 !shadow-red-900/40 inline-flex items-center gap-2"
           >
-            🚨 Play-In Tournament — Win or Go Home
+            <Siren className="w-5 h-5" aria-hidden />
+            Play-In Tournament — Win or Go Home
           </Button>
         ) : (
           <Button

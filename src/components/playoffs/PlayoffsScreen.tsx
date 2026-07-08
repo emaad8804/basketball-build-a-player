@@ -1,55 +1,68 @@
+import { Flame, Hourglass, Play, Skull, TriangleAlert } from 'lucide-react'
 import { useGame } from '../../state/GameContext'
 import type { PlayoffRound, SeriesGame } from '../../types'
-import { Button, Card, StatChip } from '../shared/atoms'
+import { Button, Card, CountUpValue, StatChip } from '../shared/atoms'
 import { useAutoTicker } from '../shared/useAutoTicker'
+import { useCountUp } from '../shared/useCountUp'
 
 const ordinal = (n: number) =>
   n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`
 
+/** Stat line with count-up on the freshly revealed game. */
+function StatLineText({ line, animate }: { line: SeriesGame['statLine']; animate: boolean }) {
+  const pts = useCountUp(line.pts, animate)
+  const reb = useCountUp(line.reb, animate)
+  const ast = useCountUp(line.ast, animate)
+  return (
+    <span className="tabular-nums">
+      {pts} PTS · {reb} REB · {ast} AST · {line.stl} STL · {line.blk} BLK
+    </span>
+  )
+}
+
+/** Broadcast score-bug row: one game, scannable at a glance. */
 export function GameCard({ game, isLatest }: { game: SeriesGame; isLatest: boolean }) {
   return (
     <Card
       className={`p-3 sm:p-4 ${isLatest ? 'anim-card-flip' : ''} ${
-        game.won ? '' : 'border-red-500/40'
-      } ${game.isGame7 ? 'border-amber-500/60' : ''} ${game.dnp ? 'opacity-75' : ''}`}
+        game.won ? '' : 'border-loss/40'
+      } ${game.isGame7 ? 'border-rarity-legendary/60' : ''} ${game.dnp ? 'opacity-75' : ''}`}
     >
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
+      <div className="flex items-center gap-3">
+        {/* Score bug: W/L + score up front, like a broadcast bottom-line */}
+        <div
+          className={`shrink-0 w-14 rounded-lg py-2 text-center font-display font-normal text-2xl leading-none ${
+            game.won ? 'bg-win/15 text-win' : 'bg-loss/15 text-loss'
+          }`}
+        >
+          {game.won ? 'W' : 'L'}
+        </div>
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs uppercase tracking-wider text-gray-400 font-semibold">
-              {game.isGame7 ? '🔥 GAME 7' : `Game ${game.gameNumber}`}
+            <span className="text-xs uppercase tracking-wider text-muted font-semibold inline-flex items-center gap-1">
+              {game.isGame7 && <Flame className="w-3.5 h-3.5 text-rarity-legendary" aria-hidden />}
+              {game.isGame7 ? 'Game 7' : `Game ${game.gameNumber}`}
             </span>
-            <span className="text-xs text-gray-500">
+            <span className="font-bold text-cream tabular-nums">
+              {game.scoreFor}–{game.scoreAgainst}
+            </span>
+            <span className="text-xs text-muted tabular-nums">
               Series {game.seriesFor}–{game.seriesAgainst}
             </span>
           </div>
           {game.flawEvent && (
-            <div className="mt-1 inline-block text-xs font-bold text-red-300 bg-red-500/15 border border-red-500/40 rounded-full px-2.5 py-0.5">
+            <div className="mt-1 inline-block text-xs font-bold text-loss bg-loss/15 border border-loss/40 rounded-full px-2.5 py-0.5">
               {game.flawEvent}
             </div>
           )}
-          <div className="mt-0.5 font-bold text-white">
-            {game.won ? 'Win' : 'Loss'}, {game.scoreFor}–{game.scoreAgainst}
-          </div>
-          <div className="mt-0.5 text-sm text-gray-300">
+          <div className="mt-0.5 text-sm text-cream/80">
             {game.dnp ? (
-              <span className="italic text-gray-500">Did not play</span>
+              <span className="italic text-muted">Did not play</span>
             ) : (
-              <>
-                {game.statLine.pts} PTS · {game.statLine.reb} REB ·{' '}
-                {game.statLine.ast} AST · {game.statLine.stl} STL ·{' '}
-                {game.statLine.blk} BLK
-              </>
+              <StatLineText line={game.statLine} animate={isLatest} />
             )}
           </div>
-          <div className="mt-1 text-xs sm:text-sm text-gray-400">{game.recap}</div>
-        </div>
-        <div
-          className={`text-2xl font-black shrink-0 ${
-            game.won ? 'text-emerald-400' : 'text-red-400'
-          }`}
-        >
-          {game.won ? 'W' : 'L'}
+          <div className="mt-1 text-xs sm:text-sm text-muted">{game.recap}</div>
         </div>
       </div>
     </Card>
@@ -70,22 +83,37 @@ function RoundSection({
 
   return (
     <div>
-      <div className="flex items-center justify-between">
-        <div className="text-sm uppercase tracking-wider text-gray-300 font-bold">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="text-sm uppercase tracking-wider text-cream/80 font-bold">
           {round.round}
-          <span className="ml-2 text-gray-500 font-normal normal-case">
+          <span className="ml-2 text-muted font-normal normal-case">
             vs {round.opponent} ({ordinal(round.opponentSeed)} seed)
           </span>
         </div>
-        {complete && (
-          <span
-            className={`text-sm font-black ${
-              round.won ? 'text-emerald-400' : 'text-red-400'
-            }`}
-          >
-            {round.won ? 'WON' : 'LOST'} {round.winsFor}–{round.winsAgainst}
+        <div className="flex items-center gap-2">
+          {/* W/L series dot-tracker */}
+          <span className="flex items-center gap-1" aria-label="series results">
+            {games.map((g) => (
+              <span
+                key={g.gameNumber}
+                className={`w-2.5 h-2.5 rounded-full ${g.won ? 'bg-win' : 'bg-loss'}`}
+                title={`Game ${g.gameNumber}: ${g.won ? 'W' : 'L'}`}
+              />
+            ))}
+            {round.games.slice(revealedGames).map((g) => (
+              <span key={g.gameNumber} className="w-2.5 h-2.5 rounded-full bg-raised border border-edge" />
+            ))}
           </span>
-        )}
+          {complete && (
+            <span
+              className={`text-sm font-bold tabular-nums ${
+                round.won ? 'text-win' : 'text-loss'
+              }`}
+            >
+              {round.won ? 'WON' : 'LOST'} {round.winsFor}–{round.winsAgainst}
+            </span>
+          )}
+        </div>
       </div>
       <div className="mt-2 space-y-2">
         {games.map((game, i) => (
@@ -100,8 +128,8 @@ function RoundSection({
         <div
           className={`mt-2 text-sm rounded-xl px-4 py-2.5 border ${
             round.won
-              ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-200'
-              : 'bg-red-500/10 border-red-500/40 text-red-200'
+              ? 'bg-win/10 border-win/40 text-win'
+              : 'bg-loss/10 border-loss/40 text-loss'
           }`}
         >
           {round.recap}
@@ -165,7 +193,7 @@ export function PlayoffsScreen() {
   return (
     <div className="min-h-dvh px-4 py-8 max-w-3xl mx-auto">
       <div className="anim-rise-in text-center">
-        <div className="text-xs uppercase tracking-widest text-gray-400">
+        <div className="text-xs uppercase tracking-widest text-muted">
           Playoff Run — {ordinal(seed)} seed
         </div>
         <h2 className="mt-2 font-display font-normal uppercase text-3xl text-white">
@@ -191,12 +219,12 @@ export function PlayoffsScreen() {
                 key={name}
                 className={`text-xs font-semibold rounded-full px-3 py-1 border ${
                   status === 'won'
-                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/50'
+                    ? 'bg-win/15 text-win border-win/50'
                     : status === 'lost'
-                      ? 'bg-red-500/15 text-red-300 border-red-500/50'
+                      ? 'bg-loss/15 text-loss border-loss/50'
                       : status === 'active'
-                        ? 'bg-ball/15 text-ball-bright border-ball/60'
-                        : 'bg-court-raised text-gray-500 border-court-border'
+                        ? 'bg-accent/15 text-accent border-accent/60'
+                        : 'bg-raised text-muted border-edge'
                 }`}
               >
                 {name}
@@ -221,12 +249,21 @@ export function PlayoffsScreen() {
 
       {/* Drama tension frame while the ticker holds */}
       {started && !allRevealed && nextIsDrama && (
-        <div className="mt-4 anim-glow-pulse text-center text-sm font-bold text-amber-300 bg-amber-500/10 border border-amber-500/40 rounded-xl px-4 py-3">
-          {pendingGame?.isGame7
-            ? '🔥 GAME 7. Winner moves on. Loser goes home.'
-            : pendingGame?.flawEvent
-              ? '⚠️ Something is wrong in the locker room…'
-              : '⏳ Elimination stakes. Everything on the line.'}
+        <div className="mt-4 anim-glow-pulse text-center text-sm font-bold text-rarity-legendary bg-rarity-legendary/10 border border-rarity-legendary/40 rounded-xl px-4 py-3">
+          <span className="inline-flex items-center gap-2">
+            {pendingGame?.isGame7 ? (
+              <Flame className="w-4 h-4" aria-hidden />
+            ) : pendingGame?.flawEvent ? (
+              <TriangleAlert className="w-4 h-4" aria-hidden />
+            ) : (
+              <Hourglass className="w-4 h-4" aria-hidden />
+            )}
+            {pendingGame?.isGame7
+              ? 'GAME 7. Winner moves on. Loser goes home.'
+              : pendingGame?.flawEvent
+                ? 'Something is wrong in the locker room…'
+                : 'Elimination stakes. Everything on the line.'}
+          </span>
         </div>
       )}
 
@@ -238,31 +275,33 @@ export function PlayoffsScreen() {
                 variant="secondary"
                 onClick={() => dispatch({ type: 'REVEAL_NEXT_PLAYOFF_GAME' })}
               >
-                ⏩ Fast Forward
+                Fast Forward
               </Button>
               <Button
                 variant="ghost"
                 onClick={() => dispatch({ type: 'REVEAL_ALL_PLAYOFF_GAMES' })}
               >
-                ⏭ Skip to Result
+                Skip to Result
               </Button>
             </div>
           ) : (
             <Button
               onClick={() => dispatch({ type: 'REVEAL_NEXT_PLAYOFF_GAME' })}
-              className="text-lg px-8"
+              className="text-lg px-8 inline-flex items-center gap-2"
             >
-              ▶️ Tip Off the Playoffs
+              <Play className="w-5 h-5" aria-hidden />
+              Tip Off the Playoffs
             </Button>
           )
         ) : (
           <div className="anim-pop-in">
             {injuryRound ? (
               <>
-                <div className="anim-burn-in text-2xl font-black text-red-400">
-                  💀 Glass Bones Strikes
+                <div className="anim-burn-in font-display font-normal uppercase text-2xl text-loss inline-flex items-center gap-2">
+                  <Skull className="w-6 h-6" aria-hidden />
+                  Glass Bones Strikes
                 </div>
-                <p className="mt-2 text-gray-300 max-w-md mx-auto">
+                <p className="mt-2 text-cream/80 max-w-md mx-auto">
                   A season-ending injury before the {injuryRound}. The run is
                   over — not by a better team, but by a body that betrayed a
                   championship build.
@@ -278,29 +317,30 @@ export function PlayoffsScreen() {
               </>
             ) : playoffs.reachedFinals ? (
               <>
-                <div className="text-2xl font-black text-ball-bright">
+                <div className="font-display font-normal uppercase text-2xl text-accent">
                   Through to the NBA Finals!
                 </div>
                 <div className="mt-6">
                   <Button
                     onClick={() => dispatch({ type: 'REVEAL_NEXT_FINALS_GAME' })}
-                    className="text-lg px-8 anim-glow-pulse"
+                    className="text-lg px-8 anim-glow-pulse inline-flex items-center gap-2"
                   >
-                    🏟️ Play the NBA Finals
+                    <Play className="w-5 h-5" aria-hidden />
+                    Play the NBA Finals
                   </Button>
                 </div>
               </>
             ) : (
               <>
-                <div className="text-2xl font-black text-gray-200">
+                <div className="font-display font-normal uppercase text-2xl text-cream/90">
                   Eliminated — {playoffs.eliminatedIn}
                 </div>
                 <div className="mt-4 grid grid-cols-3 sm:grid-cols-5 gap-2 text-left">
-                  <StatChip label="PPG" value={stats.ppg} />
-                  <StatChip label="RPG" value={stats.rpg} />
-                  <StatChip label="APG" value={stats.apg} />
-                  <StatChip label="SPG" value={stats.spg} />
-                  <StatChip label="BPG" value={stats.bpg} />
+                  <StatChip label="PPG" value={<CountUpValue value={stats.ppg} decimals={1} />} />
+                  <StatChip label="RPG" value={<CountUpValue value={stats.rpg} decimals={1} />} />
+                  <StatChip label="APG" value={<CountUpValue value={stats.apg} decimals={1} />} />
+                  <StatChip label="SPG" value={<CountUpValue value={stats.spg} decimals={1} />} />
+                  <StatChip label="BPG" value={<CountUpValue value={stats.bpg} decimals={1} />} />
                 </div>
                 <div className="mt-6">
                   <Button

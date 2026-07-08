@@ -4,7 +4,9 @@ import { FLAW_BY_ID, FLAW_TIER_COLORS } from '../../constants/flaws'
 import { teamTierFor } from '../../constants/teamStrength'
 import { analyzeBuild } from '../../game-logic/report'
 import { useGame } from '../../state/GameContext'
-import { Button, Card } from '../shared/atoms'
+import { Clover, Trophy, Zap } from 'lucide-react'
+import { Button, Card, CountUpValue } from '../shared/atoms'
+import { FLAW_ICONS, TIER_ICONS } from '../shared/icons'
 import { AttributeBoard } from '../game/AttributeBoard'
 
 export function ResultScreen() {
@@ -18,12 +20,14 @@ export function ResultScreen() {
   return (
     <div className="min-h-dvh px-4 py-8 max-w-4xl mx-auto">
       <div className="anim-rise-in text-center">
-        <div className="text-xs uppercase tracking-widest text-gray-400">
+        <div className="text-xs uppercase tracking-widest text-muted">
           Build Complete — {GROUP_LABELS[group]}
         </div>
         <div className="mt-3 flex items-center justify-center gap-4">
-          <div className="anim-glow-pulse bg-gradient-to-br from-ball-bright to-ball-deep text-white rounded-2xl w-24 h-24 flex flex-col items-center justify-center">
-            <span className="font-display font-normal text-4xl">{state.overall}</span>
+          <div className="anim-glow-pulse bg-accent text-cream rounded-2xl w-24 h-24 flex flex-col items-center justify-center">
+            <span className="font-display font-normal text-4xl tabular-nums">
+              <CountUpValue value={state.overall ?? 0} />
+            </span>
             <span className="text-[10px] uppercase tracking-wider opacity-80">
               Overall
             </span>
@@ -32,7 +36,7 @@ export function ResultScreen() {
         <h2 className="mt-4 font-display font-normal uppercase text-3xl text-white">{state.archetype}</h2>
         {/* Team Destiny landing */}
         {state.homeTeam && (
-          <div className="mt-2 text-sm text-gray-300">
+          <div className="mt-2 text-sm text-cream/80">
             {state.homeTeam.name}
             {(() => {
               const tier = teamTierFor(state.homeTeam!.name)
@@ -45,7 +49,11 @@ export function ResultScreen() {
                     backgroundColor: `${tier.color}14`,
                   }}
                 >
-                  {tier.emoji} {tier.label}
+                  {(() => {
+                    const Icon = TIER_ICONS[tier.id]
+                    return <Icon className="inline w-3 h-3 mr-1 align-[-1px]" aria-hidden />
+                  })()}
+                  {tier.label}
                 </span>
               )
             })()}
@@ -67,13 +75,18 @@ export function ResultScreen() {
                     }}
                     title={flaw.description}
                   >
-                    {flaw.emoji} Fatal Flaw: {flaw.name}
+                    {(() => {
+                      const Icon = FLAW_ICONS[flaw.id]
+                      return <Icon className="inline w-4 h-4 mr-1 align-[-2px]" aria-hidden />
+                    })()}
+                    Fatal Flaw: {flaw.name}
                   </span>
                 )
               })()
             ) : (
-              <span className="inline-block text-sm font-bold text-emerald-300 bg-emerald-500/10 border border-emerald-500/50 rounded-full px-4 py-1.5">
-                🍀 CLEAN BUILD — no fatal flaw
+              <span className="inline-flex items-center gap-1.5 text-sm font-bold text-win bg-win/10 border border-win/50 rounded-full px-4 py-1.5">
+                <Clover className="w-4 h-4" aria-hidden />
+                CLEAN BUILD — no fatal flaw
               </span>
             )}
           </div>
@@ -84,12 +97,13 @@ export function ResultScreen() {
               <span
                 key={b.name}
                 title={b.description}
-                className="text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 rounded-full px-3 py-1"
+                className="inline-flex items-center gap-1 text-xs font-semibold bg-win/15 text-win border border-win/40 rounded-full px-3 py-1"
               >
-                ⚡ {b.name} +{b.bonus}
+                <Zap className="w-3 h-3" aria-hidden />
+                {b.name} +{b.bonus}
               </span>
             ))}
-            <span className="text-xs text-gray-500 self-center">
+            <span className="text-xs text-muted self-center">
               (base {state.baseOverall})
             </span>
           </div>
@@ -98,57 +112,61 @@ export function ResultScreen() {
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         <Card className="p-4">
-          <div className="text-xs uppercase tracking-wider text-gray-400 font-semibold">
+          <div className="text-xs uppercase tracking-wider text-muted font-semibold">
             Best Attributes
           </div>
           <div className="mt-2 space-y-1.5">
             {report.best.map((b) => (
               <div key={b.attribute} className="flex justify-between text-sm">
-                <span className="text-gray-200">{b.label}</span>
-                <span className="font-bold text-ball-bright">{b.rating}</span>
+                <span className="text-cream/90">{b.label}</span>
+                <span className="font-bold text-accent tabular-nums">{b.rating}</span>
               </div>
             ))}
           </div>
-          <div className="mt-3 text-xs uppercase tracking-wider text-gray-400 font-semibold">
+          <div className="mt-3 text-xs uppercase tracking-wider text-muted font-semibold">
             Weakest
           </div>
           <div className="mt-1 space-y-1.5">
             {report.weakest.map((w) => (
               <div key={w.attribute} className="flex justify-between text-sm">
-                <span className="text-gray-400">{w.label}</span>
-                <span className="font-semibold text-gray-500">{w.rating}</span>
+                <span className="text-muted">{w.label}</span>
+                <span className="font-semibold text-muted tabular-nums">{w.rating}</span>
               </div>
             ))}
           </div>
         </Card>
 
         <Card className="p-4">
-          <div className="text-xs uppercase tracking-wider text-gray-400 font-semibold">
+          <div className="text-xs uppercase tracking-wider text-muted font-semibold">
             Player Comparison
           </div>
-          <div className="mt-1 text-xl font-bold text-white">
+          <div className="mt-1 text-xl font-bold text-cream">
             {report.comparison.name}
           </div>
-          <div className="text-xs text-gray-500">{report.comparison.team}</div>
-          <div className="mt-3 text-xs uppercase tracking-wider text-gray-400 font-semibold">
+          <div className="text-xs text-muted">{report.comparison.team}</div>
+          <div className="mt-3 text-xs uppercase tracking-wider text-muted font-semibold">
             Scouting Report
           </div>
-          <p className="mt-1 text-sm text-gray-300 leading-relaxed">
+          <p className="mt-1 text-sm text-cream/80 leading-relaxed">
             {report.scoutingReport}
           </p>
         </Card>
       </div>
 
       <div className="mt-6">
-        <div className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-2">
+        <div className="text-xs uppercase tracking-wider text-muted font-semibold mb-2">
           Completed Board
         </div>
         <AttributeBoard locked={state.lockedAttributes} />
       </div>
 
       <div className="mt-8 flex flex-wrap justify-center gap-3">
-        <Button onClick={() => dispatch({ type: 'SIMULATE_SEASON' })} className="text-lg px-8">
-          🏆 Simulate Season
+        <Button
+          onClick={() => dispatch({ type: 'SIMULATE_SEASON' })}
+          className="text-lg px-8 inline-flex items-center gap-2"
+        >
+          <Trophy className="w-5 h-5" aria-hidden />
+          Simulate Season
         </Button>
         {state.mode === 'free' && (
           <Button variant="ghost" onClick={() => dispatch({ type: 'RESET_BUILD' })}>

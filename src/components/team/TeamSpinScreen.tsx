@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { NBA_TEAMS } from '../../constants/teams'
 import { teamTierFor, TEAM_TIERS } from '../../constants/teamStrength'
 import { useGame } from '../../state/GameContext'
+import { ArrowRight, Dices, Landmark } from 'lucide-react'
 import { Button, TeamBadge } from '../shared/atoms'
+import { TIER_ICONS } from '../shared/icons'
 
 const SPIN_MS = 3000
 
@@ -62,13 +64,13 @@ export function TeamSpinScreen() {
       }}
     >
       <div className="text-center mb-8">
-        <div className="text-xs uppercase tracking-[0.35em] text-ball-bright font-semibold">
+        <div className="text-xs uppercase tracking-[0.35em] text-accent font-semibold">
           The Draft of Fate
         </div>
         <h2 className="mt-2 font-display font-normal uppercase text-3xl sm:text-4xl text-white">
           {revealed ? homeTeam.name : 'TEAM DESTINY'}
         </h2>
-        <p className="mt-2 text-sm text-gray-400 max-w-md mx-auto">
+        <p className="mt-2 text-sm text-muted max-w-md mx-auto">
           {phase === 'idle' &&
             'Your build is set. Your flaw is sealed. One question left: who do you play for?'}
           {phase === 'spinning' && 'The league decides…'}
@@ -79,8 +81,8 @@ export function TeamSpinScreen() {
       {/* Spinner / reveal card */}
       <div className="min-h-[180px] flex items-center justify-center">
         {phase === 'idle' && (
-          <div className="text-6xl anim-glow-pulse rounded-full w-28 h-28 flex items-center justify-center bg-court-card border-2 border-court-border">
-            🏟️
+          <div className="anim-glow-pulse rounded-full w-28 h-28 flex items-center justify-center bg-panel border-2 border-edge">
+            <Landmark className="w-12 h-12 text-muted" aria-hidden />
           </div>
         )}
         {phase === 'spinning' && (
@@ -117,15 +119,19 @@ export function TeamSpinScreen() {
                 backgroundColor: `${tier.color}14`,
               }}
             >
-              {tier.emoji} {tier.label}
+              {(() => {
+                const Icon = TIER_ICONS[tier.id]
+                return <Icon className="inline w-3.5 h-3.5 mr-1 align-[-2px]" aria-hidden />
+              })()}
+              {tier.label}
             </div>
             <div className="mt-3 text-sm font-semibold">
-              <span className="text-gray-400">Championship odds: </span>
-              {boosted && <span className="text-emerald-300">▲ boosted</span>}
-              {hurt && <span className="text-red-400">▼ slim</span>}
-              {!boosted && !hurt && <span className="text-gray-300">— on your shoulders</span>}
+              <span className="text-muted">Championship odds: </span>
+              {boosted && <span className="text-win">▲ boosted</span>}
+              {hurt && <span className="text-loss">▼ slim</span>}
+              {!boosted && !hurt && <span className="text-cream/80">— on your shoulders</span>}
             </div>
-            <div className="mt-1 text-xs text-gray-500">
+            <div className="mt-1 text-xs text-muted">
               {tier.winPctDelta !== 0 &&
                 `${tier.winPctDelta > 0 ? '+' : ''}${Math.round(tier.winPctDelta * 82)} wins to the season · `}
               {tier.strengthDelta !== 0
@@ -149,7 +155,11 @@ export function TeamSpinScreen() {
                 backgroundColor: `${t.color}14`,
               }}
             >
-              {t.emoji} {t.label}
+              {(() => {
+                const Icon = TIER_ICONS[t.id]
+                return <Icon className="inline w-3 h-3 mr-1 align-[-1px]" aria-hidden />
+              })()}
+              {t.label}
             </span>
           ))}
         </div>
@@ -158,17 +168,19 @@ export function TeamSpinScreen() {
       <div className="mt-8 flex flex-col items-center gap-3">
         {phase === 'idle' && (
           <>
-            <Button onClick={spin} className="px-8 text-lg">
-              🎰 Spin for Your Team
+            <Button onClick={spin} className="px-8 text-lg inline-flex items-center gap-2">
+              <Dices className="w-5 h-5" aria-hidden />
+              Spin for Your Team
             </Button>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-muted">
               No trades. No outs. Where you land is where you play.
             </span>
           </>
         )}
         {revealed && (
-          <Button onClick={() => dispatch({ type: 'ACCEPT_TEAM' })} className="px-8">
-            Sign the Contract →
+          <Button onClick={() => dispatch({ type: 'ACCEPT_TEAM' })} className="px-8 inline-flex items-center gap-2">
+            Sign the Contract
+            <ArrowRight className="w-4 h-4" aria-hidden />
           </Button>
         )}
       </div>

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { Grade, Rarity, Team } from '../../types'
+import { useCountUp } from './useCountUp'
 
 export function Button({
   children,
@@ -115,11 +116,18 @@ export function TeamBadge({ team, size = 'md' }: { team: Team; size?: 'md' | 'lg
 
 export function StatChip({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="bg-court-card border border-court-border rounded-xl px-3 py-2 text-center">
-      <div className="text-[11px] uppercase tracking-wider text-gray-400">{label}</div>
-      <div className="text-lg font-bold text-white">{value}</div>
+    <div className="bg-panel border border-edge rounded-xl px-3 py-2 text-center">
+      <div className="text-[11px] uppercase tracking-wider text-muted">{label}</div>
+      <div className="text-lg font-bold text-cream tabular-nums">{value}</div>
     </div>
   )
+}
+
+/** Number that counts up on reveal; handles one decimal place. */
+export function CountUpValue({ value, decimals = 0 }: { value: number; decimals?: 0 | 1 }) {
+  const scale = decimals === 1 ? 10 : 1
+  const v = useCountUp(Math.round(value * scale))
+  return <>{(v / scale).toFixed(decimals)}</>
 }
 
 export function Card({
@@ -133,8 +141,8 @@ export function Card({
 }) {
   return (
     <div
-      className={`bg-court-card border border-court-border rounded-2xl ${
-        glow ? 'anim-glow-pulse border-ball/50' : ''
+      className={`bg-panel border border-edge rounded-2xl ${
+        glow ? 'anim-glow-pulse border-accent/50' : ''
       } ${className}`}
     >
       {children}

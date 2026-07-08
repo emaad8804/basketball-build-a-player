@@ -18,18 +18,6 @@
   --color-rarity-elite: #c026d3;
   --color-rarity-legendary: #f5b301;
 
-  /* Legacy aliases — every pre-redesign class (bg-court-card, text-ball…)
-     resolves to the new palette without per-file edits. Each screen's
-     redesign pass swaps its classes to the new tokens; these aliases are
-     deleted once `grep -rn 'court-\|ball' src/` is clean. */
-  --color-court: #0a0a0b;
-  --color-court-card: #141416;
-  --color-court-raised: #1c1c1f;
-  --color-court-border: #26262b;
-  --color-ball: #ff5a1f;
-  --color-ball-bright: #ff5a1f;
-  --color-ball-deep: #d8410e;
-
   /* Two-face type system (DESIGN.md §4): Anton for display moments only —
      OVR numbers, wordmark, headlines, card names. Geist for all UI/body.
      Anton ships a single 400 weight: pair with font-normal + uppercase,

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useCountUp } from '../shared/useCountUp'
 
 const MIN = 60
 const MAX = 99
@@ -8,6 +9,7 @@ const CIRC = 2 * Math.PI * R
 /** Animated projected-overall ring: fills 60→99 and pops on change. */
 export function OverallRing({ value }: { value: number }) {
   const frac = Math.max(0, Math.min(1, (value - MIN) / (MAX - MIN)))
+  const displayValue = useCountUp(value, true, 600)
   const [pop, setPop] = useState(false)
   const prev = useRef(value)
 
@@ -31,7 +33,7 @@ export function OverallRing({ value }: { value: number }) {
           cy="32"
           r={R}
           fill="none"
-          stroke="var(--color-court-border)"
+          stroke="var(--color-edge)"
           strokeWidth="6"
         />
         <circle
@@ -39,7 +41,7 @@ export function OverallRing({ value }: { value: number }) {
           cy="32"
           r={R}
           fill="none"
-          stroke="var(--color-ball)"
+          stroke="var(--color-accent)"
           strokeWidth="6"
           strokeLinecap="round"
           strokeDasharray={CIRC}
@@ -48,10 +50,10 @@ export function OverallRing({ value }: { value: number }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-display font-normal text-lg sm:text-xl text-white leading-none">
-          {value}
+        <span className="font-display font-normal text-lg sm:text-xl text-white leading-none tabular-nums">
+          {displayValue}
         </span>
-        <span className="text-[8px] uppercase tracking-wider text-gray-400">
+        <span className="text-[8px] uppercase tracking-wider text-muted">
           Proj
         </span>
       </div>

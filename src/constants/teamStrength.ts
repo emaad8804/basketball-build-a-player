@@ -17,7 +17,6 @@ export type TeamTierId =
 export interface TeamTier {
   id: TeamTierId
   label: string
-  emoji: string
   color: string
   strengthDelta: number
   winPctDelta: number
@@ -29,7 +28,6 @@ export const TEAM_TIERS: Record<TeamTierId, TeamTier> = {
   contender: {
     id: 'contender',
     label: 'Title Contender',
-    emoji: '👑',
     color: TEAM_TIER_HEX.contender,
     strengthDelta: 3,
     winPctDelta: 0.05,
@@ -38,7 +36,6 @@ export const TEAM_TIERS: Record<TeamTierId, TeamTier> = {
   'playoff-lock': {
     id: 'playoff-lock',
     label: 'Playoff Lock',
-    emoji: '🔒',
     color: TEAM_TIER_HEX['playoff-lock'],
     strengthDelta: 1.5,
     winPctDelta: 0.025,
@@ -47,7 +44,6 @@ export const TEAM_TIERS: Record<TeamTierId, TeamTier> = {
   middle: {
     id: 'middle',
     label: 'Middle of the Pack',
-    emoji: '⚖️',
     color: TEAM_TIER_HEX.middle,
     strengthDelta: 0,
     winPctDelta: 0,
@@ -56,7 +52,6 @@ export const TEAM_TIERS: Record<TeamTierId, TeamTier> = {
   rebuilding: {
     id: 'rebuilding',
     label: 'Rebuilding',
-    emoji: '🧱',
     color: TEAM_TIER_HEX.rebuilding,
     strengthDelta: -2,
     winPctDelta: -0.03,
@@ -65,7 +60,6 @@ export const TEAM_TIERS: Record<TeamTierId, TeamTier> = {
   tanking: {
     id: 'tanking',
     label: 'Tanking',
-    emoji: '🕳️',
     color: TEAM_TIER_HEX.tanking,
     strengthDelta: -4,
     winPctDelta: -0.05,
