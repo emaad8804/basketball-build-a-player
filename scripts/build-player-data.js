@@ -39,6 +39,7 @@ const NEUTRAL_STAT = {
 // Applied after parsing, before grading; the sheet stays authoritative otherwise.
 const ROSTER_MOVES = {
   'Aaron Wiggins': 'Atlanta Hawks', // OKC -> ATL, July 2026 (two 2nd-rounders)
+  'Kevon Looney': 'Los Angeles Lakers', // NOP declined option; 1yr minimum, July 2026
 };
 
 // A player needs this many games for a season's stats to be trusted; below it, the
