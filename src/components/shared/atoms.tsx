@@ -18,7 +18,8 @@ export function Button({
   const base =
     'font-semibold rounded-xl px-5 py-3 transition-all duration-150 active:scale-95 disabled:opacity-40 disabled:pointer-events-none cursor-pointer text-sm sm:text-base'
   const variants = {
-    primary: 'bg-accent text-cream hover:bg-accent-deep',
+    // Ink on vermilion: 10.1:1 (cream was 2.98:1 — AA fail at button sizes)
+    primary: 'bg-accent text-ink hover:bg-accent-deep',
     secondary:
       'bg-raised text-cream border border-edge hover:border-muted',
     ghost: 'text-muted hover:text-cream hover:bg-raised',

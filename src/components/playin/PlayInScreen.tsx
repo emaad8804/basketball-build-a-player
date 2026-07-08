@@ -69,7 +69,7 @@ export function PlayInScreen() {
         {!injured && !allRevealed ? (
           <Button
             onClick={() => dispatch({ type: 'REVEAL_NEXT_PLAYIN_GAME' })}
-            className="text-lg px-8 anim-glow-pulse !bg-red-700 hover:!bg-red-600 !shadow-red-900/40"
+            className="text-lg px-8 anim-glow-pulse !bg-red-700 hover:!bg-red-600 !text-cream"
           >
             <span className="inline-flex items-center gap-2">
               {revealed.length === 0 ? (

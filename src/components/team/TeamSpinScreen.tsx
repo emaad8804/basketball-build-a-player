@@ -3,6 +3,7 @@ import { NBA_TEAMS } from '../../constants/teams'
 import { teamTierFor, TEAM_TIERS } from '../../constants/teamStrength'
 import { useGame } from '../../state/GameContext'
 import { ArrowRight, Dices, Landmark } from 'lucide-react'
+import { prefersReducedMotion } from '../../utils/motion'
 import { Button, TeamBadge } from '../shared/atoms'
 import { TIER_ICONS } from '../shared/icons'
 
@@ -30,6 +31,7 @@ export function TeamSpinScreen() {
   // Slot-machine flash: fast at first, decelerating until the reveal
   useEffect(() => {
     if (phase !== 'spinning') return
+    const spinMs = prefersReducedMotion() ? 350 : SPIN_MS
     let elapsed = 0
     let cancelled = false
     const tick = (delay: number) => {
@@ -37,7 +39,7 @@ export function TeamSpinScreen() {
         if (cancelled) return
         setFlashIdx((i) => (i + 1 + Math.floor(Math.random() * 3)) % NBA_TEAMS.length)
         elapsed += delay
-        if (elapsed < SPIN_MS) tick(Math.min(60 + (elapsed / SPIN_MS) ** 2 * 400, 460))
+        if (elapsed < spinMs) tick(Math.min(60 + (elapsed / spinMs) ** 2 * 400, 460))
         else setPhase('revealed')
       }, delay)
     }

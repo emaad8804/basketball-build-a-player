@@ -1,10 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
+import { prefersReducedMotion } from '../../utils/motion'
 
 const EASE_OUT_CUBIC = (t: number) => 1 - Math.pow(1 - t, 3)
-
-const prefersReducedMotion = () =>
-  typeof window !== 'undefined' &&
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 /**
  * Count a number up from its previously displayed value on each `target`

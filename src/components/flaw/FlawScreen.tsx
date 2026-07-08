@@ -9,6 +9,7 @@ import {
 import type { FlawId } from '../../constants/flaws'
 import { ATTRIBUTE_LABELS } from '../../constants/attributes'
 import { CircleHelp, Clover, RotateCw } from 'lucide-react'
+import { prefersReducedMotion } from '../../utils/motion'
 import { useGame } from '../../state/GameContext'
 import { Button } from '../shared/atoms'
 import { FLAW_ICONS } from '../shared/icons'
@@ -30,6 +31,7 @@ const SEGMENTS: { id: FlawId | null; weight: number; color: string }[] = [
 ]
 const TOTAL_WEIGHT = SEGMENTS.reduce((s, x) => s + x.weight, 0)
 const SPIN_MS = 3800
+const REDUCED_SPIN_MS = 350 // reduced motion: a beat, not a ride
 
 /** [startDeg, endDeg) of each segment, clockwise from the top pointer. */
 function segmentArcs(): { id: FlawId | null; start: number; end: number }[] {
@@ -83,11 +85,15 @@ export function FlawScreen() {
     // Land inside the middle 70% of the segment, pointer at top
     const jitter = (Math.random() - 0.5) * width * 0.7
     const targetMod = (360 - (arc.start + width / 2 + jitter) + 360) % 360
+    const reduced = prefersReducedMotion()
     setRotation((prev) => {
       const delta = (targetMod - (prev % 360) + 360) % 360
-      return prev + 4 * 360 + delta
+      return prev + (reduced ? 0 : 4 * 360) + delta
     })
-    spinTimer.current = window.setTimeout(() => setPhase('revealed'), SPIN_MS)
+    spinTimer.current = window.setTimeout(
+      () => setPhase('revealed'),
+      reduced ? REDUCED_SPIN_MS : SPIN_MS,
+    )
     return () => {
       if (spinTimer.current) clearTimeout(spinTimer.current)
     }
@@ -158,7 +164,7 @@ export function FlawScreen() {
               ? '0 0 60px rgba(52, 211, 153, 0.45)'
               : '0 0 50px rgba(153, 27, 27, 0.35), inset 0 0 40px rgba(0,0,0,0.6)',
             transform: `rotate(${rotation}deg)`,
-            transition: `transform ${SPIN_MS}ms cubic-bezier(0.12, 0.8, 0.2, 1)`,
+            transition: `transform ${prefersReducedMotion() ? REDUCED_SPIN_MS : SPIN_MS}ms cubic-bezier(0.12, 0.8, 0.2, 1)`,
           }}
         />
         {/* Hub */}
@@ -246,7 +252,7 @@ export function FlawScreen() {
       <div className="mt-7 flex flex-col items-center gap-3">
         {phase === 'idle' && (
           <>
-            <Button onClick={spin} className="!bg-red-700 hover:!bg-red-600 !shadow-red-900/40 px-8">
+            <Button onClick={spin} className="!bg-red-700 hover:!bg-red-600 !text-cream px-8">
               Spin the Flaw Wheel
             </Button>
             <span className="text-xs text-muted">
@@ -268,7 +274,7 @@ export function FlawScreen() {
                 {canReroll && (
                   <Button
                     onClick={reroll}
-                    className="!bg-red-700 hover:!bg-red-600 !shadow-red-900/40 px-6 inline-flex items-center gap-2"
+                    className="!bg-red-700 hover:!bg-red-600 !text-cream px-6 inline-flex items-center gap-2"
                   >
                     <RotateCw className="w-4 h-4" aria-hidden />
                     Burn a Respin — Reroll the Wheel

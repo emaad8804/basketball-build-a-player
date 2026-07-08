@@ -142,7 +142,7 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
   ring.addColorStop(1, PALETTE.accentDeep)
   ctx.fillStyle = ring
   ctx.fill()
-  ctx.fillStyle = PALETTE.cream
+  ctx.fillStyle = PALETTE.ink
   ctx.font = displayFont(96)
   ctx.fillText(`${state.overall ?? ''}`, cx, cy + 24)
   ctx.font = uiFont(22, 700)

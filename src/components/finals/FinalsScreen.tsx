@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import confetti from 'canvas-confetti'
 import { FastForward, Flame, Hourglass, Play, SkipForward, TriangleAlert, Trophy } from 'lucide-react'
+import { prefersReducedMotion } from '../../utils/motion'
 import { PALETTE, RARITY_HEX } from '../../constants/designTokens'
 import { useGame } from '../../state/GameContext'
 import { Button, CountUpValue, StatChip } from '../shared/atoms'
@@ -22,7 +23,7 @@ export function FinalsScreen() {
   const started = state.finalsGamesRevealed > 0
 
   useEffect(() => {
-    if (allRevealed && finals.won) fireChampionConfetti()
+    if (allRevealed && finals.won && !prefersReducedMotion()) fireChampionConfetti()
   }, [allRevealed, finals.won])
 
   const pendingGame = allRevealed

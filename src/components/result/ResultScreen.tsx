@@ -24,7 +24,7 @@ export function ResultScreen() {
           Build Complete — {GROUP_LABELS[group]}
         </div>
         <div className="mt-3 flex items-center justify-center gap-4">
-          <div className="anim-glow-pulse bg-accent text-cream rounded-2xl w-24 h-24 flex flex-col items-center justify-center">
+          <div className="anim-glow-pulse bg-accent text-ink rounded-2xl w-24 h-24 flex flex-col items-center justify-center">
             <span className="font-display font-normal text-4xl tabular-nums">
               <CountUpValue value={state.overall ?? 0} />
             </span>

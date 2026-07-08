@@ -103,7 +103,7 @@ export function LandingScreen() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => dispatch({ type: 'RESUME_RUN', saved: savedRun })}
-              className="inline-flex items-center gap-2 text-sm font-bold bg-accent hover:bg-accent-deep text-cream rounded-xl px-4 py-2.5 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 text-sm font-bold bg-accent hover:bg-accent-deep text-ink rounded-xl px-4 py-2.5 transition-colors cursor-pointer"
             >
               <RotateCw className="w-4 h-4" aria-hidden />
               Resume
@@ -170,7 +170,7 @@ export function LandingScreen() {
                   result.
                 </div>
               </div>
-              <span className="inline-flex items-center gap-2 text-sm font-bold bg-accent text-cream rounded-xl px-5 py-2.5">
+              <span className="inline-flex items-center gap-2 text-sm font-bold bg-accent text-ink rounded-xl px-5 py-2.5">
                 Play Today's
                 <Play className="w-4 h-4" aria-hidden />
               </span>

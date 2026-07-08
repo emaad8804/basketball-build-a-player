@@ -107,7 +107,7 @@ export function SeasonScreen() {
         ) : season.playInEligible ? (
           <Button
             onClick={() => dispatch({ type: 'SIMULATE_PLAY_IN' })}
-            className="text-lg px-8 anim-glow-pulse !bg-red-700 hover:!bg-red-600 !shadow-red-900/40 inline-flex items-center gap-2"
+            className="text-lg px-8 anim-glow-pulse !bg-red-700 hover:!bg-red-600 !text-cream inline-flex items-center gap-2"
           >
             <Siren className="w-5 h-5" aria-hidden />
             Play-In Tournament — Win or Go Home

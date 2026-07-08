@@ -163,3 +163,28 @@ body {
 .anim-glow-pulse { animation: glowPulse 2.2s ease-in-out infinite; }
 .anim-pop-in { animation: popIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
 .anim-rise-in { animation: riseIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* ---- Reduced motion: every animation collapses to its settled state ----
+   All anim-* keyframes use fill 'both', so a 0.01ms duration renders the
+   final frame instantly — content is never gated behind a skipped reveal.
+   The wheels' JS timers are separately shortened (see prefersReducedMotion
+   call sites); confetti is skipped outright. */
+@media (prefers-reduced-motion: reduce) {
+  [class*='anim-'],
+  .sheen-once::after,
+  .sheen-loop::after,
+  .foil-legendary {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---- Keyboard focus: designed, not the UA default ---- */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
