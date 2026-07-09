@@ -54,6 +54,10 @@ export function TeamSpinScreen() {
     dispatch({ type: 'SPIN_HOME_TEAM' })
     setPhase('spinning')
   }
+  // Tap-to-settle: phase change unwinds the timer chain via effect cleanup
+  const settle = () => {
+    if (phase === 'spinning' && state.homeTeam) setPhase('revealed')
+  }
 
   const revealed = phase === 'revealed' && homeTeam && tier
   const flashTeam = NBA_TEAMS[flashIdx]
@@ -83,8 +87,13 @@ export function TeamSpinScreen() {
         </p>
       </div>
 
-      {/* Spinner / reveal card */}
-      <div className="min-h-[180px] flex items-center justify-center">
+      {/* Spinner / reveal card — tappable mid-spin to cut to the pick */}
+      <div
+        className={`min-h-[180px] flex items-center justify-center ${
+          phase === 'spinning' ? 'cursor-pointer' : ''
+        }`}
+        onClick={settle}
+      >
         {phase === 'idle' && (
           <div className="anim-glow-pulse rounded-full w-28 h-28 flex items-center justify-center bg-panel border-2 border-edge">
             <Landmark className="w-12 h-12 text-muted" aria-hidden />
@@ -171,6 +180,11 @@ export function TeamSpinScreen() {
       )}
 
       <div className="mt-8 flex flex-col items-center gap-3">
+        {phase === 'spinning' && (
+          <Button variant="ghost" onClick={settle} className="!px-4 !py-2 text-xs">
+            Skip the suspense — show the team
+          </Button>
+        )}
         {phase === 'idle' && (
           <>
             <Button onClick={spin} className="px-8 text-lg inline-flex items-center gap-2">

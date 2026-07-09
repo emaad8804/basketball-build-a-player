@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { ReactNode, Ref } from 'react'
 import type { Grade, Rarity, Team } from '../../types'
 import { useCountUp } from './useCountUp'
 
@@ -135,13 +135,16 @@ export function Card({
   children,
   className = '',
   glow = false,
+  ref,
 }: {
   children: ReactNode
   className?: string
   glow?: boolean
+  ref?: Ref<HTMLDivElement>
 }) {
   return (
     <div
+      ref={ref}
       className={`bg-panel border border-edge rounded-2xl ${
         glow ? 'anim-glow-pulse border-accent/50' : ''
       } ${className}`}

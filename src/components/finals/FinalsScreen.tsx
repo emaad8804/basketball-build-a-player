@@ -7,6 +7,7 @@ import { useGame } from '../../state/GameContext'
 import { Button, CountUpValue, StatChip } from '../shared/atoms'
 import { GameCard } from '../playoffs/PlayoffsScreen'
 import { useAutoTicker } from '../shared/useAutoTicker'
+import { useRevealScroll } from '../shared/useRevealScroll'
 
 function fireChampionConfetti() {
   const defaults = { spread: 90, ticks: 220, gravity: 0.9, scalar: 1.1 }
@@ -43,6 +44,9 @@ export function FinalsScreen() {
     nextIsDrama,
     advance: () => dispatch({ type: 'REVEAL_NEXT_FINALS_GAME' }),
   })
+
+  // The verdict + confetti must play on screen, not below the fold
+  const resultRef = useRevealScroll<HTMLDivElement>(allRevealed)
 
   return (
     <div className="min-h-dvh px-4 py-8 max-w-3xl mx-auto">
@@ -117,7 +121,7 @@ export function FinalsScreen() {
             </Button>
           )
         ) : (
-          <div className="anim-pop-in">
+          <div ref={resultRef} className="anim-pop-in">
             <div
               className={`font-display font-normal uppercase text-4xl inline-flex items-center gap-3 ${
                 finals.won ? 'text-rarity-legendary' : 'text-cream/80'

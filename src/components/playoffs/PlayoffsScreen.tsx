@@ -4,6 +4,7 @@ import type { PlayoffRound, SeriesGame } from '../../types'
 import { Button, Card, CountUpValue, StatChip } from '../shared/atoms'
 import { useAutoTicker } from '../shared/useAutoTicker'
 import { useCountUp } from '../shared/useCountUp'
+import { useRevealScroll } from '../shared/useRevealScroll'
 
 const ordinal = (n: number) =>
   n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`
@@ -22,8 +23,11 @@ function StatLineText({ line, animate }: { line: SeriesGame['statLine']; animate
 
 /** Broadcast score-bug row: one game, scannable at a glance. */
 export function GameCard({ game, isLatest }: { game: SeriesGame; isLatest: boolean }) {
+  // The feed grows below the fold — keep the freshest game on screen
+  const scrollRef = useRevealScroll<HTMLDivElement>(isLatest)
   return (
     <Card
+      ref={scrollRef}
       className={`p-3 sm:p-4 ${isLatest ? 'anim-card-flip' : ''} ${
         game.won ? '' : 'border-loss/40'
       } ${game.isGame7 ? 'border-rarity-legendary/60' : ''} ${game.dnp ? 'opacity-75' : ''}`}
@@ -188,6 +192,8 @@ export function PlayoffsScreen() {
     advance: () => dispatch({ type: 'REVEAL_NEXT_PLAYOFF_GAME' }),
   })
 
+  // Runs after the last GameCard's own scroll — the verdict wins the frame
+  const resultRef = useRevealScroll<HTMLDivElement>(allRevealed)
   const injuryRound = playoffs.seasonEndingInjury
 
   return (
@@ -294,7 +300,7 @@ export function PlayoffsScreen() {
             </Button>
           )
         ) : (
-          <div className="anim-pop-in">
+          <div ref={resultRef} className="anim-pop-in">
             {injuryRound ? (
               <>
                 <div className="anim-burn-in font-display font-normal uppercase text-2xl text-loss inline-flex items-center gap-2">

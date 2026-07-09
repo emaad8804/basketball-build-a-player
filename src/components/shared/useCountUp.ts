@@ -4,13 +4,18 @@ import { prefersReducedMotion } from '../../utils/motion'
 const EASE_OUT_CUBIC = (t: number) => 1 - Math.pow(1 - t, 3)
 
 /**
- * Count a number up from its previously displayed value on each `target`
- * change (~800ms ease-out — fits inside the autoTicker's 1500ms cadence).
- * Renders the target instantly when disabled or reduced motion is on.
+ * Count a number up on reveal: from 0 when the component mounts, then from
+ * the previously displayed value on each `target` change (~800ms ease-out —
+ * fits inside the autoTicker's 1500ms cadence). Renders the target instantly
+ * when disabled or reduced motion is on.
  */
 export function useCountUp(target: number, enabled = true, duration = 800): number {
-  const [value, setValue] = useState(target)
-  const displayed = useRef(target)
+  // Initializer runs once; later target changes re-check reduced motion
+  // live in the effect.
+  const [value, setValue] = useState(() =>
+    enabled && !prefersReducedMotion() ? 0 : target,
+  )
+  const displayed = useRef(value)
 
   useEffect(() => {
     if (!enabled || prefersReducedMotion() || displayed.current === target) {

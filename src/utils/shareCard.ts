@@ -247,18 +247,24 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
   return new Promise((resolve) => canvas.toBlob(resolve, 'image/png'))
 }
 
+export type ShareCardOutcome = 'shared' | 'downloaded' | 'cancelled' | 'failed'
+
 /** Share the card via the native sheet when possible, else download it. */
-export async function shareCard(state: GameState): Promise<void> {
+export async function shareCard(state: GameState): Promise<ShareCardOutcome> {
   const blob = await generateShareCard(state)
-  if (!blob) return
+  if (!blob) return 'failed'
   const file = new File([blob], 'build-a-hooper.png', { type: 'image/png' })
 
   if (navigator.canShare?.({ files: [file] })) {
     try {
       await navigator.share({ files: [file], title: 'Build-a-Hooper' })
-      return
-    } catch {
-      // fall through to download (user may have cancelled — harmless)
+      return 'shared'
+    } catch (err) {
+      // Closing the sheet is a choice — respect it, no surprise download
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        return 'cancelled'
+      }
+      // Real share failure — fall through to the download path
     }
   }
   const url = URL.createObjectURL(blob)
@@ -267,4 +273,5 @@ export async function shareCard(state: GameState): Promise<void> {
   a.download = 'build-a-hooper.png'
   a.click()
   URL.revokeObjectURL(url)
+  return 'downloaded'
 }

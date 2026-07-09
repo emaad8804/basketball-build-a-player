@@ -39,8 +39,8 @@ export function SeasonScreen() {
             </span>
           </div>
         )}
-        <h2 className="mt-2 font-display font-normal text-5xl text-white">
-          {season.wins}–{season.losses}
+        <h2 className="mt-2 font-display font-normal text-5xl text-white tabular-nums">
+          <CountUpValue value={season.wins} />–<CountUpValue value={season.losses} />
         </h2>
         <div className="mt-1 text-lg text-cream/80">
           {ordinal(season.seed)} seed in the {season.conference}

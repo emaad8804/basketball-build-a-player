@@ -17,6 +17,7 @@ import { FLAW_ICONS } from '../shared/icons'
 export function ShareScreen() {
   const { state, dispatch } = useGame()
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle')
+  const [cardState, setCardState] = useState<'idle' | 'making' | 'saved' | 'failed'>('idle')
   const [newBest, setNewBest] = useState(false)
   const group = state.group!
   const season = state.seasonResult
@@ -116,6 +117,23 @@ export function ShareScreen() {
       }
     } else {
       copy()
+    }
+  }
+
+  // The download path is otherwise silent — confirm it on the button itself
+  const downloadCard = async () => {
+    if (cardState === 'making') return
+    setCardState('making')
+    const outcome = await shareCard(state)
+    if (outcome === 'downloaded') {
+      setCardState('saved')
+      setTimeout(() => setCardState('idle'), 2000)
+    } else if (outcome === 'failed') {
+      setCardState('failed')
+      setTimeout(() => setCardState('idle'), 2500)
+    } else {
+      // Native sheet shown (shared/cancelled) — it was its own feedback
+      setCardState('idle')
     }
   }
 
@@ -255,10 +273,20 @@ export function ShareScreen() {
         <Button
           variant="secondary"
           className="inline-flex items-center gap-2"
-          onClick={() => shareCard(state)}
+          onClick={downloadCard}
         >
-          <ImageDown className="w-4 h-4" aria-hidden />
-          Share Card
+          {cardState === 'saved' ? (
+            <Check className="w-4 h-4 text-win" aria-hidden />
+          ) : (
+            <ImageDown className="w-4 h-4" aria-hidden />
+          )}
+          {cardState === 'making'
+            ? 'Printing…'
+            : cardState === 'saved'
+              ? 'Card saved!'
+              : cardState === 'failed'
+                ? 'Card failed — retry'
+                : 'Share Card'}
         </Button>
         <Button
           variant="secondary"

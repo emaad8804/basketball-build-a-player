@@ -8,8 +8,9 @@ const CIRC = 2 * Math.PI * R
 
 /** Animated projected-overall ring: fills 60→99 and pops on change. */
 export function OverallRing({ value }: { value: number }) {
-  const frac = Math.max(0, Math.min(1, (value - MIN) / (MAX - MIN)))
+  // Fill follows the counted digits so ring and number rise as one
   const displayValue = useCountUp(value, true, 600)
+  const frac = Math.max(0, Math.min(1, (displayValue - MIN) / (MAX - MIN)))
   const [pop, setPop] = useState(false)
   const prev = useRef(value)
 
@@ -46,7 +47,6 @@ export function OverallRing({ value }: { value: number }) {
           strokeLinecap="round"
           strokeDasharray={CIRC}
           strokeDashoffset={CIRC * (1 - frac)}
-          style={{ transition: 'stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1)' }}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">

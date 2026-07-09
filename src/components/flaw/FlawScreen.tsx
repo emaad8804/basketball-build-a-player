@@ -62,6 +62,8 @@ export function FlawScreen() {
   // to the reveal instead of offering a second (state-corrupting) spin.
   const [phase, setPhase] = useState<Phase>(state.flawSpun ? 'revealed' : 'idle')
   const [rotation, setRotation] = useState(0)
+  // Tap-to-settle: kills the transition so the wheel snaps to its verdict
+  const [snapped, setSnapped] = useState(false)
   const spinTimer = useRef<number | null>(null)
   const arcs = useMemo(segmentArcs, [])
   const gradient = useMemo(wheelGradient, [])
@@ -101,12 +103,21 @@ export function FlawScreen() {
   }, [phase, state.flawSpun, state.flawId, state.flawRerolled])
 
   const spin = () => {
+    setSnapped(false)
     setPhase('spinning')
     dispatch({ type: 'SPIN_FLAW' })
   }
   const reroll = () => {
+    setSnapped(false)
     setPhase('spinning')
     dispatch({ type: 'REROLL_FLAW' })
+  }
+  // The ride is the default; the impatient can always cut to the verdict
+  const settle = () => {
+    if (phase !== 'spinning' || !state.flawSpun) return
+    if (spinTimer.current) clearTimeout(spinTimer.current)
+    setSnapped(true)
+    setPhase('revealed')
   }
 
   const revealed = phase === 'revealed'
@@ -141,8 +152,11 @@ export function FlawScreen() {
         </p>
       </div>
 
-      {/* Wheel */}
-      <div className="relative">
+      {/* Wheel — tappable mid-spin to cut straight to the verdict */}
+      <div
+        className={`relative ${phase === 'spinning' ? 'cursor-pointer' : ''}`}
+        onClick={settle}
+      >
         {/* Pointer */}
         <div
           className="absolute left-1/2 -top-2 -translate-x-1/2 z-10 w-0 h-0"
@@ -164,7 +178,9 @@ export function FlawScreen() {
               ? '0 0 60px rgba(52, 211, 153, 0.45)'
               : '0 0 50px rgba(153, 27, 27, 0.35), inset 0 0 40px rgba(0,0,0,0.6)',
             transform: `rotate(${rotation}deg)`,
-            transition: `transform ${prefersReducedMotion() ? REDUCED_SPIN_MS : SPIN_MS}ms cubic-bezier(0.12, 0.8, 0.2, 1)`,
+            transition: snapped
+              ? 'none'
+              : `transform ${prefersReducedMotion() ? REDUCED_SPIN_MS : SPIN_MS}ms cubic-bezier(0.12, 0.8, 0.2, 1)`,
           }}
         />
         {/* Hub */}
@@ -250,6 +266,12 @@ export function FlawScreen() {
 
       {/* Actions */}
       <div className="mt-7 flex flex-col items-center gap-3">
+        {phase === 'spinning' && (
+          <Button variant="ghost" onClick={settle} className="!px-4 !py-2 text-xs">
+            Can't watch — cut to the verdict
+          </Button>
+        )}
+
         {phase === 'idle' && (
           <>
             <Button onClick={spin} className="!bg-red-700 hover:!bg-red-600 !text-cream px-8">
