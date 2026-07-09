@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "data:build": "node scripts/fetch-nbastats.js 2025-26 && node scripts/fetch-nbastats.js 2024-25 && node scripts/build-player-data.js"
+    "data:build": "node scripts/fetch-nbastats.js 2025-26 && node scripts/fetch-nbastats.js 2024-25 && node scripts/build-player-data.js",
+    "balance:check": "tsx scripts/balance-check.ts"
   },
   "dependencies": {
     "@fontsource/anton": "^5.2.7",
@@ -27,6 +28,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
     "oxlint": "^1.71.0",
+    "tsx": "^4.23.0",
     "typescript": "~6.0.2",
     "vite": "^8.1.1"
   }

@@ -115,9 +115,9 @@ export function simulateSeason(profile: BuildProfile): SeasonResult {
         ? 9 + Math.floor(Math.random() * 2)
         : 11 + Math.floor(Math.random() * 4)
   } else {
-    if (wins >= 58) seed = 1
-    else if (wins >= 53) seed = 2
-    else if (wins >= 49) seed = 3
+    if (wins >= 60) seed = 1
+    else if (wins >= 55) seed = 2
+    else if (wins >= 50) seed = 3
     else if (wins >= 46) seed = 4
     else seed = 5 + Math.floor(Math.random() * 4)
     if (seed >= 2 && seed <= 5 && Math.random() < 0.3) seed += Math.random() < 0.5 ? -1 : 1

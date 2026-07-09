@@ -1,8 +1,9 @@
 /**
  * Team Destiny tiers (July 2026): where the wheel lands you shapes both
- * the regular season (small) and championship odds (full force).
+ * the regular season and championship odds.
  * strengthDelta lands on the 60-99 playoff strength scale (1 pt ≈ 2%
- * per-game win prob); winPctDelta shifts season win% (±0.05 ≈ ±4 wins).
+ * per-game win prob); winPctDelta shifts season win% (±0.17 ≈ ±14 wins,
+ * before superstar carry — see carriedWinPctDelta).
  */
 
 import { TEAM_TIER_HEX } from './designTokens'
@@ -29,16 +30,16 @@ export const TEAM_TIERS: Record<TeamTierId, TeamTier> = {
     id: 'contender',
     label: 'Title Contender',
     color: TEAM_TIER_HEX.contender,
-    strengthDelta: 3,
-    winPctDelta: 0.05,
+    strengthDelta: 4,
+    winPctDelta: 0.17,
     flavor: 'A loaded roster built to win now — your title odds just jumped.',
   },
   'playoff-lock': {
     id: 'playoff-lock',
     label: 'Playoff Lock',
     color: TEAM_TIER_HEX['playoff-lock'],
-    strengthDelta: 1.5,
-    winPctDelta: 0.025,
+    strengthDelta: 2,
+    winPctDelta: 0.085,
     flavor: 'A proven playoff outfit. Real help on both ends.',
   },
   middle: {
@@ -53,16 +54,16 @@ export const TEAM_TIERS: Record<TeamTierId, TeamTier> = {
     id: 'rebuilding',
     label: 'Rebuilding',
     color: TEAM_TIER_HEX.rebuilding,
-    strengthDelta: -2,
-    winPctDelta: -0.03,
+    strengthDelta: -3,
+    winPctDelta: -0.11,
     flavor: 'Young, raw, and inconsistent — you will have to drag them.',
   },
   tanking: {
     id: 'tanking',
     label: 'Tanking',
     color: TEAM_TIER_HEX.tanking,
-    strengthDelta: -4,
-    winPctDelta: -0.05,
+    strengthDelta: -5,
+    winPctDelta: -0.17,
     flavor: 'The front office wants lottery balls. Your title odds are slim.',
   },
 }
@@ -116,4 +117,24 @@ export const TEAM_TIER_BY_NAME: Record<string, TeamTier> = Object.fromEntries(
 
 export function teamTierFor(teamName: string): TeamTier {
   return TEAM_TIER_BY_NAME[teamName] ?? TEAM_TIERS.middle
+}
+
+/** Superstar carry: overall where penalty relief starts / maxes out. */
+const CARRY_START = 82
+const CARRY_FULL = 94
+const MAX_CARRY_RELIEF = 0.45
+
+/**
+ * Stars drag bad teams upward: a high overall shrinks a negative
+ * winPctDelta by up to 45% (90 OVR ≈ 30% relief, enough to put a
+ * tanking team in the play-in hunt). Good-team bonuses are untouched,
+ * as is the playoff strengthDelta — a thin roster still hurts in May.
+ */
+export function carriedWinPctDelta(delta: number, overall: number): number {
+  if (delta >= 0) return delta
+  const carry = Math.min(
+    1,
+    Math.max(0, (overall - CARRY_START) / (CARRY_FULL - CARRY_START)),
+  )
+  return delta * (1 - MAX_CARRY_RELIEF * carry)
 }

@@ -41,12 +41,13 @@ export const CENTER_TYPE_WEIGHTS: Record<string, number> = {
 }
 
 /**
- * Spin odds by rarity tier — better players are harder to land.
+ * Spin odds by rarity tier — tilted toward Elite so strong builds are
+ * assemblable (eased July 2026; Legendary is still scarce in most pools).
  * Weights renormalize over the tiers actually present in a team's pool.
  */
 export const RARITY_WEIGHTS: Record<string, number> = {
-  Common: 34,
-  Rare: 30,
-  Elite: 22,
-  Legendary: 14,
+  Common: 18,
+  Rare: 26,
+  Elite: 34,
+  Legendary: 22,
 }

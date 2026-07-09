@@ -2,7 +2,7 @@ import type { AttributeKey, Group, LockedAttribute, Team } from '../types'
 import { ATTRIBUTE_KEYS } from '../constants/attributes'
 import { FLAW_BY_ID, SOFTEN_THRESHOLD } from '../constants/flaws'
 import type { FlawId } from '../constants/flaws'
-import { teamTierFor } from '../constants/teamStrength'
+import { carriedWinPctDelta, teamTierFor } from '../constants/teamStrength'
 
 /** The build's Fatal Flaw as the sims see it. */
 export interface ActiveFlaw {
@@ -55,6 +55,6 @@ export function makeBuildProfile(
     homeTeamName: homeTeam?.name ?? null,
     homeConference: homeTeam?.conference ?? null,
     teamStrengthDelta: tier?.strengthDelta ?? 0,
-    teamWinPctDelta: tier?.winPctDelta ?? 0,
+    teamWinPctDelta: tier ? carriedWinPctDelta(tier.winPctDelta, overall) : 0,
   }
 }
