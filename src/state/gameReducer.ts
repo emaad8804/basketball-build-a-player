@@ -1,4 +1,7 @@
 import type { AttributeKey, GameMode, GameState, Group } from '../types'
+import { BUDGET_TIER_BY_ID, RESPIN_COST } from '../constants/budget'
+import type { BudgetTierId } from '../constants/budget'
+import { lockCharge } from '../game-logic/budget'
 import {
   emptyBuildState,
   isBuildComplete,
@@ -57,6 +60,8 @@ export const initialGameState: GameState = {
   mode: 'free',
   dailyNumber: null,
   dailyDateKey: null,
+  budgetTier: null,
+  budgetLeft: null,
   runSeed: 0,
   ...emptyBuildState(),
 }

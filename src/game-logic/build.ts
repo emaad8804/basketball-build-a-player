@@ -18,6 +18,7 @@ export function lockAttribute(
   locked: Partial<Record<AttributeKey, LockedAttribute>>,
   attribute: AttributeKey,
   player: Player,
+  price?: number,
 ): Partial<Record<AttributeKey, LockedAttribute>> {
   if (attribute in locked) return locked
   const grade = player.grades[attribute]
@@ -30,6 +31,7 @@ export function lockAttribute(
       grade,
       rating: convertGradeToRating(grade),
       rarity: player.rarity,
+      ...(price !== undefined ? { price } : {}),
     },
   }
 }

@@ -9,7 +9,6 @@ import { PlayInScreen } from './components/playin/PlayInScreen'
 import { PlayoffsScreen } from './components/playoffs/PlayoffsScreen'
 import { FinalsScreen } from './components/finals/FinalsScreen'
 import { ShareScreen } from './components/share/ShareScreen'
-import { ShareScreen } from './components/share/ShareScreen'
 import { Analytics } from '@vercel/analytics/react'
 
 function Screens() {
