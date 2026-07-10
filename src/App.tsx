@@ -9,6 +9,8 @@ import { PlayInScreen } from './components/playin/PlayInScreen'
 import { PlayoffsScreen } from './components/playoffs/PlayoffsScreen'
 import { FinalsScreen } from './components/finals/FinalsScreen'
 import { ShareScreen } from './components/share/ShareScreen'
+import { ShareScreen } from './components/share/ShareScreen'
+import { Analytics } from '@vercel/analytics/react'
 
 function Screens() {
   const { state } = useGame()
@@ -45,6 +47,7 @@ export default function App() {
         <span className="mx-1.5 text-white/25">•</span>
         Not Affiliated with the NBA
       </footer>
+      <Analytics />
     </GameProvider>
   )
 }

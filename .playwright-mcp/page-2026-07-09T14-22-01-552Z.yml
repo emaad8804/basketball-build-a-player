@@ -1,0 +1,35 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - heading "Hooper" [level=1] [ref=e5]
+      - paragraph [ref=e6]: Spin NBA teams. Steal one skill from every player you land on. Build a superstar, survive the Fatal Flaw wheel — then chase a ring.
+    - 'button "Daily Challenge #9 Guard Day Same spins for everyone today. One official run. Share your result. Play Today''s" [ref=e8] [cursor=pointer]':
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]:
+            - img [ref=e12]
+            - text: "Daily Challenge #9"
+          - generic [ref=e14]:
+            - img [ref=e15]
+            - text: Guard Day
+          - generic [ref=e17]: Same spins for everyone today. One official run. Share your result.
+        - generic [ref=e18]:
+          - text: Play Today's
+          - img [ref=e19]
+    - generic [ref=e21]:
+      - generic [ref=e22]: Free Play — unlimited runs, your choice of build
+      - generic [ref=e23]:
+        - button "Build-A-Guard Handles, shooting, and playmaking. Run the offense." [ref=e24] [cursor=pointer]:
+          - img [ref=e25]
+          - generic [ref=e27]: Build-A-Guard
+          - generic [ref=e28]: Handles, shooting, and playmaking. Run the offense.
+        - button "Build-A-Forward Two-way wings and do-it-all superstars." [ref=e29] [cursor=pointer]:
+          - img [ref=e30]
+          - generic [ref=e32]: Build-A-Forward
+          - generic [ref=e33]: Two-way wings and do-it-all superstars.
+        - button "Build-A-Center Anchor the paint. True bigs, hybrids, and unicorns." [ref=e34] [cursor=pointer]:
+          - img [ref=e35]
+          - generic [ref=e37]: Build-A-Center
+          - generic [ref=e38]: Anchor the paint. True bigs, hybrids, and unicorns.
+    - paragraph [ref=e39]: 2 respins per build · 9 attributes · 1 fatal flaw spin · 1 legacy
+  - contentinfo [ref=e40]: Fan-Made•Not Affiliated with the NBA
