@@ -130,7 +130,7 @@ export const GRADE_OVERRIDES = {
   'Herbert Jones': { defense: 'A+' },
 
   // New York
-  'Jalen Brunson': { finishing: 'B+' },
+  'Jalen Brunson': { finishing: 'A+' },
   'Karl-Anthony Towns': { shooting: 'A-' },
   'Mikal Bridges': { defense: 'A-' },
   'Josh Hart': { defense: 'B+' },

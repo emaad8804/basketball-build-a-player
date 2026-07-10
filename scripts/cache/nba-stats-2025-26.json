@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-07T15:14:27.415Z",
+  "fetchedAt": "2026-07-10T16:41:53.335Z",
   "season": "2025-26",
   "players": [
     {
@@ -1768,7 +1768,7 @@
     },
     {
       "playerId": 1626171,
-      "name": "Bobby Portis",
+      "name": "Bobby Portis Jr.",
       "teamAbbr": "MIL",
       "age": 31,
       "gp": 67,
@@ -10336,7 +10336,7 @@
     },
     {
       "playerId": 202685,
-      "name": "Jonas Valančiūnas",
+      "name": "Jonas Valanciunas",
       "teamAbbr": "DEN",
       "age": 34,
       "gp": 65,
