@@ -1,5 +1,6 @@
 import { GameProvider, useGame } from './state/GameContext'
 import { LandingScreen } from './components/landing/LandingScreen'
+import { BudgetSetupScreen } from './components/landing/BudgetSetupScreen'
 import { GameScreen } from './components/game/GameScreen'
 import { FlawScreen } from './components/flaw/FlawScreen'
 import { TeamSpinScreen } from './components/team/TeamSpinScreen'
@@ -16,6 +17,8 @@ function Screens() {
   switch (state.screen) {
     case 'landing':
       return <LandingScreen />
+    case 'budget-setup':
+      return <BudgetSetupScreen />
     case 'game':
       return <GameScreen />
     case 'flaw':

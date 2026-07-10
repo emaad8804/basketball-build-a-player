@@ -1,5 +1,7 @@
 import { ATTRIBUTE_KEYS, GROUP_LABELS } from '../constants/attributes'
+import { BUDGET_TIER_BY_ID } from '../constants/budget'
 import { FLAW_BY_ID } from '../constants/flaws'
+import { budgetSpent, efficiencyBadge } from '../game-logic/budget'
 import type { GameState, Rarity } from '../types'
 
 const RARITY_SQUARES: Record<Rarity, string> = {
@@ -57,12 +59,22 @@ export function buildShareText(state: GameState): string {
       : '🏀 Build-a-Hooper'
   const respinNote =
     state.respinsLeft > 0 ? ' · respin saved ✅' : ''
+  const budgetLine =
+    state.mode === 'budget' && state.budgetTier && state.overall !== null
+      ? `💰 $${BUDGET_TIER_BY_ID[state.budgetTier].budget}M ${
+          BUDGET_TIER_BY_ID[state.budgetTier].label
+        } · spent $${budgetSpent(state)}M · ${efficiencyBadge(
+          state.budgetTier,
+          state.overall,
+        )}`
+      : ''
 
   return [
     header,
     `${GROUP_LABELS[state.group!].toUpperCase()} · ${state.overall} OVR${
       state.homeTeam ? ` · ${state.homeTeam.abbr}` : ''
     }`,
+    budgetLine,
     rarityRow(state),
     flawLine(state),
     `${resultLine(state)}${respinNote}`,

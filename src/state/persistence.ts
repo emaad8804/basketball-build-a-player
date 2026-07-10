@@ -37,6 +37,13 @@ export function loadRun(): GameState | null {
     ) {
       return null
     }
+    // Budget runs must carry their money fields or the HUD/pricing breaks
+    if (
+      parsed.mode === 'budget' &&
+      (typeof parsed.budgetLeft !== 'number' || !parsed.budgetTier)
+    ) {
+      return null
+    }
     return parsed
   } catch {
     return null
