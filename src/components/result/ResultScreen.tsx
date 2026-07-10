@@ -1,7 +1,9 @@
 import { useMemo } from 'react'
 import { GROUP_LABELS } from '../../constants/attributes'
+import { BUDGET_TIER_BY_ID } from '../../constants/budget'
 import { FLAW_BY_ID, FLAW_TIER_COLORS } from '../../constants/flaws'
 import { teamTierFor } from '../../constants/teamStrength'
+import { budgetSpent, efficiencyBadge, efficiencyLine } from '../../game-logic/budget'
 import { analyzeBuild } from '../../game-logic/report'
 import { useGame } from '../../state/GameContext'
 import { Clover, Trophy, Zap } from 'lucide-react'
@@ -16,6 +18,8 @@ export function ResultScreen() {
     () => analyzeBuild(group, state.lockedAttributes, state.archetype ?? ''),
     [group, state.lockedAttributes, state.archetype],
   )
+  const budgetTier = state.budgetTier ? BUDGET_TIER_BY_ID[state.budgetTier] : null
+  const spent = budgetSpent(state)
 
   return (
     <div className="min-h-dvh px-4 py-8 max-w-4xl mx-auto">
@@ -34,6 +38,20 @@ export function ResultScreen() {
           </div>
         </div>
         <h2 className="mt-4 font-display font-normal uppercase text-3xl text-white">{state.archetype}</h2>
+        {budgetTier && (
+          <div className="mt-2">
+            <span
+              className="inline-block text-[11px] font-bold uppercase tracking-wider rounded-full border px-2 py-0.5 tabular-nums"
+              style={{
+                color: budgetTier.color,
+                borderColor: `${budgetTier.color}88`,
+                backgroundColor: `${budgetTier.color}14`,
+              }}
+            >
+              ${budgetTier.budget}M {budgetTier.label}
+            </span>
+          </div>
+        )}
         {/* Team Destiny landing */}
         {state.homeTeam && (
           <div className="mt-2 text-sm text-cream/80">
@@ -151,6 +169,40 @@ export function ResultScreen() {
             {report.scoutingReport}
           </p>
         </Card>
+
+        {budgetTier && state.budgetLeft !== null && state.overall !== null && (
+          <Card className="p-4 sm:col-span-2">
+            <div className="text-xs uppercase tracking-wider text-muted font-semibold">
+              Budget
+            </div>
+            <div className="mt-2 grid grid-cols-3 gap-3">
+              <div>
+                <div className="text-xs text-muted">Spent</div>
+                <div className="text-lg font-bold text-cream tabular-nums">
+                  ${spent}M
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-muted">Left on the table</div>
+                <div className="text-lg font-bold text-cream tabular-nums">
+                  ${state.budgetLeft}M
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-muted">Efficiency</div>
+                <div
+                  className="text-lg font-bold"
+                  style={{ color: budgetTier.color }}
+                >
+                  {efficiencyBadge(budgetTier.id, state.overall)}
+                </div>
+                <div className="text-xs text-muted tabular-nums">
+                  {efficiencyLine(state.overall, spent)}
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
       </div>
 
       <div className="mt-6">
@@ -168,7 +220,7 @@ export function ResultScreen() {
           <Trophy className="w-5 h-5" aria-hidden />
           Simulate Season
         </Button>
-        {state.mode === 'free' && (
+        {state.mode !== 'daily' && (
           <Button variant="ghost" onClick={() => dispatch({ type: 'RESET_BUILD' })}>
             Reset Build
           </Button>

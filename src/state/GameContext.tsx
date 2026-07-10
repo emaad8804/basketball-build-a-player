@@ -25,12 +25,19 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   // Snapshot every in-run state change; the landing transition also clears
   // as a backstop (never on initial mount — the landing screen needs the
-  // save alive to offer a resume).
+  // save alive to offer a resume). Menu screens are excluded on both
+  // sides: browsing budget-setup must neither overwrite nor clear a
+  // paused run's save.
   const prevScreen = useRef<Screen | null>(null)
   useEffect(() => {
-    if (state.screen !== 'landing') {
+    const MENU_SCREENS: Screen[] = ['landing', 'budget-setup']
+    if (!MENU_SCREENS.includes(state.screen)) {
       saveRun(state)
-    } else if (prevScreen.current && prevScreen.current !== 'landing') {
+    } else if (
+      state.screen === 'landing' &&
+      prevScreen.current &&
+      !MENU_SCREENS.includes(prevScreen.current)
+    ) {
       clearRun()
     }
     prevScreen.current = state.screen

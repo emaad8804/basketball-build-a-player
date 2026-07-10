@@ -5,6 +5,7 @@ import type {
   PlayoffResult,
   SeasonResult,
 } from './simulation'
+import type { BudgetTierId } from '../constants/budget'
 import type { FlawId } from '../constants/flaws'
 import type { RngCounters } from '../game-logic/rng'
 
@@ -16,6 +17,8 @@ export interface LockedAttribute {
   rating: number
   /** Rarity of the player this was stolen from (drives share squares). */
   rarity: Rarity
+  /** $M charged in budget mode; 0 = minimum-wage free signing. Absent in free/daily. */
+  price?: number
 }
 
 export interface ChemistryBonus {
@@ -26,6 +29,7 @@ export interface ChemistryBonus {
 
 export type Screen =
   | 'landing'
+  | 'budget-setup'
   | 'game'
   | 'flaw'
   | 'team'
@@ -36,7 +40,7 @@ export type Screen =
   | 'finals'
   | 'share'
 
-export type GameMode = 'free' | 'daily'
+export type GameMode = 'free' | 'daily' | 'budget'
 
 export interface GameState {
   screen: Screen
@@ -45,6 +49,10 @@ export interface GameState {
   /** Set in daily mode: which Daily Challenge this run is. */
   dailyNumber: number | null
   dailyDateKey: string | null
+  /** Budget mode: chosen tier; null in free/daily. */
+  budgetTier: BudgetTierId | null
+  /** Budget mode: remaining $M; null in free/daily. */
+  budgetLeft: number | null
   /** Seed for all build-phase spins (daily mode shares one per day). */
   runSeed: number
   /** Per-event-type spin counters keying the counter-based RNG streams. */

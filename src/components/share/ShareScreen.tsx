@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { Check, Clover, Copy, ImageDown, RotateCw, Share2, Trophy } from 'lucide-react'
 import { ATTRIBUTE_KEYS, GROUP_LABELS } from '../../constants/attributes'
 import { ATTRIBUTE_LABELS } from '../../constants/attributes'
+import { BUDGET_TIER_BY_ID } from '../../constants/budget'
 import { RARITY_HEX } from '../../constants/designTokens'
 import { FLAW_BY_ID, FLAW_TIER_COLORS } from '../../constants/flaws'
 import { teamTierFor } from '../../constants/teamStrength'
+import { budgetSpent, efficiencyBadge } from '../../game-logic/budget'
 import { saveDailyRecord } from '../../game-logic/dailyStore'
 import { useGame } from '../../state/GameContext'
 import { saveIfBest } from '../../utils/bestBuild'
@@ -24,17 +26,23 @@ export function ShareScreen() {
   const playoffs = state.playoffResult
   const finals = state.finalsResult
   const flaw = state.flawId ? FLAW_BY_ID[state.flawId] : null
+  const budgetTier = state.budgetTier ? BUDGET_TIER_BY_ID[state.budgetTier] : null
+  const spent = budgetSpent(state)
 
   useEffect(() => {
     if (state.overall === null || !state.legacyLabel || !state.archetype) return
-    const becameBest = saveIfBest({
-      overall: state.overall,
-      archetype: state.archetype,
-      legacyLabel: state.legacyLabel,
-      group,
-      champion: finals?.won ?? false,
-      date: new Date().toISOString().slice(0, 10),
-    })
+    // Budget OVRs are cap-shaped — keep them out of the single personal best
+    const becameBest =
+      state.mode === 'budget'
+        ? false
+        : saveIfBest({
+            overall: state.overall,
+            archetype: state.archetype,
+            legacyLabel: state.legacyLabel,
+            group,
+            champion: finals?.won ?? false,
+            date: new Date().toISOString().slice(0, 10),
+          })
     setNewBest(becameBest)
 
     // Lock the official daily run into history (first finish wins)
@@ -150,7 +158,9 @@ export function ShareScreen() {
           <div className="text-xs uppercase tracking-widest text-muted">
             {state.mode === 'daily'
               ? `Daily Challenge #${state.dailyNumber} Complete`
-              : 'Career Complete'}
+              : budgetTier
+                ? `Budget Run — $${budgetTier.budget}M ${budgetTier.label} Complete`
+                : 'Career Complete'}
           </div>
           <div className="mt-3 font-display font-normal text-6xl text-cream">
             {state.overall}{' '}
@@ -263,6 +273,28 @@ export function ShareScreen() {
             </div>
           )}
         </div>
+
+        {/* Budget efficiency — the mode's share flex (spec §9) */}
+        {budgetTier && state.budgetLeft !== null && state.overall !== null && (
+          <div className="mt-4 border-t border-edge pt-4 grid grid-cols-3 gap-3 text-sm">
+            <div>
+              <div className="text-xs text-muted">Spent</div>
+              <div className="font-bold text-cream tabular-nums">${spent}M</div>
+            </div>
+            <div>
+              <div className="text-xs text-muted">Left</div>
+              <div className="font-bold text-cream tabular-nums">
+                ${state.budgetLeft}M
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-muted">Efficiency</div>
+              <div className="font-bold" style={{ color: budgetTier.color }}>
+                {efficiencyBadge(budgetTier.id, state.overall)}
+              </div>
+            </div>
+          </div>
+        )}
       </CollectibleFrame>
 
       <div className="mt-6 flex flex-wrap justify-center gap-3">
@@ -308,7 +340,7 @@ export function ShareScreen() {
           <RotateCw className="w-4 h-4" aria-hidden />
           Play Again
         </Button>
-        {state.mode === 'free' && (
+        {state.mode !== 'daily' && (
           <Button variant="ghost" onClick={() => dispatch({ type: 'RESET_BUILD' })}>
             Reset Build
           </Button>

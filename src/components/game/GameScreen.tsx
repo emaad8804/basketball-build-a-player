@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Dices, Search } from 'lucide-react'
 import { NBA_TEAMS } from '../../constants/teams'
 import { GROUP_LABELS } from '../../constants/attributes'
+import { BUDGET_TIER_BY_ID, MIN_SKILL_PRICE } from '../../constants/budget'
 import { computeBaseOverall } from '../../game-logic/overall'
 import { getAvailableAttributes } from '../../game-logic/build'
 import { useGame } from '../../state/GameContext'
@@ -52,6 +53,7 @@ export function GameScreen() {
   const slotsRemaining = available.length
   const projected = computeBaseOverall(group, state.lockedAttributes)
 
+  const budgetTier = state.budgetTier ? BUDGET_TIER_BY_ID[state.budgetTier] : null
   const teamFlash = useTeamDealFlash(state.currentTeam?.name)
   const [playerSpinning, setPlayerSpinning] = useState(false)
 
@@ -76,18 +78,44 @@ export function GameScreen() {
                 Daily #{state.dailyNumber}
               </span>
             )}
+            {budgetTier && (
+              <span
+                className="ml-2 align-middle text-xs font-bold uppercase tracking-wider rounded-full px-2.5 py-1 border tabular-nums"
+                style={{
+                  color: budgetTier.color,
+                  borderColor: `${budgetTier.color}88`,
+                  backgroundColor: `${budgetTier.color}14`,
+                }}
+              >
+                ${budgetTier.budget}M {budgetTier.label}
+              </span>
+            )}
           </h2>
           <button
             onClick={() => dispatch({ type: 'PLAY_AGAIN' })}
             className="text-xs text-muted hover:text-cream cursor-pointer"
           >
-            {state.mode === 'daily' ? '← Abandon daily run' : '← Change build group'}
+            {state.mode === 'daily'
+              ? '← Abandon daily run'
+              : state.mode === 'budget'
+                ? '← Exit budget run'
+                : '← Change build group'}
           </button>
         </div>
         <div className="flex items-center gap-2">
           <OverallRing value={projected} />
           <StatChip label="Slots Left" value={slotsRemaining} />
           <StatChip label="Respins" value={state.respinsLeft} />
+          {state.mode === 'budget' && state.budgetLeft !== null && (
+            <StatChip
+              label={state.budgetLeft === 0 ? 'Broke' : 'Rem. Budget'}
+              value={state.budgetLeft === 0 ? 'BROKE' : `$${state.budgetLeft}M`}
+              className="min-w-[96px]"
+              valueClassName={
+                state.budgetLeft < MIN_SKILL_PRICE ? 'text-loss' : ''
+              }
+            />
+          )}
         </div>
       </div>
 

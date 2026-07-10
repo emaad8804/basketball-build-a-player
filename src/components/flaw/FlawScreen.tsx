@@ -8,6 +8,7 @@ import {
 } from '../../constants/flaws'
 import type { FlawId } from '../../constants/flaws'
 import { ATTRIBUTE_LABELS } from '../../constants/attributes'
+import { RESPIN_COST } from '../../constants/budget'
 import { CircleHelp, Clover, RotateCw } from 'lucide-react'
 import { prefersReducedMotion } from '../../utils/motion'
 import { useGame } from '../../state/GameContext'
@@ -69,11 +70,15 @@ export function FlawScreen() {
   const gradient = useMemo(wheelGradient, [])
 
   const flaw = state.flawId ? FLAW_BY_ID[state.flawId] : null
+  // Budget mode: a second-respin reroll carries the $1M tax
+  const paidReroll = state.mode === 'budget' && state.respinsLeft === 1
+  const brokeForReroll = paidReroll && (state.budgetLeft ?? 0) < RESPIN_COST
   const canReroll =
     state.flawSpun &&
     state.flawId !== null &&
     !state.flawRerolled &&
-    state.respinsLeft > 0
+    state.respinsLeft > 0 &&
+    !brokeForReroll
   const softened =
     flaw !== null &&
     (state.lockedAttributes[flaw.linkedAttribute]?.rating ?? 70) >=
@@ -299,8 +304,13 @@ export function FlawScreen() {
                     className="!bg-red-700 hover:!bg-red-600 !text-cream px-6 inline-flex items-center gap-2"
                   >
                     <RotateCw className="w-4 h-4" aria-hidden />
-                    Burn a Respin — Reroll the Wheel
+                    Burn a Respin — Reroll the Wheel{paidReroll && ' ($1M)'}
                   </Button>
+                )}
+                {brokeForReroll && !state.flawRerolled && (
+                  <span className="text-xs text-muted">
+                    A reroll would cost $1M — you can't cover it.
+                  </span>
                 )}
                 <Button
                   variant={canReroll ? 'secondary' : 'primary'}

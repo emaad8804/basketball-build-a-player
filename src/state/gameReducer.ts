@@ -1,4 +1,7 @@
 import type { AttributeKey, GameMode, GameState, Group } from '../types'
+import { BUDGET_TIER_BY_ID, RESPIN_COST } from '../constants/budget'
+import type { BudgetTierId } from '../constants/budget'
+import { lockCharge } from '../game-logic/budget'
 import {
   emptyBuildState,
   isBuildComplete,
@@ -28,7 +31,10 @@ export type GameAction =
       mode?: GameMode
       dailyNumber?: number
       dailyDateKey?: string
+      budgetTier?: BudgetTierId
     }
+  | { type: 'OPEN_BUDGET_SETUP' }
+  | { type: 'GOTO_LANDING' }
   | { type: 'SPIN_PLAYER' }
   | { type: 'RESPIN' }
   | { type: 'RISK_IT' }
@@ -57,6 +63,8 @@ export const initialGameState: GameState = {
   mode: 'free',
   dailyNumber: null,
   dailyDateKey: null,
+  budgetTier: null,
+  budgetLeft: null,
   runSeed: 0,
   ...emptyBuildState(),
 }
@@ -84,6 +92,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       // Team is dealt automatically — no free team rerolls
       const runSeed = action.seed ?? randomSeed()
       const rand = eventRng(runSeed, 'team', 0)
+      const budgetTier =
+        action.mode === 'budget' ? (action.budgetTier ?? 'starter') : null
       return {
         ...initialGameState,
         screen: 'game',
@@ -91,11 +101,22 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         mode: action.mode ?? 'free',
         dailyNumber: action.dailyNumber ?? null,
         dailyDateKey: action.dailyDateKey ?? null,
+        budgetTier,
+        budgetLeft: budgetTier ? BUDGET_TIER_BY_ID[budgetTier].budget : null,
         runSeed,
         rngCounters: { ...zeroRngCounters(), team: 1 },
         currentTeam: spinTeam(action.group, rand),
       }
     }
+
+    case 'OPEN_BUDGET_SETUP':
+      return state.screen === 'landing'
+        ? { ...state, screen: 'budget-setup' }
+        : state
+
+    // Back out of the budget setup menu — never clears a saved run
+    case 'GOTO_LANDING':
+      return { ...state, screen: 'landing' }
 
     case 'SPIN_PLAYER': {
       if (!state.group || !state.currentTeam) return state
@@ -116,8 +137,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'RESPIN': {
-      // Loses current player, spins a fresh team, costs 1 respin
+      // Loses current player, spins a fresh team, costs 1 respin.
+      // Budget mode: the second respin costs $1M wherever it's spent.
       if (state.respinsLeft <= 0 || !state.group) return state
+      const paid = state.mode === 'budget' && state.respinsLeft === 1
+      if (paid && (state.budgetLeft ?? 0) < RESPIN_COST) return state
       const { rand, rngCounters } = drawRng(state, 'team')
       const team = spinTeam(state.group, rand, state.currentTeam?.name)
       return {
@@ -125,6 +149,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         currentTeam: team,
         currentPlayer: null,
         respinsLeft: state.respinsLeft - 1,
+        budgetLeft: paid ? state.budgetLeft! - RESPIN_COST : state.budgetLeft,
         rngCounters,
       }
     }
@@ -138,6 +163,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         !state.currentPlayer
       )
         return state
+      const paid = state.mode === 'budget' && state.respinsLeft === 1
+      if (paid && (state.budgetLeft ?? 0) < RESPIN_COST) return state
       const { rand, rngCounters } = drawRng(state, 'riskit')
       const player = spinPlayer(
         state.currentTeam.name,
@@ -149,6 +176,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         currentPlayer: player,
         respinsLeft: state.respinsLeft - 1,
+        budgetLeft: paid ? state.budgetLeft! - RESPIN_COST : state.budgetLeft,
         rngCounters,
       }
     }
@@ -157,10 +185,27 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       if (!state.group || !state.currentPlayer) return state
       if (action.attribute in state.lockedAttributes) return state
 
+      // Budget mode: price the pick; null = illegal (unaffordable, or not
+      // the free minimum-wage choice on a broke slate)
+      let charge: number | undefined
+      if (state.mode === 'budget' && state.budgetLeft !== null) {
+        const priced = lockCharge(
+          state.currentPlayer,
+          state.lockedAttributes,
+          state.budgetLeft,
+          action.attribute,
+        )
+        if (priced === null) return state
+        charge = priced
+      }
+      const budgetLeft =
+        state.budgetLeft === null ? null : state.budgetLeft - (charge ?? 0)
+
       const locked = lockAttribute(
         state.lockedAttributes,
         action.attribute,
         state.currentPlayer,
+        charge,
       )
 
       if (!isBuildComplete(locked)) {
@@ -171,6 +216,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           lockedAttributes: locked,
           currentTeam: spinTeam(state.group, rand, state.currentTeam?.name),
           currentPlayer: null,
+          budgetLeft,
           rngCounters,
         }
       }
@@ -190,6 +236,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         lockedAttributes: locked,
         currentTeam: null,
         currentPlayer: null,
+        budgetLeft,
         chemistryBonuses: bonuses,
         baseOverall,
         overall,
@@ -211,7 +258,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'REROLL_FLAW': {
-      // Burn a banked Respin for one full-wheel reroll — true insurance
+      // Burn a banked Respin for one full-wheel reroll — true insurance.
+      // Budget mode: if this is the second respin, the $1M tax still applies.
       if (
         state.screen !== 'flaw' ||
         !state.flawSpun ||
@@ -220,12 +268,15 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         state.respinsLeft <= 0
       )
         return state
+      const paid = state.mode === 'budget' && state.respinsLeft === 1
+      if (paid && (state.budgetLeft ?? 0) < RESPIN_COST) return state
       const rand = eventRng(state.runSeed, 'flaw', 1)
       return {
         ...state,
         flawId: spinFlaw(rand),
         flawRerolled: true,
         respinsLeft: state.respinsLeft - 1,
+        budgetLeft: paid ? state.budgetLeft! - RESPIN_COST : state.budgetLeft,
         rngCounters: { ...state.rngCounters, flaw: 2 },
       }
     }
@@ -451,10 +502,20 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       if (!state.group) return { ...initialGameState }
       const runSeed = randomSeed()
       const rand = eventRng(runSeed, 'team', 0)
+      // Budget runs re-roll with the same tier and a refilled cap
+      const budget =
+        state.mode === 'budget' && state.budgetTier
+          ? {
+              mode: 'budget' as const,
+              budgetTier: state.budgetTier,
+              budgetLeft: BUDGET_TIER_BY_ID[state.budgetTier].budget,
+            }
+          : {}
       return {
         ...initialGameState,
         screen: 'game',
         group: state.group,
+        ...budget,
         runSeed,
         rngCounters: { ...zeroRngCounters(), team: 1 },
         currentTeam: spinTeam(state.group, rand),

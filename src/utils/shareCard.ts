@@ -1,7 +1,9 @@
 import { ATTRIBUTE_KEYS, ATTRIBUTE_LABELS, GROUP_LABELS } from '../constants/attributes'
+import { BUDGET_TIER_BY_ID } from '../constants/budget'
 import { FLAW_BY_ID, FLAW_TIER_COLORS } from '../constants/flaws'
 import { teamTierFor } from '../constants/teamStrength'
 import { FOIL_STOPS, PALETTE, RARITY_HEX } from '../constants/designTokens'
+import { budgetSpent, efficiencyBadge } from '../game-logic/budget'
 import type { GameState, Rarity } from '../types'
 import { resultLine } from './shareText'
 
@@ -127,7 +129,9 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
   ctx.fillText(
     state.mode === 'daily' && state.dailyNumber !== null
       ? `Daily Challenge #${state.dailyNumber} · ${state.dailyDateKey}`
-      : 'Free Play',
+      : state.mode === 'budget' && state.budgetTier
+        ? `Budget Mode · $${BUDGET_TIER_BY_ID[state.budgetTier].budget}M ${BUDGET_TIER_BY_ID[state.budgetTier].label}`
+        : 'Free Play',
     W / 2,
     162,
   )
@@ -233,6 +237,17 @@ export async function generateShareCard(state: GameState): Promise<Blob | null> 
   ctx.stroke()
   ctx.fillStyle = RARITY_HEX.Legendary
   ctx.fillText(legacy, W / 2, bottomY + 78)
+
+  // Budget efficiency line — bold + cream so it reads at thumbnail size
+  if (state.mode === 'budget' && state.budgetTier && state.overall !== null) {
+    ctx.fillStyle = PALETTE.cream
+    ctx.font = uiFont(30, 700)
+    ctx.fillText(
+      `SPENT $${budgetSpent(state)}M · LEFT $${state.budgetLeft ?? 0}M · ${efficiencyBadge(state.budgetTier, state.overall).toUpperCase()}`,
+      W / 2,
+      H - 88,
+    )
+  }
 
   // Footer
   const season = state.seasonResult

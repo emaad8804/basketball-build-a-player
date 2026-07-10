@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CalendarDays, Clover, Flame, Play, RotateCw, Skull, Star, Trash2, Trophy } from 'lucide-react'
+import { CalendarDays, Clover, Flame, Play, RotateCw, Skull, Star, Trash2, Trophy, Wallet } from 'lucide-react'
 import { useGame } from '../../state/GameContext'
 import { GROUP_LABELS } from '../../constants/attributes'
 import { dailyGroup, dailyNumber, dailySeed, todayKey } from '../../game-logic/daily'
@@ -7,7 +7,8 @@ import { getDailyRecord, getDailyStats } from '../../game-logic/dailyStore'
 import { clearRun, loadRun } from '../../state/persistence'
 import { loadBestBuild } from '../../utils/bestBuild'
 import { GROUP_ICONS } from '../shared/icons'
-import type { Group, Screen } from '../../types'
+import type { Screen } from '../../types'
+import { GROUP_CARDS } from './groupCards'
 
 /** Where a resumed run picks back up, in player language. */
 const SCREEN_LABELS: Partial<Record<Screen, string>> = {
@@ -21,28 +22,6 @@ const SCREEN_LABELS: Partial<Record<Screen, string>> = {
   finals: 'in the NBA Finals',
   share: 'career complete',
 }
-
-const GROUP_CARDS: {
-  group: Group
-  title: string
-  desc: string
-}[] = [
-  {
-    group: 'Guards',
-    title: 'Build-A-Guard',
-    desc: 'Handles, shooting, and playmaking. Run the offense.',
-  },
-  {
-    group: 'Forwards',
-    title: 'Build-A-Forward',
-    desc: 'Two-way wings and do-it-all superstars.',
-  },
-  {
-    group: 'Centers',
-    title: 'Build-A-Center',
-    desc: 'Anchor the paint. True bigs, hybrids, and unicorns.',
-  },
-]
 
 export function LandingScreen() {
   const { dispatch } = useGame()
@@ -91,7 +70,9 @@ export function LandingScreen() {
             <div className="text-sm font-bold text-cream">
               {savedRun.mode === 'daily'
                 ? `Daily #${savedRun.dailyNumber} in progress`
-                : 'Run in progress'}
+                : savedRun.mode === 'budget'
+                  ? `Budget run in progress — $${savedRun.budgetLeft}M left`
+                  : 'Run in progress'}
             </div>
             <div className="mt-0.5 text-sm text-muted">
               {Object.keys(savedRun.lockedAttributes).length}/9 locked
@@ -231,6 +212,33 @@ export function LandingScreen() {
             )
           })}
         </div>
+      </div>
+
+      {/* Budget Mode — the strategy layer */}
+      <div className="mt-8 w-full max-w-3xl">
+        <div className="text-xs uppercase tracking-wider text-muted font-semibold text-center">
+          Budget Mode — build under the cap
+        </div>
+        <button
+          onClick={() => dispatch({ type: 'OPEN_BUDGET_SETUP' })}
+          className="mt-3 anim-rise-in group w-full text-left bg-panel border border-edge rounded-2xl p-5 transition-all duration-200 hover:border-accent hover:-translate-y-0.5 cursor-pointer"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="font-display font-normal uppercase text-lg text-cream group-hover:text-accent transition-colors inline-flex items-center gap-2">
+                <Wallet className="w-5 h-5 text-accent" aria-hidden />
+                Budget Mode
+              </div>
+              <div className="mt-1 text-sm text-muted">
+                Every grade has a price. Pick a cap, build the most efficient
+                hooper you can.
+              </div>
+            </div>
+            <span className="text-sm text-muted tabular-nums">
+              $150M · $90M · $60M
+            </span>
+          </div>
+        </button>
       </div>
 
       {best && (

@@ -115,11 +115,21 @@ export function TeamBadge({ team, size = 'md' }: { team: Team; size?: 'md' | 'lg
   )
 }
 
-export function StatChip({ label, value }: { label: string; value: ReactNode }) {
+export function StatChip({
+  label,
+  value,
+  className = '',
+  valueClassName = '',
+}: {
+  label: string
+  value: ReactNode
+  className?: string
+  valueClassName?: string
+}) {
   return (
-    <div className="bg-panel border border-edge rounded-xl px-3 py-2 text-center">
+    <div className={`bg-panel border border-edge rounded-xl px-3 py-2 text-center ${className}`}>
       <div className="text-[11px] uppercase tracking-wider text-muted">{label}</div>
-      <div className="text-lg font-bold text-cream tabular-nums">{value}</div>
+      <div className={`text-lg font-bold text-cream tabular-nums ${valueClassName}`}>{value}</div>
     </div>
   )
 }
