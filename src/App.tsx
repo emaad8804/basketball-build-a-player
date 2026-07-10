@@ -11,6 +11,7 @@ import { PlayoffsScreen } from './components/playoffs/PlayoffsScreen'
 import { FinalsScreen } from './components/finals/FinalsScreen'
 import { ShareScreen } from './components/share/ShareScreen'
 import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 
 function Screens() {
   const { state } = useGame()
@@ -50,6 +51,7 @@ export default function App() {
         Not Affiliated with the NBA
       </footer>
       <Analytics />
+      <SpeedInsights />
     </GameProvider>
   )
 }
