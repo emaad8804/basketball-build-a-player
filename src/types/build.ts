@@ -58,6 +58,8 @@ export interface GameState {
   /** Per-event-type spin counters keying the counter-based RNG streams. */
   rngCounters: RngCounters
   lockedAttributes: Partial<Record<AttributeKey, LockedAttribute>>
+  /** One entry per roll this run (spins + risk-its); duplicates = rolled again. Roll order. */
+  rolledPlayerNames: string[]
   currentTeam: Team | null
   currentPlayer: Player | null
   respinsLeft: number

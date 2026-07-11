@@ -36,6 +36,15 @@ export function lockAttribute(
   }
 }
 
+/**
+ * Record a roll into the run pool. One entry per roll-instance — a player
+ * rolled twice appears twice, because each roll is one lock opportunity
+ * (the dream build's assignment capacity). Roll order preserved.
+ */
+export function trackRolledPlayer(rolled: string[], name: string): string[] {
+  return [...rolled, name]
+}
+
 export function isBuildComplete(
   locked: Partial<Record<AttributeKey, LockedAttribute>>,
 ): boolean {
@@ -46,6 +55,7 @@ export function emptyBuildState(): Pick<
   GameState,
   | 'rngCounters'
   | 'lockedAttributes'
+  | 'rolledPlayerNames'
   | 'currentTeam'
   | 'currentPlayer'
   | 'respinsLeft'
@@ -69,6 +79,7 @@ export function emptyBuildState(): Pick<
   return {
     rngCounters: zeroRngCounters(),
     lockedAttributes: {},
+    rolledPlayerNames: [],
     currentTeam: null,
     currentPlayer: null,
     respinsLeft: RESPINS_PER_BUILD,

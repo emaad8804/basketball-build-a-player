@@ -21,6 +21,15 @@ for (const player of ALL_PLAYERS) {
   }
 }
 
+/** name -> player. Names are unique across the generated roster. */
+const playerByNameIndex = new Map<string, Player>(
+  ALL_PLAYERS.map((p) => [p.name, p]),
+)
+
+export function playerByName(name: string): Player | undefined {
+  return playerByNameIndex.get(name)
+}
+
 export function playersOnTeamInGroup(team: string, group: Group): Player[] {
   return teamGroupIndex.get(team)?.get(group) ?? []
 }

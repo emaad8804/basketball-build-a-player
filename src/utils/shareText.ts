@@ -1,7 +1,8 @@
-import { ATTRIBUTE_KEYS, GROUP_LABELS } from '../constants/attributes'
+import { ATTRIBUTE_KEYS, ATTRIBUTE_LABELS, GROUP_LABELS } from '../constants/attributes'
 import { BUDGET_TIER_BY_ID } from '../constants/budget'
 import { FLAW_BY_ID } from '../constants/flaws'
 import { budgetSpent, efficiencyBadge } from '../game-logic/budget'
+import { biggestMiss, computeDreamBuildResult } from '../game-logic/dreamBuild'
 import type { GameState, Rarity } from '../types'
 
 const RARITY_SQUARES: Record<Rarity, string> = {
@@ -25,6 +26,27 @@ export function flawLine(state: GameState): string {
   }
   const flaw = FLAW_BY_ID[state.flawId]
   return `${flaw.name}${state.flawRerolled ? ' (rerolled)' : ''}`
+}
+
+/** Dream Build hook: the biggest miss, or the Perfect Read flex. Free/Daily only. */
+export function dreamLine(state: GameState): string {
+  if (state.mode === 'budget' || !state.group || state.overall === null) return ''
+  const result = computeDreamBuildResult(
+    state.group,
+    state.lockedAttributes,
+    state.overall,
+    state.rolledPlayerNames,
+  )
+  if (!result) return ''
+  if (result.perfectRead) return '🎯 Perfect Read — kept the best of everyone I saw'
+  if (result.missedOVR > 0) {
+    const top = biggestMiss(state.lockedAttributes, result.dream, result.missed)
+    if (!top) return ''
+    return `👀 Left ${result.missedOVR} OVR on the table — had ${top.slot.grade} ${
+      ATTRIBUTE_LABELS[top.attribute]
+    } from ${top.slot.sourcePlayerName}`
+  }
+  return ''
 }
 
 /** One-line run outcome for share text and daily history. */
@@ -78,6 +100,7 @@ export function buildShareText(state: GameState): string {
     rarityRow(state),
     flawLine(state),
     `${resultLine(state)}${respinNote}`,
+    dreamLine(state),
     state.legacyLabel ? `Legacy: ${state.legacyLabel}` : '',
   ]
     .filter(Boolean)

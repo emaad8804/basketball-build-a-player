@@ -4,12 +4,14 @@ import { BUDGET_TIER_BY_ID } from '../../constants/budget'
 import { FLAW_BY_ID, FLAW_TIER_COLORS } from '../../constants/flaws'
 import { teamTierFor } from '../../constants/teamStrength'
 import { budgetSpent, efficiencyBadge, efficiencyLine } from '../../game-logic/budget'
+import { computeDreamBuildResult } from '../../game-logic/dreamBuild'
 import { analyzeBuild } from '../../game-logic/report'
 import { useGame } from '../../state/GameContext'
 import { Clover, Trophy, Zap } from 'lucide-react'
 import { Button, Card, CountUpValue } from '../shared/atoms'
 import { FLAW_ICONS, TIER_ICONS } from '../shared/icons'
 import { AttributeBoard } from '../game/AttributeBoard'
+import { DreamBuildSection } from './DreamBuildSection'
 
 export function ResultScreen() {
   const { state, dispatch } = useGame()
@@ -20,6 +22,19 @@ export function ResultScreen() {
   )
   const budgetTier = state.budgetTier ? BUDGET_TIER_BY_ID[state.budgetTier] : null
   const spent = budgetSpent(state)
+  // Free Play + Daily only in v1 — Budget's affordability layer excluded
+  const dreamResult = useMemo(
+    () =>
+      state.mode === 'budget' || state.overall === null
+        ? null
+        : computeDreamBuildResult(
+            group,
+            state.lockedAttributes,
+            state.overall,
+            state.rolledPlayerNames,
+          ),
+    [group, state.mode, state.lockedAttributes, state.overall, state.rolledPlayerNames],
+  )
 
   return (
     <div className="min-h-dvh px-4 py-8 max-w-4xl mx-auto">
@@ -211,6 +226,10 @@ export function ResultScreen() {
         </div>
         <AttributeBoard locked={state.lockedAttributes} />
       </div>
+
+      {state.mode !== 'budget' && dreamResult && (
+        <DreamBuildSection result={dreamResult} locked={state.lockedAttributes} />
+      )}
 
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <Button
