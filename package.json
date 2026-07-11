@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "data:build": "node scripts/fetch-nbastats.js 2025-26 && node scripts/fetch-nbastats.js 2024-25 && node scripts/build-player-data.js",
-    "balance:check": "tsx scripts/balance-check.ts"
+    "balance:check": "tsx scripts/balance-check.ts",
+    "dream:check": "tsx scripts/dream-build-check.ts"
   },
   "dependencies": {
     "@fontsource/anton": "^5.2.7",
