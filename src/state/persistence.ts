@@ -44,6 +44,11 @@ export function loadRun(): GameState | null {
     ) {
       return null
     }
+    // Saves from before Dream Build lack the rolled-player pool — default it
+    // rather than rejecting so old runs still resume
+    if (!Array.isArray(parsed.rolledPlayerNames)) {
+      return { ...parsed, rolledPlayerNames: [] }
+    }
     return parsed
   } catch {
     return null

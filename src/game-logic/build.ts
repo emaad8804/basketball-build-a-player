@@ -36,6 +36,11 @@ export function lockAttribute(
   }
 }
 
+/** Record a rolled player into the run pool: unique, first-seen order kept. */
+export function trackRolledPlayer(rolled: string[], name: string): string[] {
+  return rolled.includes(name) ? rolled : [...rolled, name]
+}
+
 export function isBuildComplete(
   locked: Partial<Record<AttributeKey, LockedAttribute>>,
 ): boolean {
@@ -46,6 +51,7 @@ export function emptyBuildState(): Pick<
   GameState,
   | 'rngCounters'
   | 'lockedAttributes'
+  | 'rolledPlayerNames'
   | 'currentTeam'
   | 'currentPlayer'
   | 'respinsLeft'
@@ -69,6 +75,7 @@ export function emptyBuildState(): Pick<
   return {
     rngCounters: zeroRngCounters(),
     lockedAttributes: {},
+    rolledPlayerNames: [],
     currentTeam: null,
     currentPlayer: null,
     respinsLeft: RESPINS_PER_BUILD,

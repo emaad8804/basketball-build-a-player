@@ -6,6 +6,7 @@ import {
   emptyBuildState,
   isBuildComplete,
   lockAttribute,
+  trackRolledPlayer,
 } from '../game-logic/build'
 import { spinFlaw } from '../game-logic/flaw'
 import { eventRng, randomSeed, zeroRngCounters } from '../game-logic/rng'
@@ -133,7 +134,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           rngCounters: teamDraw.rngCounters,
         }
       }
-      return { ...state, currentPlayer: player, rngCounters }
+      return {
+        ...state,
+        currentPlayer: player,
+        rngCounters,
+        rolledPlayerNames: trackRolledPlayer(state.rolledPlayerNames, player.name),
+      }
     }
 
     case 'RESPIN': {
@@ -178,6 +184,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         respinsLeft: state.respinsLeft - 1,
         budgetLeft: paid ? state.budgetLeft! - RESPIN_COST : state.budgetLeft,
         rngCounters,
+        rolledPlayerNames: player
+          ? trackRolledPlayer(state.rolledPlayerNames, player.name)
+          : state.rolledPlayerNames,
       }
     }
 
