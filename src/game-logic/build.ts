@@ -36,9 +36,13 @@ export function lockAttribute(
   }
 }
 
-/** Record a rolled player into the run pool: unique, first-seen order kept. */
+/**
+ * Record a roll into the run pool. One entry per roll-instance — a player
+ * rolled twice appears twice, because each roll is one lock opportunity
+ * (the dream build's assignment capacity). Roll order preserved.
+ */
 export function trackRolledPlayer(rolled: string[], name: string): string[] {
-  return rolled.includes(name) ? rolled : [...rolled, name]
+  return [...rolled, name]
 }
 
 export function isBuildComplete(

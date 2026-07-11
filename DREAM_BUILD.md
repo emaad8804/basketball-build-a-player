@@ -35,10 +35,22 @@ isn't in the pool. Someone who spends more respins sees more players and has a r
 
 - **Scope:** Free Play + Daily Challenge only. Budget Mode explicitly excluded in v1
   (its pricing/budget layer complicates "could you have afforded it" — revisit later).
-- **Pool = every unique player rolled during the build**, across all 9 slots, including
-  every respin, not just locked players.
-- **Dream grade per attribute = best grade among all pooled players for that attribute**,
-  compared via the existing `GRADE_RANK` order. Ties broken by first-seen (stable).
+- **Pool = every player rolled during the build**, across all 9 slots, including
+  every respin, not just locked players. Track with multiplicity: a player rolled twice
+  can contribute two attributes.
+- **CRITICAL — one attribute per roll.** Each rolled player can supply AT MOST as many
+  attributes to the dream build as the number of times they were rolled (normally once).
+  This is the real game rule: one roll = one lockable attribute. A single roll of an
+  elite player (e.g. Luka) may NOT fill all 9 slots — he fills the ONE slot where he adds
+  the most, and the other slots are filled by the next-best available players, cascading.
+- **The dream build is therefore an ASSIGNMENT problem, not a per-slot max.** Solve for
+  the assignment of pooled players to the 9 slots that maximizes total build OVR, subject
+  to each player used ≤ (times rolled). Use maximum-weight bipartite matching (Hungarian).
+  Compare grades via the existing `GRADE_RANK`. This naturally places a versatile star
+  where his marginal advantage is greatest — matching the "put Luka where the alternatives
+  were worst" intuition — because that's what maximizes the total.
+- **Show the source player** for each dream slot — the emotional payoff ("you had Curry
+  the whole time"). This is a locked design decision, not optional.
 - **Show the source player** for each dream grade — the emotional payoff ("you had Curry
   the whole time"). This is a locked design decision, not optional.
 - **Two result states**, both designed for, not just the negative one:
@@ -67,10 +79,26 @@ The 9 attribute keys, per the existing rating system:
 
 - `type DreamSlot = { attribute: AttributeKey; grade: Grade; sourcePlayerId: string; sourcePlayerName: string }`
 - `dreamBuild(rolledPlayers: Player[]): Record<AttributeKey, DreamSlot>`
-  For each of the 9 attributes, scan every pooled player's grade for that attribute,
-  keep the best by `GRADE_RANK`; record the winning player's id + name. Stable tie-break
-  (first player seen with that grade wins, so the ordering of `rolledPlayers` matters —
-  preserve roll order when building the pool).
+  **Assignment, not greedy per-slot.** `rolledPlayers` includes multiplicity (a player
+  rolled twice appears twice). Build a weighted bipartite graph: left = the 9 attribute
+  slots, right = one node per roll-instance in `rolledPlayers`. Edge weight(slot, player)
+  = the numeric value that player's grade for that slot's attribute contributes to OVR
+  (use the SAME per-attribute value the OVR formula uses — see `dreamOVR` note — so
+  maximizing total weight genuinely maximizes dream OVR). Solve for the maximum-weight
+  assignment where each slot gets exactly one player-node and each player-node is used at
+  most once (⇒ each real player used ≤ times rolled). Implement with the Hungarian
+  algorithm (or an equivalent max-weight bipartite matching / min-cost-max-flow — the pool
+  is tiny, ~9–15 nodes, so exact is cheap). Record each slot's assigned grade + the source
+  player's id + name.
+  - **Tie-break must be deterministic:** when multiple assignments tie on total weight,
+    prefer the one using earlier-rolled players (stable), so results are reproducible.
+  - **Feasibility:** there are always ≥ 9 roll-instances (9 initial rolls + any respins),
+    and any player's grade can go to any slot, so a full 9-slot assignment always exists.
+    Guard anyway: if fewer than 9 roll-instances somehow exist, fill remaining slots from
+    the best available and don't crash.
+  - **Sanity expectation:** a single roll of an elite player must occupy exactly ONE slot
+    in the output, never more. Add a dev assertion that no `sourcePlayerId` appears more
+    times than that player was rolled.
 - `dreamOVR(dream: Record<AttributeKey, DreamSlot>): number`
   OVR of the dream build using the same OVR formula the real build uses (import/reuse
   the existing OVR calc — do NOT duplicate it, so the two can't drift).
@@ -170,8 +198,12 @@ should flag if the copy makes nailing every pick feel like a loss.
 
 1. `types/build.ts` + `gameReducer.ts` + `persistence.ts` — track `rolledPlayerIds`, no UI.
    Verify via a run that the array fills correctly on spin + respin and clears on reset.
-2. `game-logic/dreamBuild.ts` — pure logic + a quick unit sanity check (feed a known
-   pool, assert the recombined grades and OVR).
+2. `game-logic/dreamBuild.ts` — the assignment logic + a unit test that specifically
+   proves the one-player-one-slot constraint: feed a pool where one elite player (all-S)
+   is rolled ONCE alongside several weaker players, and assert that elite player appears
+   in exactly ONE output slot, with the remaining 8 slots filled by other players. Also
+   assert total dream OVR ≥ actual and that no source player is used more than they were
+   rolled.
 3. `DreamBuildSection.tsx` + wire into `ResultScreen.tsx` behind the `mode !== 'budget'`
    guard — comparison variant first, then Perfect Read variant.
 4. `shareText.ts` hook.
@@ -188,5 +220,11 @@ should flag if the copy makes nailing every pick feel like a loss.
 - Do not let this always read as a bummer. The Perfect Read state is what keeps the feature
   from punishing good play. A player who reads every card well should feel rewarded, not
   told they merely avoided regret.
+- **The one-player-one-attribute rule is what makes this honest.** A greedy per-slot "best
+  grade anyone had" lets a single elite roll win all 9 slots — an impossible team the
+  player could never have actually built, which turns the feature into a lie. The
+  assignment model shows a build that was genuinely achievable under the real one-lock-per-
+  roll rule, which is both truthful and a better "what if" — it forces the interesting
+  question of where each star should have gone.
 - Respin-constrained by construction: more respins = more players seen = richer dream pool.
   This is a nice implicit incentive to engage with the respin mechanic, at no design cost.

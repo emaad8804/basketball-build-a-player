@@ -58,7 +58,7 @@ export interface GameState {
   /** Per-event-type spin counters keying the counter-based RNG streams. */
   rngCounters: RngCounters
   lockedAttributes: Partial<Record<AttributeKey, LockedAttribute>>
-  /** Every unique player rolled this run (spins + risk-its), first-seen order. */
+  /** One entry per roll this run (spins + risk-its); duplicates = rolled again. Roll order. */
   rolledPlayerNames: string[]
   currentTeam: Team | null
   currentPlayer: Player | null
