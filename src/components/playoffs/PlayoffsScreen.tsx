@@ -97,16 +97,20 @@ function RoundSection({
         <div className="flex items-center gap-2">
           {/* W/L series dot-tracker */}
           <span className="flex items-center gap-1" aria-label="series results">
-            {games.map((g) => (
-              <span
-                key={g.gameNumber}
-                className={`w-2.5 h-2.5 rounded-full ${g.won ? 'bg-win' : 'bg-loss'}`}
-                title={`Game ${g.gameNumber}: ${g.won ? 'W' : 'L'}`}
-              />
-            ))}
-            {round.games.slice(revealedGames).map((g) => (
-              <span key={g.gameNumber} className="w-2.5 h-2.5 rounded-full bg-raised border border-edge" />
-            ))}
+            {/* Always 7 slots — deriving the count from round.games.length
+                would spoil the series length before the games are revealed. */}
+            {Array.from({ length: 7 }, (_, i) => {
+              const game = i < revealedGames ? round.games[i] : null
+              return game ? (
+                <span
+                  key={i}
+                  className={`w-2.5 h-2.5 rounded-full ${game.won ? 'bg-win' : 'bg-loss'}`}
+                  title={`Game ${game.gameNumber}: ${game.won ? 'W' : 'L'}`}
+                />
+              ) : (
+                <span key={i} className="w-2.5 h-2.5 rounded-full border border-muted/40" />
+              )
+            })}
           </span>
           {complete && (
             <span
