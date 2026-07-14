@@ -117,6 +117,9 @@ export const MATCHUP_PROB_CEIL = 0.76
 /** Per-game win-prob swing for playing at home. Real NBA playoff home teams win ~60%. */
 export const HOME_COURT_EDGE = 0.035
 
+/** Without its star, the team's edge collapses toward — but not to — a floor. */
+export const STAR_ABSENCE_MULT = 0.55
+
 export const SEASON_VARIANCE_STD = 0.045
 /** Noise on the SERIES (stylistic matchup) — small, applies to every game in that series. */
 export const SERIES_MATCHUP_STD = 0.02

@@ -2,6 +2,7 @@ import {
   GAME7_VARIANCE_STD,
   GAME_VARIANCE_STD,
   HOME_COURT_EDGE,
+  STAR_ABSENCE_MULT,
 } from '../constants/weights'
 import type { SeriesGame } from '../types'
 import { clamp, gaussian } from './random'
@@ -131,15 +132,22 @@ export function simulateDetailedSeries(
       isGame7 ? GAME7_VARIANCE_STD : GAME_VARIANCE_STD,
     )
 
-    // Team plays badly without its star; flaw deltas only apply when playing
+    // What this team's odds are tonight, before the star's own quirks.
+    const pBase = clamp(
+      (isGame7 ? pGame7 : pGame) + homeEdge + gameNoise,
+      0.1,
+      0.9,
+    )
+    // Without its star the edge collapses relative to what the team was —
+    // a 96 build's team without him is still better than a 78 build's.
+    // Flaw deltas only apply when the star actually plays.
     const p = sitting
-      ? 0.25
+      ? clamp(pBase * STAR_ABSENCE_MULT, 0.12, 0.5)
       : clamp(
-          (isGame7
-            ? pGame7 + flawPGame7Delta(flaw)
-            : pGame + flawPGameDelta(flaw, gameNumber)) +
-            homeEdge +
-            gameNoise,
+          pBase +
+            (isGame7
+              ? flawPGame7Delta(flaw)
+              : flawPGameDelta(flaw, gameNumber)),
           0.1,
           0.9,
         )
