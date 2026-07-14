@@ -168,3 +168,70 @@ export const CLEAN_ELIMINATION_RECAPS: Line[] = [
   'A flawless closer: no crack in the armor for the opponent to pry open.',
   'Elimination pressure, zero flaws to hunt. Checkmate.',
 ]
+
+// --- Series-level verdicts (SIM_BALANCE.md §8) -----------------------------
+
+export const SERIES_WIN_RECAPS = [
+  'Your build controlled the series with poise on both ends.',
+  'Clutch execution late in games sealed the series.',
+  'Your build wore the opponent down and closed it out.',
+]
+export const SERIES_CLOSE_WIN_RECAPS = [
+  'A grueling series that came down to the final possessions.',
+  'Your build survived a war and advanced.',
+]
+export const SERIES_LOSS_RECAPS = [
+  'The opponent had an answer for everything late in games.',
+  'Cold shooting stretches proved fatal in the biggest moments.',
+  'Defensive lapses in crunch time ended the run.',
+]
+
+/** Generic series recap from the existing pools. */
+export function pickSeriesRecap(won: boolean, winsAgainst: number): string {
+  return won
+    ? winsAgainst >= 3
+      ? pickRandom(SERIES_CLOSE_WIN_RECAPS)
+      : pickRandom(SERIES_WIN_RECAPS)
+    : pickRandom(SERIES_LOSS_RECAPS)
+}
+
+/** "Games 2 and 3" / "Games 2, 3 and 5". */
+function gameList(numbers: number[]): string {
+  if (numbers.length === 1) return `Game ${numbers[0]}`
+  const head = numbers.slice(0, -1).join(', ')
+  return `Games ${head} and ${numbers[numbers.length - 1]}`
+}
+
+/**
+ * One line explaining the series outcome, derived from what actually
+ * happened. Priority: flaw was decisive → swept by a stronger team →
+ * upset → went the distance → the generic pools. Losing must never
+ * read as unexplained noise.
+ */
+export function seriesVerdict(args: {
+  won: boolean
+  winsFor: number
+  games: SeriesGame[]
+  opponent: string
+  myStrength: number
+  oppStrength: number
+  flawName: string | null
+  fallback: string
+}): string {
+  const { won, winsFor, games, opponent, myStrength, oppStrength } = args
+
+  const dnpGames = games.filter((g) => g.dnp).map((g) => g.gameNumber)
+  if (!won && dnpGames.length >= 2 && args.flawName) {
+    return `${args.flawName} cost you ${gameList(dnpGames)} — the series was gone before you got back.`
+  }
+  if (!won && winsFor === 0 && oppStrength > myStrength) {
+    return `The ${opponent} were the better team, and it showed.`
+  }
+  if (!won && myStrength > oppStrength) {
+    return `You were the favorite. That's what makes it hurt.`
+  }
+  if (games.length === 7) {
+    return `Seven games. One possession. That's the playoffs.`
+  }
+  return args.fallback
+}

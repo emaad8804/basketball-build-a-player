@@ -78,6 +78,8 @@ export interface PlayoffRound {
   winsAgainst: number
   games: SeriesGame[]
   recap: string
+  /** One line explaining WHY the series went the way it did (§8). */
+  verdict: string
 }
 
 export interface PlayoffResult {
@@ -99,4 +101,6 @@ export interface FinalsResult {
   winsAgainst: number
   finalsMvp: boolean
   averages: StatLine
+  /** One line explaining WHY the series went the way it did (§8). */
+  verdict: string
 }

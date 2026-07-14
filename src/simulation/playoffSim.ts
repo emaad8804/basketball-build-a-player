@@ -16,7 +16,8 @@ import type {
 } from '../types'
 import { clamp, gaussian, pickRandom } from './random'
 import type { BuildProfile } from './profile'
-import { flawStrengthDelta, rollGlassBones } from './flawEffects'
+import { flawLabel, flawStrengthDelta, rollGlassBones } from './flawEffects'
+import { pickSeriesRecap, seriesVerdict } from './recaps'
 import { generateStatLine } from './seasonSim'
 import { simulateDetailedSeries } from './seriesSim'
 
@@ -76,21 +77,6 @@ const ROUNDS: PlayoffRoundName[] = [
   'First Round',
   'Second Round',
   'Conference Finals',
-]
-
-const SERIES_WIN_RECAPS = [
-  'Your build controlled the series with poise on both ends.',
-  'Clutch execution late in games sealed the series.',
-  'Your build wore the opponent down and closed it out.',
-]
-const SERIES_CLOSE_WIN_RECAPS = [
-  'A grueling series that came down to the final possessions.',
-  'Your build survived a war and advanced.',
-]
-const SERIES_LOSS_RECAPS = [
-  'The opponent had an answer for everything late in games.',
-  'Cold shooting stretches proved fatal in the biggest moments.',
-  'Defensive lapses in crunch time ended the run.',
 ]
 
 /**
@@ -177,11 +163,17 @@ export function simulatePlayoffs(
       buildSeed < opponentSeed,
     )
 
-    const recap = series.won
-      ? series.winsAgainst >= 3
-        ? pickRandom(SERIES_CLOSE_WIN_RECAPS)
-        : pickRandom(SERIES_WIN_RECAPS)
-      : pickRandom(SERIES_LOSS_RECAPS)
+    const recap = pickSeriesRecap(series.won, series.winsAgainst)
+    const verdict = seriesVerdict({
+      won: series.won,
+      winsFor: series.winsFor,
+      games: series.games,
+      opponent,
+      myStrength: strength,
+      oppStrength,
+      flawName: profile.flaw ? flawLabel(profile.flaw) : null,
+      fallback: recap,
+    })
 
     rounds.push({
       round,
@@ -192,6 +184,7 @@ export function simulatePlayoffs(
       winsAgainst: series.winsAgainst,
       games: series.games,
       recap,
+      verdict,
     })
 
     if (!series.won) {

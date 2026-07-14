@@ -136,6 +136,17 @@ export function FinalsScreen() {
                 : `Lost the series ${finals.winsFor}–${finals.winsAgainst}`}
               {finals.won && finals.finalsMvp && ' · Finals MVP'}
             </div>
+            {finals.verdict && (
+              <div
+                className={`mt-3 inline-block text-sm rounded-xl px-4 py-2.5 border ${
+                  finals.won
+                    ? 'bg-win/10 border-win/40 text-win'
+                    : 'bg-loss/10 border-loss/40 text-loss'
+                }`}
+              >
+                {finals.verdict}
+              </div>
+            )}
 
             <div className="mt-6 grid grid-cols-3 sm:grid-cols-7 gap-2 text-left">
               <StatChip label="PPG" value={<CountUpValue value={finals.averages.ppg} decimals={1} />} />

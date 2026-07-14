@@ -10,7 +10,8 @@ import { matchupWinProb, opponentStrength } from './playoffSim'
 import type { FinalsResult, SeasonResult, SeriesGame, StatLine } from '../types'
 import { clamp, gaussian, lerpAnchors, pickRandom, round1 } from './random'
 import type { BuildProfile } from './profile'
-import { flawStrengthDelta } from './flawEffects'
+import { flawLabel, flawStrengthDelta } from './flawEffects'
+import { pickSeriesRecap, seriesVerdict } from './recaps'
 import { simulateDetailedSeries } from './seriesSim'
 
 function finalsStrength(profile: BuildProfile): number {
@@ -98,6 +99,17 @@ export function simulateFinals(
     threePct: round1(clamp(35 + (profile.ratings.shooting - 70) * 0.25 + gaussian(0, 2.5), 26, 46)),
   }
 
+  const verdict = seriesVerdict({
+    won,
+    winsFor,
+    games,
+    opponent,
+    myStrength: finalsStrength(profile),
+    oppStrength,
+    flawName: profile.flaw ? flawLabel(profile.flaw) : null,
+    fallback: pickSeriesRecap(won, winsAgainst),
+  })
+
   return {
     opponent,
     games,
@@ -106,5 +118,6 @@ export function simulateFinals(
     winsAgainst,
     finalsMvp: won, // solo-star build: champion == Finals MVP
     averages,
+    verdict,
   }
 }

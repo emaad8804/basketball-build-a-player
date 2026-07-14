@@ -145,7 +145,7 @@ function RoundSection({
               : 'bg-loss/10 border-loss/40 text-loss'
           }`}
         >
-          {round.recap}
+          {round.verdict || round.recap}
         </div>
       )}
     </div>
