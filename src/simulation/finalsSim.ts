@@ -1,4 +1,5 @@
 import { NBA_TEAMS } from '../constants/teams'
+import { teamTierFor } from '../constants/teamStrength'
 import {
   FINALS_VARIANCE_STD,
   FINALS_WEIGHTS,
@@ -43,8 +44,13 @@ export function simulateFinals(
   season: SeasonResult,
 ): FinalsResult {
   const oppConference = season.conference === 'East' ? 'West' : 'East'
+  // It's the Finals — the opponent is essentially always a strong team.
+  const inConference = NBA_TEAMS.filter((t) => t.conference === oppConference)
+  const strongPool = inConference.filter((t) =>
+    ['contender', 'playoff-lock'].includes(teamTierFor(t.name).id),
+  )
   const opponent = pickRandom(
-    NBA_TEAMS.filter((t) => t.conference === oppConference),
+    strongPool.length > 0 ? strongPool : inConference,
   ).name
 
   const pGame = clamp(

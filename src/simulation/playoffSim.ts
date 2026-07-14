@@ -1,4 +1,4 @@
-import { NBA_TEAMS } from '../constants/teams'
+import { teamsForSeed } from '../constants/teamStrength'
 import {
   GAME7_VARIANCE_STD,
   GAME7_WEIGHTS,
@@ -96,11 +96,6 @@ function opponentSeedsForPath(seed: number): [number, number, number] {
   return [r1, r2, cf]
 }
 
-/** Better-seeded opponents are harder: ±1% win prob per seed step from 4.5. */
-function seedAdjustment(opponentSeed: number): number {
-  return (opponentSeed - 4.5) * 0.01
-}
-
 export function simulatePlayoffs(
   profile: BuildProfile,
   season: SeasonResult,
@@ -120,11 +115,8 @@ export function simulatePlayoffs(
   const usedOpponents = new Set<string>(
     profile.homeTeamName ? [profile.homeTeamName] : [],
   )
-  const pickOpponent = (conf: 'East' | 'West'): string => {
-    const pool = NBA_TEAMS.filter(
-      (t) => t.conference === conf && !usedOpponents.has(t.name),
-    )
-    const team = pickRandom(pool)
+  const pickOpponent = (conf: 'East' | 'West', seed: number): string => {
+    const team = pickRandom(teamsForSeed(seed, conf, usedOpponents))
     usedOpponents.add(team.name)
     return team.name
   }
@@ -142,20 +134,19 @@ export function simulatePlayoffs(
       break
     }
     const opponentSeed = clamp(Math.round(opponentSeeds[i]), 1, 8)
+    const opponent = pickOpponent(season.conference, opponentSeed)
     const pGame = clamp(
       strengthToWinProb(strength) -
         ROUND_DIFFICULTY[round] +
-        seedAdjustment(opponentSeed) +
         gaussian(0, PLAYOFF_VARIANCE_STD),
       0.15,
       0.85,
     )
     const pGame7 = clamp(
-      pGame7Base + seedAdjustment(opponentSeed) + gaussian(0, GAME7_VARIANCE_STD),
+      pGame7Base + gaussian(0, GAME7_VARIANCE_STD),
       0.12,
       0.88,
     )
-    const opponent = pickOpponent(season.conference)
     const series = simulateDetailedSeries(profile, pGame, pGame7)
 
     const recap = series.won

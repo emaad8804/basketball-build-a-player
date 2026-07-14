@@ -6,7 +6,9 @@
  * before superstar carry — see carriedWinPctDelta).
  */
 
+import type { Team } from '../types'
 import { TEAM_TIER_HEX } from './designTokens'
+import { NBA_TEAMS } from './teams'
 
 export type TeamTierId =
   | 'contender'
@@ -117,6 +119,36 @@ export const TEAM_TIER_BY_NAME: Record<string, TeamTier> = Object.fromEntries(
 
 export function teamTierFor(teamName: string): TeamTier {
   return TEAM_TIER_BY_NAME[teamName] ?? TEAM_TIERS.middle
+}
+
+/** Which team tiers plausibly occupy each playoff seed. */
+export const SEED_TIER_POOL: Record<number, TeamTierId[]> = {
+  1: ['contender'],
+  2: ['contender'],
+  3: ['contender', 'playoff-lock'],
+  4: ['playoff-lock'],
+  5: ['playoff-lock'],
+  6: ['playoff-lock', 'middle'],
+  7: ['middle'],
+  8: ['middle', 'rebuilding'],
+}
+
+/**
+ * Teams that can plausibly hold `seed` in `conference`, excluding names
+ * already used. Falls back to any unused team in the conference so a thin
+ * pool can never crash the sim or draw the build's own team.
+ */
+export function teamsForSeed(
+  seed: number,
+  conference: 'East' | 'West',
+  excluded: ReadonlySet<string>,
+): Team[] {
+  const tiers = SEED_TIER_POOL[seed] ?? []
+  const inConference = NBA_TEAMS.filter(
+    (t) => t.conference === conference && !excluded.has(t.name),
+  )
+  const pool = inConference.filter((t) => tiers.includes(teamTierFor(t.name).id))
+  return pool.length > 0 ? pool : inConference
 }
 
 /** Superstar carry: overall where penalty relief starts / maxes out. */
