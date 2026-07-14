@@ -87,13 +87,24 @@ export const WIN_PCT_ANCHORS: [number, number][] = [
 /** Hard playoff gate: seasons below this many wins end in the lottery. */
 export const PLAYOFF_WIN_CUTOFF = 44
 
-/** Extra difficulty subtracted from per-game win prob as rounds deepen. */
-export const ROUND_DIFFICULTY: Record<string, number> = {
-  'First Round': 0.0,
-  'Second Round': 0.05,
-  'Conference Finals': 0.09,
-  'NBA Finals': 0.12,
+/** Baseline composite strength of a playoff team by seed (60-99 scale). */
+export const SEED_BASE_STRENGTH: Record<number, number> = {
+  1: 92,
+  2: 90,
+  3: 88,
+  4: 86,
+  5: 85,
+  6: 83,
+  7: 81,
+  8: 79,
 }
+
+/**
+ * Strength-differential → win-prob slope: each point of edge over the
+ * opponent is worth this much per game. Deeper rounds are harder because
+ * the opponents are better, not because of a flat round penalty.
+ */
+export const MATCHUP_COEFF = 0.022
 
 export const SEASON_VARIANCE_STD = 0.045
 export const PLAYOFF_VARIANCE_STD = 0.05

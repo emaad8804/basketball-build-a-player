@@ -1,10 +1,11 @@
-import { teamsForSeed } from '../constants/teamStrength'
+import { teamTierFor, teamsForSeed } from '../constants/teamStrength'
 import {
   GAME7_VARIANCE_STD,
   GAME7_WEIGHTS,
+  MATCHUP_COEFF,
   PLAYOFF_VARIANCE_STD,
   PLAYOFF_WEIGHTS,
-  ROUND_DIFFICULTY,
+  SEED_BASE_STRENGTH,
 } from '../constants/weights'
 import type {
   PlayoffResult,
@@ -45,9 +46,25 @@ function game7Strength(profile: BuildProfile): number {
   )
 }
 
-/** Map strength (60-99) to a per-game win probability. */
+/**
+ * Map absolute strength (60-99) to a win probability with no opponent in
+ * the equation. Playoff rounds use matchupWinProb instead; this survives
+ * only for the play-in, where the opponent is an unseeded bubble team.
+ */
 export function strengthToWinProb(strength: number): number {
   return clamp(0.5 + (strength - 82) * 0.02, 0.2, 0.82)
+}
+
+/** Opponent's composite strength on the same 60-99 scale as playoffStrength(). */
+export function opponentStrength(opponentName: string, seed: number): number {
+  // Base by seed (a 1-seed is genuinely a better team than an 8-seed)
+  // plus the named team's tier delta.
+  return SEED_BASE_STRENGTH[seed] + teamTierFor(opponentName).strengthDelta
+}
+
+/** Strength differential → per-game win probability. */
+export function matchupWinProb(mine: number, theirs: number): number {
+  return clamp(0.5 + (mine - theirs) * MATCHUP_COEFF, 0.15, 0.85)
 }
 
 const ROUNDS: PlayoffRoundName[] = [
@@ -102,11 +119,7 @@ export function simulatePlayoffs(
   seedOverride?: number,
 ): PlayoffResult {
   const strength = playoffStrength(profile)
-  const pGame7Base = clamp(
-    0.5 + (game7Strength(profile) - 82) * 0.025,
-    0.15,
-    0.85,
-  )
+  const clutch = game7Strength(profile)
   const rounds: PlayoffRound[] = []
   // Play-in survivors enter as the 8 seed regardless of season record
   const opponentSeeds = opponentSeedsForPath(seedOverride ?? season.seed)
@@ -135,15 +148,16 @@ export function simulatePlayoffs(
     }
     const opponentSeed = clamp(Math.round(opponentSeeds[i]), 1, 8)
     const opponent = pickOpponent(season.conference, opponentSeed)
+    const oppStrength = opponentStrength(opponent, opponentSeed)
     const pGame = clamp(
-      strengthToWinProb(strength) -
-        ROUND_DIFFICULTY[round] +
+      matchupWinProb(strength, oppStrength) +
         gaussian(0, PLAYOFF_VARIANCE_STD),
       0.15,
       0.85,
     )
+    // Game 7 is a pure clutch profile, but still against THIS opponent.
     const pGame7 = clamp(
-      pGame7Base + gaussian(0, GAME7_VARIANCE_STD),
+      0.5 + (clutch - oppStrength) * 0.025 + gaussian(0, GAME7_VARIANCE_STD),
       0.12,
       0.88,
     )

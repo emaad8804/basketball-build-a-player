@@ -5,8 +5,8 @@ import {
   FINALS_WEIGHTS,
   GAME7_VARIANCE_STD,
   GAME7_WEIGHTS,
-  ROUND_DIFFICULTY,
 } from '../constants/weights'
+import { matchupWinProb, opponentStrength } from './playoffSim'
 import type { FinalsResult, SeasonResult, SeriesGame, StatLine } from '../types'
 import { clamp, gaussian, pickRandom, round1 } from './random'
 import type { BuildProfile } from './profile'
@@ -53,16 +53,19 @@ export function simulateFinals(
     strongPool.length > 0 ? strongPool : inConference,
   ).name
 
+  // The other conference's champ is a top seed by definition.
+  const oppSeed = Math.random() < 0.5 ? 1 : 2
+  const oppStrength = opponentStrength(opponent, oppSeed)
   const pGame = clamp(
-    0.5 +
-      (finalsStrength(profile) - 82) * 0.02 -
-      ROUND_DIFFICULTY['NBA Finals'] +
+    matchupWinProb(finalsStrength(profile), oppStrength) +
       gaussian(0, FINALS_VARIANCE_STD),
-    0.18,
-    0.8,
+    0.15,
+    0.85,
   )
   const pGame7 = clamp(
-    0.5 + (game7Strength(profile) - 82) * 0.025 + gaussian(0, GAME7_VARIANCE_STD),
+    0.5 +
+      (game7Strength(profile) - oppStrength) * 0.025 +
+      gaussian(0, GAME7_VARIANCE_STD),
     0.15,
     0.85,
   )
