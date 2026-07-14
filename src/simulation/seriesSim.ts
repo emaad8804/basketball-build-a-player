@@ -1,4 +1,8 @@
-import { HOME_COURT_EDGE } from '../constants/weights'
+import {
+  GAME7_VARIANCE_STD,
+  GAME_VARIANCE_STD,
+  HOME_COURT_EDGE,
+} from '../constants/weights'
 import type { SeriesGame } from '../types'
 import { clamp, gaussian } from './random'
 import type { BuildProfile } from './profile'
@@ -120,13 +124,22 @@ export function simulateDetailedSeries(
     const home = HCA_HOME_GAMES.includes(gameNumber) === hasHomeCourt
     const homeEdge = home ? HOME_COURT_EDGE : -HOME_COURT_EDGE
 
+    // Each game rolls its own noise — a bad break costs a game, never
+    // silently a whole series. Game 7's wobble is wider.
+    const gameNoise = gaussian(
+      0,
+      isGame7 ? GAME7_VARIANCE_STD : GAME_VARIANCE_STD,
+    )
+
     // Team plays badly without its star; flaw deltas only apply when playing
     const p = sitting
       ? 0.25
       : clamp(
           (isGame7
             ? pGame7 + flawPGame7Delta(flaw)
-            : pGame + flawPGameDelta(flaw, gameNumber)) + homeEdge,
+            : pGame + flawPGameDelta(flaw, gameNumber)) +
+            homeEdge +
+            gameNoise,
           0.1,
           0.9,
         )

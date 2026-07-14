@@ -1,10 +1,9 @@
 import { NBA_TEAMS } from '../constants/teams'
 import { teamTierFor } from '../constants/teamStrength'
 import {
-  FINALS_VARIANCE_STD,
   FINALS_WEIGHTS,
-  GAME7_VARIANCE_STD,
   GAME7_WEIGHTS,
+  SERIES_MATCHUP_STD,
   WIN_PCT_ANCHORS,
 } from '../constants/weights'
 import { matchupWinProb, opponentStrength } from './playoffSim'
@@ -57,16 +56,16 @@ export function simulateFinals(
   // The other conference's champ is a top seed by definition.
   const oppSeed = Math.random() < 0.5 ? 1 : 2
   const oppStrength = opponentStrength(opponent, oppSeed)
+  // One stylistic-matchup draw colors the whole series; per-game wobble
+  // lives inside the series sim.
+  const matchupNoise = gaussian(0, SERIES_MATCHUP_STD)
   const pGame = clamp(
-    matchupWinProb(finalsStrength(profile), oppStrength) +
-      gaussian(0, FINALS_VARIANCE_STD),
+    matchupWinProb(finalsStrength(profile), oppStrength) + matchupNoise,
     0.15,
     0.85,
   )
   const pGame7 = clamp(
-    0.5 +
-      (game7Strength(profile) - oppStrength) * 0.025 +
-      gaussian(0, GAME7_VARIANCE_STD),
+    0.5 + (game7Strength(profile) - oppStrength) * 0.025 + matchupNoise,
     0.15,
     0.85,
   )

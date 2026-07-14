@@ -110,6 +110,9 @@ export const MATCHUP_COEFF = 0.022
 export const HOME_COURT_EDGE = 0.035
 
 export const SEASON_VARIANCE_STD = 0.045
-export const PLAYOFF_VARIANCE_STD = 0.05
-export const FINALS_VARIANCE_STD = 0.06
+/** Noise on the SERIES (stylistic matchup) — small, applies to every game in that series. */
+export const SERIES_MATCHUP_STD = 0.02
+/** Noise on each GAME — the coin's own wobble. This is what a best-of-7 washes out. */
+export const GAME_VARIANCE_STD = 0.06
+/** Game 7's own wobble is wider — anything can happen in a one-game season. */
 export const GAME7_VARIANCE_STD = 0.09

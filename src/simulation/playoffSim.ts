@@ -1,11 +1,10 @@
 import { teamTierFor, teamsForSeed } from '../constants/teamStrength'
 import {
-  GAME7_VARIANCE_STD,
   GAME7_WEIGHTS,
   MATCHUP_COEFF,
-  PLAYOFF_VARIANCE_STD,
   PLAYOFF_WEIGHTS,
   SEED_BASE_STRENGTH,
+  SERIES_MATCHUP_STD,
 } from '../constants/weights'
 import type {
   PlayoffResult,
@@ -150,15 +149,17 @@ export function simulatePlayoffs(
     const opponentSeed = clamp(Math.round(opponentSeeds[i]), 1, 8)
     const opponent = pickOpponent(season.conference, opponentSeed)
     const oppStrength = opponentStrength(opponent, opponentSeed)
+    // A stylistic matchup has a character: one small draw colors the
+    // whole series. Per-game wobble lives inside the series sim.
+    const matchupNoise = gaussian(0, SERIES_MATCHUP_STD)
     const pGame = clamp(
-      matchupWinProb(strength, oppStrength) +
-        gaussian(0, PLAYOFF_VARIANCE_STD),
+      matchupWinProb(strength, oppStrength) + matchupNoise,
       0.15,
       0.85,
     )
     // Game 7 is a pure clutch profile, but still against THIS opponent.
     const pGame7 = clamp(
-      0.5 + (clutch - oppStrength) * 0.025 + gaussian(0, GAME7_VARIANCE_STD),
+      0.5 + (clutch - oppStrength) * 0.025 + matchupNoise,
       0.12,
       0.88,
     )
