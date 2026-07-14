@@ -2,6 +2,8 @@ import { teamTierFor, teamsForSeed } from '../constants/teamStrength'
 import {
   GAME7_WEIGHTS,
   MATCHUP_COEFF,
+  MATCHUP_PROB_CEIL,
+  MATCHUP_PROB_FLOOR,
   PLAYOFF_WEIGHTS,
   SEED_BASE_STRENGTH,
   SERIES_MATCHUP_STD,
@@ -63,7 +65,11 @@ export function opponentStrength(opponentName: string, seed: number): number {
 
 /** Strength differential → per-game win probability. */
 export function matchupWinProb(mine: number, theirs: number): number {
-  return clamp(0.5 + (mine - theirs) * MATCHUP_COEFF, 0.15, 0.85)
+  return clamp(
+    0.5 + (mine - theirs) * MATCHUP_COEFF,
+    MATCHUP_PROB_FLOOR,
+    MATCHUP_PROB_CEIL,
+  )
 }
 
 const ROUNDS: PlayoffRoundName[] = [

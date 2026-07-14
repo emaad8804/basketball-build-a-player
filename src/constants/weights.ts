@@ -94,9 +94,9 @@ export const SEED_BASE_STRENGTH: Record<number, number> = {
   3: 88,
   4: 86,
   5: 85,
-  6: 83,
-  7: 81,
-  8: 79,
+  6: 84,
+  7: 83,
+  8: 81,
 }
 
 /**
@@ -104,7 +104,15 @@ export const SEED_BASE_STRENGTH: Record<number, number> = {
  * opponent is worth this much per game. Deeper rounds are harder because
  * the opponents are better, not because of a flat round penalty.
  */
-export const MATCHUP_COEFF = 0.022
+export const MATCHUP_COEFF = 0.018
+
+/**
+ * Per-game win-prob bounds for a playoff matchup. Even the biggest
+ * favorite in a real playoff game sits around ~78%; the caps are what
+ * keep sweeps rare and series long.
+ */
+export const MATCHUP_PROB_FLOOR = 0.25
+export const MATCHUP_PROB_CEIL = 0.76
 
 /** Per-game win-prob swing for playing at home. Real NBA playoff home teams win ~60%. */
 export const HOME_COURT_EDGE = 0.035
