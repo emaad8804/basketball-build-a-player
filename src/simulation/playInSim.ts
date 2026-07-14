@@ -95,6 +95,9 @@ export function simulatePlayIn(
       statLine: generateGameStats(profile, won, false),
       recap,
       isGame7: false,
+      // NBA play-in venues: the 7/8 team hosts both its games; the 9/10
+      // team hosts the first and travels to the 7/8 loser for the second.
+      home: path === '7-8' || games.length === 0,
       ...(flawEvent ? { flawEvent } : {}),
     })
     return won

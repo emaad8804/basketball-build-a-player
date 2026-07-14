@@ -47,6 +47,8 @@ export interface SeriesGame {
   }
   recap: string
   isGame7: boolean
+  /** Played on the build's home floor (2-2-1-1-1 pattern). */
+  home: boolean
   /** Set when the player's Fatal Flaw visibly shaped this game. */
   flawEvent?: string
   /** Player sat this game out (Injury Prone). */

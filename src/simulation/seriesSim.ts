@@ -1,3 +1,4 @@
+import { HOME_COURT_EDGE } from '../constants/weights'
 import type { SeriesGame } from '../types'
 import { clamp, gaussian } from './random'
 import type { BuildProfile } from './profile'
@@ -88,16 +89,22 @@ export interface DetailedSeries {
   winsAgainst: number
 }
 
+/** Games the team holding home-court advantage hosts (2-2-1-1-1). */
+const HCA_HOME_GAMES = [1, 2, 5, 7]
+
 /**
  * Best-of-7 played one Bernoulli game at a time with full per-game
  * detail (score, stat line, recap). Game 7 uses its own win prob.
- * The build's Fatal Flaw hooks in per game: win-prob deltas, Injury
- * Prone DNP stretches, and explicit flaw event lines on affected games.
+ * Home court follows the standard 2-2-1-1-1 spine: ±HOME_COURT_EDGE
+ * per game depending on venue. The build's Fatal Flaw hooks in per
+ * game: win-prob deltas, Injury Prone DNP stretches, and explicit
+ * flaw event lines on affected games.
  */
 export function simulateDetailedSeries(
   profile: BuildProfile,
   pGame: number,
   pGame7: number,
+  hasHomeCourt: boolean,
 ): DetailedSeries {
   const flaw = profile.flaw
   const games: SeriesGame[] = []
@@ -110,14 +117,16 @@ export function simulateDetailedSeries(
     const gameNumber = games.length + 1
     const isGame7 = gameNumber === 7
     const sitting = injuredGamesLeft > 0
+    const home = HCA_HOME_GAMES.includes(gameNumber) === hasHomeCourt
+    const homeEdge = home ? HOME_COURT_EDGE : -HOME_COURT_EDGE
 
     // Team plays badly without its star; flaw deltas only apply when playing
     const p = sitting
       ? 0.25
       : clamp(
-          isGame7
+          (isGame7
             ? pGame7 + flawPGame7Delta(flaw)
-            : pGame + flawPGameDelta(flaw, gameNumber),
+            : pGame + flawPGameDelta(flaw, gameNumber)) + homeEdge,
           0.1,
           0.9,
         )
@@ -194,6 +203,7 @@ export function simulateDetailedSeries(
       statLine,
       recap,
       isGame7,
+      home,
       ...(flawEvent ? { flawEvent } : {}),
       ...(sitting ? { dnp: true } : {}),
     })

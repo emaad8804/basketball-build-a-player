@@ -106,6 +106,9 @@ export const SEED_BASE_STRENGTH: Record<number, number> = {
  */
 export const MATCHUP_COEFF = 0.022
 
+/** Per-game win-prob swing for playing at home. Real NBA playoff home teams win ~60%. */
+export const HOME_COURT_EDGE = 0.035
+
 export const SEASON_VARIANCE_STD = 0.045
 export const PLAYOFF_VARIANCE_STD = 0.05
 export const FINALS_VARIANCE_STD = 0.06

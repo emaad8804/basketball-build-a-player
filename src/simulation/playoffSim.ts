@@ -122,7 +122,8 @@ export function simulatePlayoffs(
   const clutch = game7Strength(profile)
   const rounds: PlayoffRound[] = []
   // Play-in survivors enter as the 8 seed regardless of season record
-  const opponentSeeds = opponentSeedsForPath(seedOverride ?? season.seed)
+  const buildSeed = clamp(seedOverride ?? season.seed, 1, 8)
+  const opponentSeeds = opponentSeedsForPath(buildSeed)
 
   // Never draw your own team as an opponent
   const usedOpponents = new Set<string>(
@@ -161,7 +162,13 @@ export function simulatePlayoffs(
       0.12,
       0.88,
     )
-    const series = simulateDetailedSeries(profile, pGame, pGame7)
+    // Home court goes to the better seed (lower number)
+    const series = simulateDetailedSeries(
+      profile,
+      pGame,
+      pGame7,
+      buildSeed < opponentSeed,
+    )
 
     const recap = series.won
       ? series.winsAgainst >= 3

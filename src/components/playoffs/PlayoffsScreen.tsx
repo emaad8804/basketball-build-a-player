@@ -47,6 +47,11 @@ export function GameCard({ game, isLatest }: { game: SeriesGame; isLatest: boole
               {game.isGame7 && <Flame className="w-3.5 h-3.5 text-rarity-legendary" aria-hidden />}
               {game.isGame7 ? 'Game 7' : `Game ${game.gameNumber}`}
             </span>
+            {typeof game.home === 'boolean' && (
+              <span className="text-xs text-muted font-semibold">
+                {game.home ? 'vs' : '@'}
+              </span>
+            )}
             <span className="font-bold text-cream tabular-nums">
               {game.scoreFor}–{game.scoreAgainst}
             </span>

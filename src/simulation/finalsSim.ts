@@ -5,10 +5,11 @@ import {
   FINALS_WEIGHTS,
   GAME7_VARIANCE_STD,
   GAME7_WEIGHTS,
+  WIN_PCT_ANCHORS,
 } from '../constants/weights'
 import { matchupWinProb, opponentStrength } from './playoffSim'
 import type { FinalsResult, SeasonResult, SeriesGame, StatLine } from '../types'
-import { clamp, gaussian, pickRandom, round1 } from './random'
+import { clamp, gaussian, lerpAnchors, pickRandom, round1 } from './random'
 import type { BuildProfile } from './profile'
 import { flawStrengthDelta } from './flawEffects'
 import { simulateDetailedSeries } from './seriesSim'
@@ -70,10 +71,16 @@ export function simulateFinals(
     0.85,
   )
 
+  // Finals home court goes to the better regular-season record; the
+  // opponent's is estimated from its strength on the season-sim anchors.
+  const oppWins = Math.round(lerpAnchors(WIN_PCT_ANCHORS, oppStrength) * 82)
+  const hasHomeCourt = season.wins > oppWins
+
   const { games, won, winsFor, winsAgainst } = simulateDetailedSeries(
     profile,
     pGame,
     pGame7,
+    hasHomeCourt,
   )
 
   // DNP games (Injury Prone) don't drag down the series averages
