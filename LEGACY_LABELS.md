@@ -46,16 +46,16 @@ already use, e.g. `ratings.defense >= 94`). These feed the identity labels.
 
 ```ts
 const R = profile.ratings
-const eliteShooting   = R.shooting >= 92
-const eliteDefense    = R.defense >= 92
+const eliteShooting   = R.shooting >= 95
+const eliteDefense    = R.defense >= 95
 const elitePlaymaking = R.playmaking >= 90
-const eliteClutch     = R.iqClutch >= 92
+const eliteClutch     = R.iqClutch >= 95
 const eliteAthleticism= R.athleticism >= 90
 const eliteRebounding = R.rebounding >= 90
 const eliteFinishing  = R.finishing >= 90
-const twoWay          = R.shooting >= 87 && R.defense >= 87
-const threeAndD       = R.shooting >= 84 && R.defense >= 84   // lower bar than twoWay
-const allAround       = ATTRIBUTE_KEYS.filter(k => R[k] >= 84).length >= 6
+const twoWay          = R.shooting >= 90 && R.defense >= 90
+const threeAndD       = R.shooting >= 87 && R.defense >= 87   // lower bar than twoWay
+const allAround       = ATTRIBUTE_KEYS.filter(k => R[k] >= 87).length >= 6
 // single dominant skill: best attr is much higher than the 2nd best
 const sorted = ATTRIBUTE_KEYS.map(k => R[k]).sort((a,b) => b - a)
 const oneDimensional  = sorted[0] - sorted[2] >= 12
@@ -82,7 +82,7 @@ Keep all current champion labels. Add these BEFORE the generic `'Championship Pi
 | **The Closer** | `finalsMvp && eliteClutch` | won it on clutch DNA |
 | **Positionless King** | `allAround` | did everything, won it all |
 | **Unicorn** | `group === 'Centers' && eliteShooting && eliteDefense` | a big who broke the position |
-| **Iron Throne** | champ with `overall >= 92` and no flaw | flawless dominant title |
+| **Iron Throne** | champ with `overall >= 94` and no flaw | flawless dominant title |
 
 ### Tier B — Reached Finals, lost (currently only "Almost a Champion")
 Insert BEFORE `'Almost a Champion'` (which stays as the tier fallback):
@@ -105,12 +105,12 @@ these so the underdog story wins.)
 
 ### Tier D — Build identity (NEW tier — the "great build, no deep run" rescue)
 This is the key addition. Insert AFTER the CF tier and AFTER the existing MVP / Playoff
-Disappointment rungs, but **BEFORE** the coarse `overall >= 94 / >= 90` fallbacks. First
+Disappointment rungs, but **BEFORE** the coarse `overall >= 96 / >= 91` fallbacks. First
 match wins, so order by specificity:
 
 | New label | Trigger | Voice/intent |
 |---|---|---|
-| **Lockdown** | `eliteDefense && R.defense >= 96` | signature stopper |
+| **Lockdown** | `eliteDefense && R.defense >= 97` | signature stopper |
 | **The Wall** | `eliteDefense` | elite defender, team fell short |
 | **Walking Bucket** | `eliteShooting && (season.stats.ppg >= 28 \|\| playoffs?.playoffStats.ppg >= 28)` | pure scorer, big numbers |
 | **Sniper** | `eliteShooting` | elite shooter |
@@ -137,7 +137,7 @@ Keep `Playoff Disappointment`. Add:
 ### Tier G — Missed playoffs
 | New label | Trigger | |
 |---|---|---|
-| **Building Block** | `!season.madePlayoffs && overall >= 88` | promising piece on a bad team |
+| **Building Block** | `!season.madePlayoffs && overall >= 91` | promising piece on a bad team |
 | **Lottery Bound** | `!season.madePlayoffs` (tier fallback) | |
 
 ### Tier H — Raised floor (replaces bare "Solid Starter")
@@ -148,7 +148,7 @@ gets an identity:
 if (threeAndD) return '3-and-D Specialist'
 if (oneDimensional) return 'Specialist'
 if (allAround) return 'Glue Guy'
-if (overall >= 82) return 'Solid Starter'   // now a genuine mid-tier, not a catch-all
+if (overall >= 85) return 'Solid Starter'   // now a genuine mid-tier, not a catch-all
 return 'Rotation Piece'                       // true floor
 ```
 

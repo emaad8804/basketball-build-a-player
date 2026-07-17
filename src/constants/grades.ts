@@ -2,15 +2,15 @@ import type { Grade } from '../types'
 
 export const GRADE_TO_RATING: Record<Grade, number> = {
   S: 99,
-  'A+': 94,
-  A: 90,
-  'A-': 86,
-  'B+': 82,
-  B: 78,
-  'B-': 74,
-  'C+': 70,
-  C: 66,
-  D: 60,
+  'A+': 96,
+  A: 93,
+  'A-': 89,
+  'B+': 85,
+  B: 81,
+  'B-': 77,
+  'C+': 73,
+  C: 68,
+  D: 62,
 }
 
 /** Higher rank = better grade. Used for threshold comparisons like "A- or higher". */

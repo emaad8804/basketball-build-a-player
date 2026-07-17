@@ -7,12 +7,12 @@ import type {
   Group,
   LockedAttribute,
 } from '../types'
-import { GRADE_TO_RATING } from '../constants/grades'
 
 /**
  * Weighted average of locked attribute ratings using group-specific weights.
- * Unlocked attributes count as a neutral C+ (70) so a projected overall can
- * be shown mid-build; once all 9 are locked this is the true base overall.
+ * Unlocked attributes count as a neutral 70 (the league-average placeholder
+ * every sim anchors on) so a projected overall can be shown mid-build; once
+ * all 9 are locked this is the true base overall.
  */
 export function computeBaseOverall(
   group: Group,
@@ -21,7 +21,7 @@ export function computeBaseOverall(
   const weights = OVERALL_WEIGHTS[group]
   let total = 0
   for (const key of ATTRIBUTE_KEYS) {
-    const rating = locked[key]?.rating ?? GRADE_TO_RATING['C+']
+    const rating = locked[key]?.rating ?? 70
     total += rating * weights[key]
   }
   return Math.round(total / 100)

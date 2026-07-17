@@ -154,8 +154,8 @@ export function teamsForSeed(
 }
 
 /** Superstar carry: overall where penalty relief starts / maxes out. */
-const CARRY_START = 82
-const CARRY_FULL = 94
+const CARRY_START = 85
+const CARRY_FULL = 96
 const MAX_CARRY_RELIEF = 0.45
 
 /**

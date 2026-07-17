@@ -20,7 +20,7 @@ import { simulateSeason } from '../src/simulation/seasonSim'
 import type { AttributeKey, Group, Rarity } from '../src/types'
 
 const RUNS = 2000
-const OVERALLS = [78, 80, 82, 84, 86, 88, 90, 94, 96]
+const OVERALLS = [81, 83, 85, 87, 89, 91, 93, 96, 97]
 const TIER_IDS: TeamTierId[] = [
   'contender',
   'playoff-lock',
@@ -220,9 +220,9 @@ console.log(
 
 const flawRows: (FlawId | null)[] = [null, ...FLAWS.map((f) => f.id)]
 for (const flawId of flawRows) {
-  const profile = makeProfile(94, 'contender')
+  const profile = makeProfile(96, 'contender')
   if (flawId) {
-    // Flat 94 ratings sit below SOFTEN_THRESHOLD, so the flaw is never softened.
+    // Flat 96 ratings sit below SOFTEN_THRESHOLD (97), so the flaw is never softened.
     const flaw: ActiveFlaw = { id: flawId, softened: false, mult: 1 }
     profile.flaw = flaw
   }

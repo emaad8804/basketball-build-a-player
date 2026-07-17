@@ -48,14 +48,14 @@ as several mid ones. This is what creates the "one star vs. balanced build" deci
 
 | Grade | Rating | Cost ($M) |
 |-------|--------|-----------|
-| C | 66 | 4 |
-| C+ | 70 | 6 |
-| B | 78 | 10 |
-| B+ | 82 | 14 |
-| A- | 86 | 22 |
-| A | 90 | 30 |
-| A+ | 94 | 38 |
-| S | 96+ | 48 |
+| C | 68 | 4 |
+| C+ | 73 | 6 |
+| B | 81 | 10 |
+| B+ | 85 | 14 |
+| A- | 89 | 22 |
+| A | 93 | 30 |
+| A+ | 96 | 38 |
+| S | 99 | 48 |
 
 Design intent to preserve if grades/ratings ever change: each jump should be >= the
 previous jump (currently +2, +4, +4, +8, +8, +8, +10), so upgrading is always a

@@ -73,13 +73,13 @@ export const GAME7_WEIGHTS = {
 
 /** Rating (60-99) → expected regular-season win% anchors; lerped between. */
 export const WIN_PCT_ANCHORS: [number, number][] = [
-  [60, 0.25],
-  [70, 0.35],
-  [80, 0.45],
-  [88, 0.55],
-  [90, 0.6],
-  [94, 0.7],
-  [96, 0.78],
+  [62, 0.25],
+  [73, 0.35],
+  [83, 0.45],
+  [91, 0.55],
+  [93, 0.6],
+  [96, 0.7],
+  [97, 0.78],
   [98, 0.85],
   [99, 0.9],
 ]
@@ -89,16 +89,16 @@ export const PLAYOFF_WIN_CUTOFF = 44
 
 /** Baseline composite strength of a playoff team by seed (60-99 scale). */
 export const SEED_BASE_STRENGTH: Record<number, number> = {
-  1: 92,
-  2: 90,
-  3: 88,
-  4: 86,
-  5: 85,
-  6: 84,
-  7: 83,
-  8: 81,
-  9: 79,
-  10: 78,
+  1: 94,
+  2: 92,
+  3: 90,
+  4: 89,
+  5: 88,
+  6: 87,
+  7: 86,
+  8: 84,
+  9: 82,
+  10: 81,
 }
 
 /**

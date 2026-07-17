@@ -25,8 +25,8 @@ export interface Flaw {
 
 export const NO_FLAW_WEIGHT = 50
 
-/** Rating on the linked attribute at which a flaw's effect is halved. */
-export const SOFTEN_THRESHOLD = 95
+/** Rating on the linked attribute at which a flaw's effect is halved (S-grade only). */
+export const SOFTEN_THRESHOLD = 97
 
 export const FLAWS: Flaw[] = [
   {

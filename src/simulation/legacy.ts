@@ -115,23 +115,23 @@ export function deriveLegacyLabel(
   const anchorDefense = R.defense >= 94 // champ-tier bar (pre-expansion)
 
   // Build-shape helpers (LEGACY_LABELS.md §2)
-  const eliteShooting = R.shooting >= 92
-  const eliteDefense = R.defense >= 92
+  const eliteShooting = R.shooting >= 95
+  const eliteDefense = R.defense >= 95
   const elitePlaymaking = R.playmaking >= 90
-  const eliteClutch = R.iqClutch >= 92
+  const eliteClutch = R.iqClutch >= 95
   const eliteAthleticism = R.athleticism >= 90
   const eliteRebounding = R.rebounding >= 90
   const eliteFinishing = R.finishing >= 90
-  const twoWay = R.shooting >= 87 && R.defense >= 87
-  const threeAndD = R.shooting >= 84 && R.defense >= 84 // lower bar than twoWay
-  const allAround = ATTRIBUTE_KEYS.filter((k) => R[k] >= 84).length >= 6
+  const twoWay = R.shooting >= 90 && R.defense >= 90
+  const threeAndD = R.shooting >= 87 && R.defense >= 87 // lower bar than twoWay
+  const allAround = ATTRIBUTE_KEYS.filter((k) => R[k] >= 87).length >= 6
   // single dominant skill: best attr towers over the field
   const sorted = ATTRIBUTE_KEYS.map((k) => R[k]).sort((a, b) => b - a)
   const oneDimensional = sorted[0] - sorted[2] >= 12
 
   // 1. Glass Bones ended the run — the great what-if outranks everything
   if (playoffs?.seasonEndingInjury || ctx.playInInjury) {
-    return overall >= 93 ? 'What Could Have Been' : 'Star-Crossed Season'
+    return overall >= 95 ? 'What Could Have Been' : 'Star-Crossed Season'
   }
 
   // 2. A title from the play-in lane is the greatest story in basketball
@@ -139,7 +139,7 @@ export function deriveLegacyLabel(
 
   // 3. Champion tier
   if (champion && finalsMvp && season.wonMvp) return 'First Ballot Hall of Famer'
-  if (champion && finalsMvp && overall >= 95) return 'All-Time Great'
+  if (champion && finalsMvp && overall >= 97) return 'All-Time Great'
   if (champion && elitePlayoffStats) return 'Playoff Legend'
   if (champion && anchorDefense) {
     return R.shooting >= 86 ? 'Two-Way Superstar' : 'Defensive Anchor'
@@ -149,7 +149,7 @@ export function deriveLegacyLabel(
   if (champion && allAround) return 'Positionless King'
   if (champion && profile.group === 'Centers' && eliteShooting && eliteDefense)
     return 'Unicorn'
-  if (champion && overall >= 92 && !profile.flaw) return 'Iron Throne'
+  if (champion && overall >= 94 && !profile.flaw) return 'Iron Throne'
   if (champion && finalsMvp) return 'Finals MVP'
   if (champion) return 'Championship Piece'
 
@@ -170,13 +170,13 @@ export function deriveLegacyLabel(
   if (season.wonMvp) return 'MVP-Caliber Superstar'
 
   // 8. Regular season vs playoffs
-  if (lostEarly && overall >= 93) return 'Playoff Disappointment'
+  if (lostEarly && overall >= 95) return 'Playoff Disappointment'
   if (lostEarly && season.wins >= 55) return 'Regular Season Hero'
   if (lostEarly && season.stats.ppg >= 28) return 'Regular Season Superstar'
 
   // 9. Build identity — the "great build, no deep run" rescue. Sits ABOVE
   // the coarse overall fallbacks by design (LEGACY_LABELS.md §4).
-  if (eliteDefense && R.defense >= 96) return 'Lockdown'
+  if (eliteDefense && R.defense >= 97) return 'Lockdown'
   if (eliteDefense) return 'The Wall'
   if (
     eliteShooting &&
@@ -192,7 +192,7 @@ export function deriveLegacyLabel(
 
   // 10. Big numbers that never mattered, then the high-overall catch
   if (season.stats.ppg >= 27 && playoffs === null) return 'Empty Numbers'
-  if (overall >= 94) return 'Franchise Player'
+  if (overall >= 96) return 'Franchise Player'
 
   // 11. League honors
   if (season.allNba !== null) return 'All-NBA Talent'
@@ -202,7 +202,7 @@ export function deriveLegacyLabel(
     return 'First-Round Casualty'
 
   // 13. Missed the bracket but the piece is real
-  if (playoffs === null && overall >= 88) return 'Building Block'
+  if (playoffs === null && overall >= 91) return 'Building Block'
 
   // 14. Raised floor — shape and a genuine mid-tier outrank the bare
   // status fallbacks, so 'Playoff Regular'/'Lottery Bound' are reserved
@@ -210,7 +210,7 @@ export function deriveLegacyLabel(
   if (threeAndD) return '3-and-D Specialist'
   if (oneDimensional) return 'Specialist'
   if (allAround) return 'Glue Guy'
-  if (overall >= 82) return 'Solid Starter'
+  if (overall >= 85) return 'Solid Starter'
   if (playoffs !== null) return 'Playoff Regular'
   if (!season.madePlayoffs) return 'Lottery Bound'
   return 'Rotation Piece'

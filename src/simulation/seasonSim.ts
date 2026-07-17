@@ -92,8 +92,8 @@ export function simulateSeason(profile: BuildProfile): SeasonResult {
   const { overall, ratings } = profile
 
   // Record: overall-anchored win% + clutch tilt + noise
-  const iqTilt = ((ratings.iqClutch - 78) / 100) * 0.25
-  const playmakingTilt = ((ratings.playmaking - 78) / 100) * 0.1
+  const iqTilt = ((ratings.iqClutch - 81) / 100) * 0.25
+  const playmakingTilt = ((ratings.playmaking - 81) / 100) * 0.1
   const winPct = clamp(
     lerpAnchors(WIN_PCT_ANCHORS, overall) +
       iqTilt +
@@ -159,7 +159,7 @@ export function simulateSeason(profile: BuildProfile): SeasonResult {
 
   // MVP voting: overall + wins + clutch driven
   const mvpScore =
-    (overall - 88) * 2 + (wins - 45) * 0.5 + (ratings.iqClutch - 80) * 0.3 + gaussian(0, 2)
+    (overall - 91) * 2 + (wins - 45) * 0.5 + (ratings.iqClutch - 83) * 0.3 + gaussian(0, 2)
   let mvpVoting: string
   let wonMvp = false
   if (mvpScore >= 20) {

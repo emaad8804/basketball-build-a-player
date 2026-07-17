@@ -38,7 +38,7 @@ this is mostly `src/simulation/` and `src/constants/weights.ts`.
 ## 1. Target outcome distribution (what "authentic" means numerically)
 
 These are the acceptance criteria for the rebalance. Approximate but the right shape.
-Measured for a **94 OVR, no flaw, contender team**, unless stated:
+Measured for a **96 OVR, no flaw, contender team** (94 on the pre-2026-07 grade scale), unless stated:
 
 | Metric | Target | Today (fill from baseline) |
 |---|---|---|
@@ -56,7 +56,7 @@ League-wide shape (across all OVR bands / tiers):
 | 1-seed losing round 1 | single digits |
 | Mean series length | ~5.7 games |
 
-A 78 OVR on a tanking team should essentially never win a title. A 96 on a contender
+An 81 OVR on a tanking team should essentially never win a title. A 97 on a contender
 should be a heavy favorite but **not** a lock — if title% > 60%, it's a coronation, not a
 season, and that reads as fake.
 
@@ -70,14 +70,14 @@ there is no way to know whether the changes helped.
 
 Keep the existing season table. Add:
 
-**Table 2 — Playoff outcomes**, per (OVR band 78–96) × (team tier):
+**Table 2 — Playoff outcomes**, per (OVR band 81–97) × (team tier):
 - Title %
 - Reached Finals %
 - Eliminated in R1 % / R2 % / CF %
 - **Swept %** (lost any series 0–4)
 - Mean series length
 
-**Table 3 — Flaw isolation**, at fixed 94 OVR on a contender, one row per flaw
+**Table 3 — Flaw isolation**, at fixed 96 OVR on a contender, one row per flaw
 (no-flaw, plus each of the 6 `FlawId`s):
 - Title %
 - Swept %

@@ -76,9 +76,9 @@ export const RESPIN_COST = 1
  * and leftover money stays neutral (spec §8).
  */
 export const BUDGET_PAR_OVERALL: Record<BudgetTierId, number> = {
-  superteam: 90,
-  starter: 84,
-  hard: 78,
+  superteam: 93,
+  starter: 87,
+  hard: 81,
 }
 
 /** First entry whose minDelta <= (overall - par) wins. */

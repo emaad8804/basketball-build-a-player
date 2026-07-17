@@ -80,7 +80,7 @@ function expect(
 // --- §5 fixed cases ---------------------------------------------------------
 
 // (a) 89 OVR / 99 defense / R2 exit. The spec's prose says "The Wall", but
-// its own Lockdown rung (defense >= 96) is more specific and fires first;
+// its own Lockdown rung (defense >= 97) is more specific and fires first;
 // the case's real point is "not Solid Starter".
 expect(
   '(a) 89 OVR, 99 def, R2 exit',
@@ -88,16 +88,16 @@ expect(
   'Lockdown',
 )
 expect(
-  '(a2) 89 OVR, 94 def, R2 exit',
-  deriveLegacyLabel(makeProfile(89, { defense: 94 }), makeSeason(), makePlayoffs('Second Round'), null),
+  '(a2) 89 OVR, 96 def, R2 exit',
+  deriveLegacyLabel(makeProfile(89, { defense: 96 }), makeSeason(), makePlayoffs('Second Round'), null),
   'The Wall',
 )
 
-// (b) champion + all-around (flat 85s, no Finals MVP)
+// (b) champion + all-around (flat 89s, no Finals MVP)
 expect(
-  '(b) champion, flat 85s (all-around)',
+  '(b) champion, flat 89s (all-around)',
   deriveLegacyLabel(
-    makeProfile(87, {}, 85), makeSeason(),
+    makeProfile(87, {}, 89), makeSeason(),
     makePlayoffs(null), makeFinals({ won: true, winsFor: 4, winsAgainst: 2 }),
   ),
   'Positionless King',
@@ -113,22 +113,22 @@ expect(
   'Heartbreak in June',
 )
 
-// (d) missed playoffs, 90 OVR shaped to dodge the identity tier (only
+// (d) missed playoffs, 93 OVR shaped to dodge the identity tier (only
 // frame/ballHandling high — no identity label reads those)
 expect(
-  '(d) missed playoffs, 90 OVR, identity-less shape',
+  '(d) missed playoffs, 93 OVR, identity-less shape',
   deriveLegacyLabel(
-    makeProfile(90, { frame: 99, ballHandling: 99 }),
+    makeProfile(93, { frame: 99, ballHandling: 99 }),
     makeSeason({ madePlayoffs: false, wins: 38 }), null, null,
   ),
   'Building Block',
 )
 // ...whereas an all-around missed-playoffs build correctly reads as
 // identity (the identity tier outranks the overall fallbacks by design,
-// §4). Flat 86s: allAround without tripping any single elite bar.
+// §4). Flat 89s: allAround without tripping any single elite bar.
 expect(
-  '(d2) missed playoffs, flat 86s (all-around)',
-  deriveLegacyLabel(makeProfile(90, {}, 86), makeSeason({ madePlayoffs: false, wins: 38 }), null, null),
+  '(d2) missed playoffs, flat 89s (all-around)',
+  deriveLegacyLabel(makeProfile(90, {}, 89), makeSeason({ madePlayoffs: false, wins: 38 }), null, null),
   'Stat Sheet Stuffer',
 )
 
@@ -177,7 +177,7 @@ const counts = new Map<string, number>()
 for (let i = 0; i < SWEEPS; i++) {
   const ratings: Partial<Record<AttributeKey, number>> = {}
   for (const key of ATTRIBUTE_KEYS) ratings[key] = 60 + Math.floor(Math.random() * 40)
-  const overall = 74 + Math.floor(Math.random() * 23)
+  const overall = 77 + Math.floor(Math.random() * 23)
   const outcome = OUTCOMES[Math.floor(Math.random() * OUTCOMES.length)]
   const ppg = 14 + Math.random() * 20
   const season = makeSeason({
