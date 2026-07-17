@@ -4,8 +4,9 @@ import { Button } from '../shared/atoms'
 import { GameCard } from '../playoffs/PlayoffsScreen'
 
 /**
- * Play-in night: one (or two) sudden-death games between a 40-43 win
- * season and the lottery. Survive and you're the 8 seed.
+ * Play-in night, NBA rules: seeds 7-8 play for the 7 seed (loser gets one
+ * more life vs the 9v10 winner for the 8 seed); seeds 9-10 must win two
+ * straight. Survive and you carry your claimed seed into the bracket.
  */
 export function PlayInScreen() {
   const { state, dispatch } = useGame()
@@ -31,8 +32,8 @@ export function PlayInScreen() {
         <h2 className="mt-2 font-display font-normal uppercase text-3xl text-white">Win or Go Home</h2>
         <p className="mt-2 text-sm text-muted max-w-md mx-auto">
           {playIn.path === '7-8'
-            ? `${state.seasonResult!.wins} wins bought you a second life: lose the first game and one final elimination game remains.`
-            : `${state.seasonResult!.wins} wins means the hard road: win two straight elimination games or the season is over.`}
+            ? `${state.seasonResult!.wins} wins earned the 7 vs 8 game: win it and the 7 seed is yours — lose, and one final game against the 9/10 winner decides the 8 seed.`
+            : `${state.seasonResult!.wins} wins means the hard road: win the 9 vs 10 game, then beat the 7/8 loser — two straight or the season is over.`}
         </p>
       </div>
 
@@ -40,11 +41,11 @@ export function PlayInScreen() {
         {revealed.map((game, i) => (
           <div key={game.gameNumber}>
             <div className="mb-1 text-xs uppercase tracking-wider text-muted font-semibold">
-              {playIn.path === '9-10' && game.gameNumber === 2
-                ? 'Final Elimination Game'
-                : game.gameNumber === 2
-                  ? 'Last Chance Game'
-                  : 'Elimination Game'}{' '}
+              {game.gameNumber === 2
+                ? '8th Seed Game'
+                : playIn.path === '7-8'
+                  ? '7 vs 8 Game'
+                  : '9 vs 10 Elimination Game'}{' '}
               <span className="text-muted normal-case">vs {game.opponent}</span>
             </div>
             <GameCard game={game} isLatest={i === revealed.length - 1} />
@@ -88,10 +89,10 @@ export function PlayInScreen() {
         ) : !injured && playIn.survived ? (
           <div className="anim-pop-in">
             <div className="font-display font-normal uppercase text-2xl text-win">
-              Season Saved — 8th Seed Claimed
+              Season Saved — {playIn.seed}th Seed Claimed
             </div>
             <p className="mt-1 text-sm text-muted">
-              The reward: a first-round date with the 1 seed.
+              The reward: a first-round date with the {playIn.seed === 7 ? 2 : 1} seed.
             </p>
             <div className="mt-6">
               <Button
@@ -99,7 +100,7 @@ export function PlayInScreen() {
                 className="text-lg px-8 anim-glow-pulse inline-flex items-center gap-2"
               >
                 <Swords className="w-5 h-5" aria-hidden />
-                Enter the Playoffs — 8th Seed
+                Enter the Playoffs — {playIn.seed}th Seed
               </Button>
             </div>
           </div>

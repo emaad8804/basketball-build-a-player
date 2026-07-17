@@ -12,7 +12,7 @@ export interface SeasonResult {
   wins: number
   losses: number
   seed: number
-  /** 40-43 wins: one last chance via the play-in tournament. */
+  /** Seeded 7-10: fights for a playoff berth in the play-in tournament. */
   playInEligible: boolean
   conference: 'East' | 'West'
   stats: StatLine
@@ -61,10 +61,12 @@ export interface PlayInGame extends SeriesGame {
 }
 
 export interface PlayInResult {
-  /** 42-43 wins get the forgiving 7/8 path; 40-41 must win two straight. */
+  /** Seeds 7-8 get the forgiving path (7v8 winner takes the 7 seed); 9-10 must win two straight. */
   path: '7-8' | '9-10'
   games: PlayInGame[]
   survived: boolean
+  /** The playoff seed claimed by surviving: 7 (won the 7v8 game) or 8. */
+  seed?: 7 | 8
   /** Glass Bones struck on play-in night — the run ends before tip-off. */
   seasonEndingInjury?: boolean
 }

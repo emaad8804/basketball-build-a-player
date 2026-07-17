@@ -387,8 +387,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         return { ...state, screen: 'share', legacyLabel }
       }
 
-      // Play-in survivors enter the bracket as the 8 seed
-      const seedOverride = state.seasonResult.madePlayoffs ? undefined : 8
+      // Play-in survivors carry the seed they claimed (7 or 8)
+      const seedOverride = state.playInResult?.seed
       const playoffResult = simulatePlayoffs(
         profile,
         state.seasonResult,

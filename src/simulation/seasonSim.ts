@@ -106,27 +106,29 @@ export function simulateSeason(profile: BuildProfile): SeasonResult {
   const wins = Math.round(winPct * 82)
   const losses = 82 - wins
 
-  // Seed: derived from wins with light jitter. Hard gate: below the win
-  // cutoff the season is over — no play-in mercy, straight to the lottery.
+  // Seed: NBA-shaped ladder derived from wins with light jitter.
+  // 1-6 = direct playoff berth, 7-10 = play-in, 11+ = lottery.
+  // Win bands mirror the old cutoffs so sim balance is unchanged.
   let seed: number
-  if (wins < PLAYOFF_WIN_CUTOFF) {
-    seed =
-      wins >= 39
-        ? 9 + Math.floor(Math.random() * 2)
-        : 11 + Math.floor(Math.random() * 4)
-  } else {
+  if (wins >= PLAYOFF_WIN_CUTOFF) {
     if (wins >= 60) seed = 1
     else if (wins >= 55) seed = 2
     else if (wins >= 50) seed = 3
     else if (wins >= 46) seed = 4
-    else seed = 5 + Math.floor(Math.random() * 4)
+    else seed = 5 + Math.floor(Math.random() * 2)
     if (seed >= 2 && seed <= 5 && Math.random() < 0.3) seed += Math.random() < 0.5 ? -1 : 1
-    seed = clamp(seed, 1, 8)
+    seed = clamp(seed, 1, 6)
+  } else if (wins >= 42) {
+    seed = 7 + Math.floor(Math.random() * 2)
+  } else if (wins >= 40) {
+    seed = 9 + Math.floor(Math.random() * 2)
+  } else {
+    seed = 11 + Math.floor(Math.random() * 4)
   }
 
-  const madePlayoffs = wins >= PLAYOFF_WIN_CUTOFF
-  // One last chance: 40-43 wins earns a sudden-death play-in berth
-  const playInEligible = !madePlayoffs && wins >= 40
+  const madePlayoffs = seed <= 6
+  // Seeds 7-10 fight for the last two berths in the play-in, like the real NBA
+  const playInEligible = seed >= 7 && seed <= 10
   // Conference comes from the Team Destiny landing when there is one
   const conference: 'East' | 'West' =
     profile.homeConference ?? (Math.random() < 0.5 ? 'East' : 'West')

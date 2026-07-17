@@ -131,6 +131,8 @@ export const SEED_TIER_POOL: Record<number, TeamTierId[]> = {
   6: ['playoff-lock', 'middle'],
   7: ['middle'],
   8: ['middle', 'rebuilding'],
+  9: ['middle', 'rebuilding'],
+  10: ['rebuilding'],
 }
 
 /**

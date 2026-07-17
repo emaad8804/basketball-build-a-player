@@ -156,8 +156,8 @@ export function PlayoffsScreen() {
   const { state, dispatch } = useGame()
   const playoffs = state.playoffResult!
   const stats = playoffs.playoffStats
-  // Play-in survivors enter as the 8 seed regardless of season record
-  const seed = state.seasonResult!.madePlayoffs ? state.seasonResult!.seed : 8
+  // Play-in survivors enter with the seed they claimed (7 or 8)
+  const seed = state.playInResult?.seed ?? state.seasonResult!.seed
 
   // Distribute the flat reveal cursor across rounds
   let remaining = state.playoffGamesRevealed

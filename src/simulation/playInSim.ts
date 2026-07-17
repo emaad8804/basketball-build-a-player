@@ -1,9 +1,9 @@
-import { NBA_TEAMS } from '../constants/teams'
+import { teamsForSeed } from '../constants/teamStrength'
 import type { PlayInGame, PlayInResult, SeasonResult } from '../types'
 import { clamp, pickRandom } from './random'
 import type { BuildProfile } from './profile'
 import { flawLabel, flawPGameDelta, rollGlassBones } from './flawEffects'
-import { playoffStrength, strengthToWinProb } from './playoffSim'
+import { matchupWinProb, opponentStrength, playoffStrength } from './playoffSim'
 import { generateGameStats, generateScore } from './seriesSim'
 
 const WIN_RECAPS = [
@@ -24,45 +24,44 @@ const BRICK_LOSS_RECAPS = [
 ]
 
 /**
- * The play-in: 42-43 wins get the NBA-style second life (lose game 1,
- * one more elimination game); 40-41 must win two straight. Survivors
- * take the 8 seed. Glass Bones rolls once at the door, and every
- * play-in game counts as an "opener" for Slow Starter.
+ * The NBA play-in: seeds 7-8 play each other — the winner claims the
+ * 7 seed, the loser gets one more life against the 9v10 winner for the
+ * 8 seed. Seeds 9-10 must win two straight. Glass Bones rolls once at
+ * the door, and every play-in game counts as an "opener" for Slow Starter.
  */
 export function simulatePlayIn(
   profile: BuildProfile,
   season: SeasonResult,
 ): PlayInResult {
-  const path: PlayInResult['path'] = season.wins >= 42 ? '7-8' : '9-10'
+  const path: PlayInResult['path'] = season.seed <= 8 ? '7-8' : '9-10'
 
   if (rollGlassBones(profile.flaw)) {
     return { path, games: [], survived: false, seasonEndingInjury: true }
   }
 
   const flaw = profile.flaw
-  const pGame = clamp(
-    strengthToWinProb(playoffStrength(profile)) + flawPGameDelta(flaw, 1),
-    0.15,
-    0.85,
-  )
+  const strength = playoffStrength(profile)
 
   const usedOpponents = new Set<string>(
     profile.homeTeamName ? [profile.homeTeamName] : [],
   )
-  const pickOpponent = (): string => {
-    const pool = NBA_TEAMS.filter(
-      (t) => t.conference === season.conference && !usedOpponents.has(t.name),
-    )
-    const team = pickRandom(pool)
-    usedOpponents.add(team.name)
-    return team.name
-  }
 
   const games: PlayInGame[] = []
   let winsFor = 0
   let winsAgainst = 0
 
-  const playGame = (): boolean => {
+  const playGame = (oppSeed: number, home: boolean): boolean => {
+    const opponent = pickRandom(
+      teamsForSeed(oppSeed, season.conference, usedOpponents),
+    ).name
+    usedOpponents.add(opponent)
+    const pGame = clamp(
+      matchupWinProb(strength, opponentStrength(opponent, oppSeed)) +
+        flawPGameDelta(flaw, 1),
+      0.15,
+      0.85,
+    )
+
     const won = Math.random() < pGame
     if (won) winsFor++
     else winsAgainst++
@@ -86,7 +85,7 @@ export function simulatePlayIn(
 
     games.push({
       gameNumber: games.length + 1,
-      opponent: pickOpponent(),
+      opponent,
       won,
       scoreFor,
       scoreAgainst,
@@ -95,22 +94,32 @@ export function simulatePlayIn(
       statLine: generateGameStats(profile, won, false),
       recap,
       isGame7: false,
-      // NBA play-in venues: the 7/8 team hosts both its games; the 9/10
-      // team hosts the first and travels to the 7/8 loser for the second.
-      home: path === '7-8' || games.length === 0,
+      home,
       ...(flawEvent ? { flawEvent } : {}),
     })
     return won
   }
 
   let survived: boolean
+  let claimedSeed: 7 | 8 | undefined
   if (path === '7-8') {
-    // Lose the first game and you get one more life
-    survived = playGame() || playGame()
+    // The 7v8 game: the 7 seed hosts. Win it and the 7 seed is yours.
+    if (playGame(season.seed === 7 ? 8 : 7, season.seed === 7)) {
+      survived = true
+      claimedSeed = 7
+    } else {
+      // One more life: host the 9v10 winner for the 8 seed.
+      survived = playGame(9 + Math.floor(Math.random() * 2), true)
+      if (survived) claimedSeed = 8
+    }
   } else {
-    // 9/10 path: win two straight or go home
-    survived = playGame() && playGame()
+    // The 9v10 game (9 seed hosts), then travel to the 7v8 loser — win
+    // two straight for the 8 seed or go home.
+    survived =
+      playGame(season.seed === 9 ? 10 : 9, season.seed === 9) &&
+      playGame(7 + Math.floor(Math.random() * 2), false)
+    if (survived) claimedSeed = 8
   }
 
-  return { path, games, survived }
+  return { path, games, survived, ...(claimedSeed ? { seed: claimedSeed } : {}) }
 }

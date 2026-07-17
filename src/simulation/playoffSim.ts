@@ -48,15 +48,6 @@ function game7Strength(profile: BuildProfile): number {
   )
 }
 
-/**
- * Map absolute strength (60-99) to a win probability with no opponent in
- * the equation. Playoff rounds use matchupWinProb instead; this survives
- * only for the play-in, where the opponent is an unseeded bubble team.
- */
-export function strengthToWinProb(strength: number): number {
-  return clamp(0.5 + (strength - 82) * 0.02, 0.2, 0.82)
-}
-
 /** Opponent's composite strength on the same 60-99 scale as playoffStrength(). */
 export function opponentStrength(opponentName: string, seed: number): number {
   // Base by seed (a 1-seed is genuinely a better team than an 8-seed)
@@ -112,7 +103,7 @@ export function simulatePlayoffs(
   const strength = playoffStrength(profile)
   const clutch = game7Strength(profile)
   const rounds: PlayoffRound[] = []
-  // Play-in survivors enter as the 8 seed regardless of season record
+  // Play-in survivors enter with the seed they claimed (7 or 8)
   const buildSeed = clamp(seedOverride ?? season.seed, 1, 8)
   const opponentSeeds = opponentSeedsForPath(buildSeed)
 

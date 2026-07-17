@@ -84,7 +84,7 @@ export const WIN_PCT_ANCHORS: [number, number][] = [
   [99, 0.9],
 ]
 
-/** Hard playoff gate: seasons below this many wins end in the lottery. */
+/** Direct playoff berth (seed 1-6); 40-43 wins lands seeds 7-10 in the play-in. */
 export const PLAYOFF_WIN_CUTOFF = 44
 
 /** Baseline composite strength of a playoff team by seed (60-99 scale). */
@@ -97,6 +97,8 @@ export const SEED_BASE_STRENGTH: Record<number, number> = {
   6: 84,
   7: 83,
   8: 81,
+  9: 79,
+  10: 78,
 }
 
 /**

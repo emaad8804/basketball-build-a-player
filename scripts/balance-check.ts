@@ -108,11 +108,7 @@ function runPostseason(profile: BuildProfile): {
   const qualified = season.madePlayoffs || playIn?.survived === true
   if (!qualified) return { outcome: 'missed', series: [] }
 
-  const playoffs = simulatePlayoffs(
-    profile,
-    season,
-    season.madePlayoffs ? undefined : 8,
-  )
+  const playoffs = simulatePlayoffs(profile, season, playIn?.seed)
   const series: SeriesRecord[] = playoffs.rounds.map((r) => ({
     length: r.games.length,
     sweptLoss: !r.won && r.winsFor === 0,
