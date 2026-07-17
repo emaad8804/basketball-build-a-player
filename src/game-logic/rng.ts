@@ -22,7 +22,7 @@ export function hashString(s: string): number {
   return h >>> 0
 }
 
-export type RngEventType = 'team' | 'player' | 'riskit' | 'flaw' | 'hometeam'
+export type RngEventType = 'team' | 'player' | 'riskit' | 'flaw'
 
 /**
  * Fresh PRNG for one semantic event, keyed by (seed, type, counter).
@@ -45,7 +45,6 @@ export interface RngCounters {
   player: number
   riskit: number
   flaw: number
-  hometeam: number
 }
 
 export const zeroRngCounters = (): RngCounters => ({
@@ -53,7 +52,6 @@ export const zeroRngCounters = (): RngCounters => ({
   player: 0,
   riskit: 0,
   flaw: 0,
-  hometeam: 0,
 })
 
 /** Unpredictable seed for free-play runs. */

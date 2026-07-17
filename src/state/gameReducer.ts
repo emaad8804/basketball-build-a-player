@@ -298,15 +298,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'SPIN_HOME_TEAM': {
       if (state.screen !== 'team' || state.homeTeam !== null) return state
-      // Dedicated stream, counter 0: in daily mode everyone lands on the
-      // same team regardless of earlier choices. Equal 1/30 odds. Final.
-      const rand = eventRng(state.runSeed, 'hometeam', 0)
-      const homeTeam = NBA_TEAMS[Math.floor(rand() * NBA_TEAMS.length)]
-      return {
-        ...state,
-        homeTeam,
-        rngCounters: { ...state.rngCounters, hometeam: 1 },
-      }
+      // Team Destiny is true randomness in every mode — daily players share
+      // spins and flaw, but each rolls their own team. Equal 1/30 odds.
+      const homeTeam = NBA_TEAMS[Math.floor(Math.random() * NBA_TEAMS.length)]
+      return { ...state, homeTeam }
     }
 
     case 'ACCEPT_TEAM': {

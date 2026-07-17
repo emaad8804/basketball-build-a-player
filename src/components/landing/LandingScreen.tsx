@@ -147,8 +147,8 @@ export function LandingScreen() {
                   {GROUP_LABELS[group]} Day
                 </div>
                 <div className="mt-1 text-sm text-muted">
-                  Same spins for everyone today. One official run. Share your
-                  result.
+                  Same build spins for everyone today — team destiny is yours
+                  alone. One official run. Share your result.
                 </div>
               </div>
               <span className="inline-flex items-center gap-2 text-sm font-bold bg-accent text-ink rounded-xl px-5 py-2.5">
